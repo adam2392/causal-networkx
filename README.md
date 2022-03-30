@@ -1,97 +1,44 @@
-# python-package-template
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-This is a template repository for Python package projects.
+# causal-networkx
 
-## In this README :point_down:
+Causal-Networkx is a Python graph library that extends [networkx](https://github.com/networkx/networkx) to implement causal graphical structures.
 
-- [Features](#features)
-- [Usage](#usagae)
-  - [Initial setup](#initial-setup)
-  - [Creating releases](#creating-releases)
-- [Projects using this template](#projects-using-this-template)
-- [Contributing](#contributing)
+## Why?
+---
+Representation of causal inference models in Python are severely lacking. Moreover, sampling from causal models is non-trivial. However, sampling from simulations is a requirement to benchmark different structural learning, causal ID, or other causal related algorithms.
 
-## Features
+This package aims at serving as a framework for representing causal models and sampling from causal models.
 
-This template repository comes with all of the boilerplate needed for:
+``causalscm`` interfaces with other popular Python packages, such as ``networkx`` for graphical representations.
 
-- Robust (and free) CI with [GitHub Actions](https://github.com/features/actions):
-  - Unit tests ran with [PyTest](https://docs.pytest.org) against multiple Python versions and operating systems.
-  - Type checking with [mypy](https://github.com/python/mypy).
-  - Linting with [flake8](https://flake8.pycqa.org/en/latest/).
-  - Formatting with [isort](https://pycqa.github.io/isort/) and [black](https://black.readthedocs.io/en/stable/).
-- [Dependabot](https://github.blog/2020-06-01-keep-all-your-packages-up-to-date-with-dependabot/) configuration to keep your dependencies up-to-date.
-- Great looking API documentation built using [Sphinx](https://www.sphinx-doc.org/en/master/) (run `make docs` to preview).
-- Automatic GitHub and PyPI releases. Just follow the steps in [`RELEASE_PROCESS.md`](./RELEASE_PROCESS.md) to trigger a new release.
+# Documentation
+---
+Documentation is hosted on `readthedocs`.
 
-## Usage
+# Installation
+---
 
-### Initial setup
+## Dependencies
 
-1. [Create a new repository](https://github.com/allenai/python-package-template/generate) from this template with the desired name of your project.
+causal-networkx requires:
 
-    *Your project name (i.e. the name of the repository) and the name of the corresponding Python package don't necessarily need to match, but you might want to check on [PyPI](https://pypi.org/) first to see if the package name you want is already taken.*
+    * Python (>=3.8)
+    * NumPy
+    * SciPy
+    * Networkx
 
-2. Create a Python 3.7 or newer virtual environment.
+## User Installation
 
-    *If you're not sure how to create a suitable Python environment, the easiest way is using [Miniconda](https://docs.conda.io/en/latest/miniconda.html). On a Mac, for example, you can install Miniconda using [Homebrew](https://brew.sh/):*
+If you already have a working installation of numpy, scipy and networkx, the easiest way to install causal-networkx is using `pip`:
 
-    ```
-    brew install miniconda
-    ```
+    # doesn't work until we make an official release :p
+    pip install -U causal-networkx
 
-    *Then you can create and activate a new Python environment by running:*
+or `conda`:
 
-    ```
-    conda create -n my-package python=3.9
-    conda activate my-package
-    ```
+    TBD
 
-3. Now that you have a suitable Python environment, you're ready to personalize this repository. Just run:
+To install the package from github, clone the repository and then `cd` into the directory:
 
-    ```
-    pip install -r setup-requirements.txt
-    python scripts/personalize.py
-    ```
-
-    And then follow the prompts.
-
-    :pencil: *NOTE: This script will overwrite the README in your repository.*
-
-4. Commit and push your changes, then make sure all GitHub Actions jobs pass.
-
-5. (Optional) If you plan on publishing your package to PyPI, add repository secrets for `PYPI_USERNAME` and `PYPI_PASSWORD`. To add these, go to "Settings" > "Secrets" > "Actions", and then click "New repository secret".
-
-    *If you don't have PyPI account yet, you can create one for free. Or, if you'd like to publish your package under the AllenNLP PyPI account, just ask someone on the AllenNLP team for the credentials.*
-
-6. (Optional) If you want to deploy your API docs to [readthedocs.org](https://readthedocs.org), go to the [readthedocs dashboard](https://readthedocs.org/dashboard/import/?) and import your new project.
-
-    Then click on the "Admin" button, navigate to "Automation Rules" in the sidebar, click "Add Rule", and then enter the following fields:
-
-    - **Description:** Publish new versions from tags
-    - **Match:** Custom Match
-    - **Custom match:** v[vV]
-    - **Version:** Tag
-    - **Action:** Activate version
-
-    Then hit "Save".
-
-    *After your first release, the docs will automatically be published to [your-project-name.readthedocs.io](https://your-project-name.readthedocs.io/).*
-
-### Creating releases
-
-Creating new GitHub and PyPI releases is easy. The GitHub Actions workflow that comes with this repository will handle all of that for you.
-All you need to do is follow the instructions in [RELEASE_PROCESS.md](./RELEASE_PROCESS.md).
-
-## Projects using this template
-
-Here is an incomplete list of some projects that started off with this template:
-
-- [ai2-tango](https://github.com/allenai/tango)
-- [cached-path](https://github.com/allenai/cached_path)
-- [beaker-py](https://github.com/allenai/beaker-py)
-
-## Contributing
-
-If you find a bug :bug:, please open a [bug report](https://github.com/allenai/python-package-template/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
-If you have an idea for an improvement or new feature :rocket:, please open a [feature request](https://github.com/allenai/python-package-template/issues/new?assignees=&labels=Feature+request&template=feature_request.md&title=).
+    pip install -e .

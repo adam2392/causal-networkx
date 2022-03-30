@@ -1,23 +1,23 @@
 Installation
 ============
 
-**my-package** supports Python >= 3.7.
+**causal-networkx** supports Python >= 3.7.
 
 ## Installing with `pip`
 
-**my-package** is available [on PyPI](https://pypi.org/project/my-package/). Just run
+**causal-networkx** is available [on PyPI](https://pypi.org/project/causal-networkx/). Just run
 
 ```bash
-pip install my-package
+pip install causal-networkx
 ```
 
 ## Installing from source
 
-To install **my-package** from source, first clone [the repository](https://github.com/allenai/python-package-template):
+To install **causal-networkx** from source, first clone [the repository](https://github.com/adam2392/causal-networkx):
 
 ```bash
-git clone https://github.com/allenai/python-package-template.git
-cd python-package-template
+git clone https://github.com/adam2392/causal-networkx.git
+cd causal-networkx
 ```
 
 Then run
