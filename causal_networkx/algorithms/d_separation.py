@@ -22,15 +22,15 @@ def convert_latent_to_unobserved_confounders(G: CausalGraph) -> nx.DiGraph:
 
     G_copy = nx.DiGraph(G.dag)
 
-    # for every bidirected edge, add a new node 
+    # for every bidirected edge, add a new node
     for idx, latent_edge in enumerate(G.c_component_graph.edges):
-        G_copy.add_node(f"U{idx}", label=uc_label, observed='no')
+        G_copy.add_node(f"U{idx}", label=uc_label, observed="no")
 
         # then add edges from the new UC to the nodes
         G_copy.add_edge("U", latent_edge[0])
         G_copy.add_edge("U", latent_edge[1])
     return G_copy
-         
+
 
 def d_separated(G: CausalGraph, x, y, z):
     """Check d-separation among 'x' and 'y' given 'z' in graph G.

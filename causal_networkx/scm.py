@@ -7,9 +7,7 @@ from causal_networkx.cgm import CausalGraph
 
 
 class StructuralCausalModel:
-    def __init__(
-        self, exogenous: Dict[str, Callable], endogenous: Dict[str, Callable]
-    ) -> None:
+    def __init__(self, exogenous: Dict[str, Callable], endogenous: Dict[str, Callable]) -> None:
         """Structural Causal Model (SCM) class.
 
         Assumes that all exogenous variables are independent of
@@ -130,9 +128,7 @@ class StructuralCausalModel:
         # then recursively call function to sample all variables
         to_sample_vars = [name for name in input_vars if name not in result_table]
         for name in to_sample_vars:
-            result_table[name] = self._sample_function(
-                self.endogenous[name], result_table
-            )
+            result_table[name] = self._sample_function(self.endogenous[name], result_table)
 
     def get_causal_graph(self) -> CausalGraph:
         """Computes the induced causal diagram.

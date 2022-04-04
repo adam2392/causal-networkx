@@ -3,7 +3,9 @@ from src.ds import CausalGraph, identify, graph_search
 import random
 
 
-def sample_cg(n, dir_rate, bidir_rate, enforce_direct_path=False, enforce_bidirect_path=False, enforce_ID=None):
+def sample_cg(
+    n, dir_rate, bidir_rate, enforce_direct_path=False, enforce_bidirect_path=False, enforce_ID=None
+):
     """
     Samples a random causal diagram with n variables, including X and Y.
     All directed edges are independently included with a chance of dir_rate.
@@ -20,9 +22,9 @@ def sample_cg(n, dir_rate, bidir_rate, enforce_direct_path=False, enforce_bidire
 
     while not done:
         x_loc = random.randint(0, n - 2)
-        V_list = ['V{}'.format(i + 1) for i in range(n - 2)]
-        V_list.insert(x_loc, 'X')
-        V_list.append('Y')
+        V_list = ["V{}".format(i + 1) for i in range(n - 2)]
+        V_list.insert(x_loc, "X")
+        V_list.append("Y")
 
         de_list = []
         be_list = []
@@ -36,13 +38,13 @@ def sample_cg(n, dir_rate, bidir_rate, enforce_direct_path=False, enforce_bidire
         cg = CausalGraph(V_list, de_list, be_list)
 
         done = True
-        if enforce_direct_path and not graph_search(cg, 'X', 'Y', edge_type="direct"):
+        if enforce_direct_path and not graph_search(cg, "X", "Y", edge_type="direct"):
             done = False
-        if enforce_bidirect_path and not graph_search(cg, 'X', 'Y', edge_type="bidirect"):
+        if enforce_bidirect_path and not graph_search(cg, "X", "Y", edge_type="bidirect"):
             done = False
 
         if enforce_ID is not None:
-            id_status = (identify(X={'X'}, Y={'Y'}, G=cg) != "FAIL")
+            id_status = identify(X={"X"}, Y={"Y"}, G=cg) != "FAIL"
             if enforce_ID != id_status:
                 done = False
 
@@ -51,9 +53,10 @@ def sample_cg(n, dir_rate, bidir_rate, enforce_direct_path=False, enforce_bidire
 
 if __name__ == "__main__":
     # cg = CausalGraph.read("../../dat/cg/napkin.cg")
-    cg = sample_cg(10, 0.3, 0.2, enforce_direct_path=False, enforce_bidirect_path=False, enforce_ID=False)
-    result = identify(X={'X'}, Y={'Y'}, G=cg)
+    cg = sample_cg(
+        10, 0.3, 0.2, enforce_direct_path=False, enforce_bidirect_path=False, enforce_ID=False
+    )
+    result = identify(X={"X"}, Y={"Y"}, G=cg)
     print(result)
     if result != "FAIL":
         print(result.get_latex())
-

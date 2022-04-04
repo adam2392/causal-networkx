@@ -2,70 +2,15 @@ from enum import Enum
 from typing import Set, List
 
 import networkx as nx
+from networkx import NetworkXError
 
-from causal_networkx.algorithms.dag import is_directed_acyclic_graph
 
+class NetworkXMixin:
+    """Suite of overriden methods of Networkx Graphs.
 
-# TODO: implement graph views for CausalGraph
-class CausalGraph:
-    """Initialize a causal graphical model.
-
-    This is a causal Bayesian network, where now the edges represent
-    causal influences. Self loops are not allowed. This graph type
-    inherits functionality from networkx. Two different edge
-    types are allowed: bidirected and traditional directed edges.
-
-    Bidirected edges = networkx.Graph
-    Normal directed edges = networkx.DiGraph
-
-    Parameters
-    ----------
-    incoming_graph_data : input graph (optional, default: None)
-        Data to initialize directed acyclic graph. If None (default) an empty
-        graph is created.  The data can be an edge list, or any
-        NetworkX graph object.  If the corresponding optional Python
-        packages are installed the data can also be a 2D NumPy array, a
-        SciPy sparse matrix, or a PyGraphviz graph. The edges in this graph
-        represent directed edges between observed variables, which are
-        represented using a `networkx.DiGraph`.
-
-    incoming_latent_data : input graph (optional, default: None)
-        Data to initialize graph. If None (default) an empty
-        graph is created.  The data can be any format that is supported
-        by the to_networkx_graph() function, currently including edge list,
-        dict of dicts, dict of lists, NetworkX graph, 2D NumPy array, SciPy
-        sparse matrix, or PyGraphviz graph. The edges in this graph represent
-        bidirected edges, which are represented using a `networkx.Graph`.
-
-    attr : keyword arguments, optional (default= no attributes)
-        Attributes to add to graph as key=value pairs.
-
-    See Also
-    --------
-    networkx.DiGraph
-    networkx.Graph
-
-    Notes
-    -----
-    The data structure underneath the hood is stored in two networkx graphs:
-    `networkx.Graph` and `networkx.DiGraph` to represent the latent unobserved
-    confounders and observed variables. These data structures should never be
-    modified directly, but should use the CausalGraph class methods.
-
-    Nodes are defined as any nodes defined in the underlying ``DiGraph`` and
-    ``Graph``. I.e. Any node connected with either a bidirected, or normal
-    directed edge. Adding edges and bidirected edges are performed separately
-    in different functions, compared to ``networkx``.
+    Assumes the subclass will store a DiGraph in 'dag' and
+    a Graph in 'c_component_graph'.
     """
-
-    def __init__(
-        self, incoming_graph_data=None, incoming_latent_data=None, **attr
-    ) -> None:
-        # create the DAG of observed variables
-        self.dag = nx.DiGraph(incoming_graph_data, **attr)
-
-        # form the bidirected edge graph
-        self.c_component_graph = nx.Graph(incoming_latent_data, **attr)
 
     @property
     def name(self):
@@ -75,38 +20,53 @@ class CausalGraph:
         keyed by the string `"name"`. as well as an attribute (technically
         a property) `G.name`. This is entirely user controlled.
         """
-        return self.dag.get("name", "")
+        return self.dag.name
 
     @name.setter
     def name(self, s):
         self.dag["name"] = s
 
-    @property
-    def c_components(self) -> List[Set]:
-        """Generate confounded components of the graph.
+    def get_edge_data(self, u, v, default=None):
+        return self.dag.get_edge_data(u, v, default)
 
-        Returns
-        -------
-        comp : List of sets
-            _description_
+    def clear_edges(self):
+        """Remove all edges from causal graph without removing nodes.
+
+        Clears edges in the DiGraph and the bidirected undirected graph.
         """
-        return nx.connected_components(self.c_component_graph)
+        self.dag.clear_edges()
+        self.c_component_graph.clear_edges()
+
+    def clear(self):
+        self.dag.clear()
+        self.c_component_graph.clear()
+
+    @property
+    def edges(self):
+        return self.dag.edges
 
     @property
     def nodes(self):
-        return set(self.dag.nodes).union(set(self.c_component_graph.nodes))
+        """Return the nodes within the DAG.
+
+        Ignores the c-component graph nodes.
+        """
+        return self.dag.nodes  # ).union(set(self.c_component_graph.nodes))
 
     def number_of_nodes(self):
         return len(self.nodes)
 
     def number_of_edges(self, u=None, v=None):
-        return len(self.dag.number_of_edges(u=u, v=v))
+        return self.dag.number_of_edges(u=u, v=v)
 
     def number_of_bidirected_edges(self, u=None, v=None):
-        return len(self.c_component_graph.number_of_edges(u=u, v=v))
+        return self.c_component_graph.number_of_edges(u=u, v=v)
 
     def has_node(self, n):
         return n in self
+
+    def has_edge(self, u, v):
+        return self.dag.has_edge(u, v)
 
     def __str__(self):
         return "".join(
@@ -115,7 +75,7 @@ class CausalGraph:
                 f" named {self.name!r}" if self.name else "",
                 f" with {self.number_of_nodes()} nodes, ",
                 f"{self.number_of_edges()} edges and ",
-                f"{self.number_of_bidirected_edges()} bidirected edges"
+                f"{self.number_of_bidirected_edges()} bidirected edges",
             ]
         )
 
@@ -137,24 +97,29 @@ class CausalGraph:
         return len(self.nodes)
 
     def __getitem__(self, n):
-        pass
+        return self.dag[n]
 
     def add_node(self, node_for_adding, **attr):
         self.dag.add_node(node_for_adding=node_for_adding, **attr)
         self.c_component_graph.add_node(node_for_adding=node_for_adding, **attr)
 
+    def add_nodes_from(self, nodes_for_adding, **attr):
+        self.dag.add_nodes_from(nodes_for_adding, **attr)
+        self.c_component_graph.add_nodes_from(nodes_for_adding, **attr)
+
     def remove_node(self, n):
         self.dag.remove_node(n)
-        self.c_component_graph.remove_node(n)
+        try:
+            self.c_component_graph.remove_node(n)
+        except NetworkXError as e:
+            return
+
+    def remove_nodes_from(self, ebunch):
+        self.dag.remove_nodes_from(ebunch)
+        self.c_component_graph.remove_nodes_from(ebunch)
 
     def copy(self):
-        return CausalGraph(
-            self.dag.copy(), self.c_component_graph.copy(), **self.dag.graph
-        )
-
-    def clear(self):
-        self.dag.clear()
-        self.c_component_graph.clear()
+        return CausalGraph(self.dag.copy(), self.c_component_graph.copy(), **self.dag.graph)
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):
         """Add an edge between u and v.
@@ -208,6 +173,95 @@ class CausalGraph:
         """
         self.dag.add_edge(u_of_edge, v_of_edge, **attr)
 
+    def remove_edges_from(self, ebunch):
+        self.dag.remove_edges_from(ebunch)
+
+    def remove_edge(self, u, v):
+        self.dag.remove_edge(u, v)
+
+    def add_edges_from(self, ebunch, **attr):
+        self.dag.add_edges_from(ebunch, **attr)
+
+    def order(self):
+        return self.dag.order()
+
+    def size(self, weight=None):
+        """Return the total number of edges possibly with weights."""
+        return self.dag.size(weight) + self.c_component_graph.size(weight)
+
+
+# TODO: implement graph views for CausalGraph
+class CausalGraph(NetworkXMixin):
+    """Initialize a causal graphical model.
+
+    This is a causal Bayesian network, where now the edges represent
+    causal influences. Self loops are not allowed. This graph type
+    inherits functionality from networkx. Two different edge
+    types are allowed: bidirected and traditional directed edges.
+
+    This is also known as an Acyclic Directed Mixed Graph (ADMG).
+
+    Bidirected edges = networkx.Graph
+    Normal directed edges = networkx.DiGraph
+
+    Parameters
+    ----------
+    incoming_graph_data : input graph (optional, default: None)
+        Data to initialize directed acyclic graph. If None (default) an empty
+        graph is created.  The data can be an edge list, or any
+        NetworkX graph object.  If the corresponding optional Python
+        packages are installed the data can also be a 2D NumPy array, a
+        SciPy sparse matrix, or a PyGraphviz graph. The edges in this graph
+        represent directed edges between observed variables, which are
+        represented using a `networkx.DiGraph`.
+
+    incoming_latent_data : input graph (optional, default: None)
+        Data to initialize graph. If None (default) an empty
+        graph is created.  The data can be any format that is supported
+        by the to_networkx_graph() function, currently including edge list,
+        dict of dicts, dict of lists, NetworkX graph, 2D NumPy array, SciPy
+        sparse matrix, or PyGraphviz graph. The edges in this graph represent
+        bidirected edges, which are represented using a `networkx.Graph`.
+
+    attr : keyword arguments, optional (default= no attributes)
+        Attributes to add to graph as key=value pairs.
+
+    See Also
+    --------
+    networkx.DiGraph
+    networkx.Graph
+
+    Notes
+    -----
+    The data structure underneath the hood is stored in two networkx graphs:
+    `networkx.Graph` and `networkx.DiGraph` to represent the latent unobserved
+    confounders and observed variables. These data structures should never be
+    modified directly, but should use the CausalGraph class methods.
+
+    Nodes are defined as any nodes defined in the underlying ``DiGraph`` and
+    ``Graph``. I.e. Any node connected with either a bidirected, or normal
+    directed edge. Adding edges and bidirected edges are performed separately
+    in different functions, compared to ``networkx``.
+    """
+
+    def __init__(self, incoming_graph_data=None, incoming_latent_data=None, **attr) -> None:
+        # create the DAG of observed variables
+        self.dag = nx.DiGraph(incoming_graph_data, **attr)
+
+        # form the bidirected edge graph
+        self.c_component_graph = nx.Graph(incoming_latent_data, **attr)
+
+    @property
+    def c_components(self) -> List[Set]:
+        """Generate confounded components of the graph.
+
+        Returns
+        -------
+        comp : List of sets
+            _description_
+        """
+        return nx.connected_components(self.c_component_graph)
+
     def add_bidirected_edge(self, u_of_edge, v_of_edge, **attr) -> None:
         """Add a bidirected edge between u and v.
 
@@ -240,13 +294,37 @@ class CausalGraph:
             self.dag.add_node(v_of_edge)
 
         # add the bidirected arrow in
-        self.c_component_graph.add_edge(u_of_edge)
+        self.c_component_graph.add_edge(u_of_edge, v_of_edge, **attr)
 
     def children(self, n):
-        pass
+        """Returns an iterator over children of node n.
 
-    def parent(self, n):
-        pass
+        Parameters
+        ----------
+        n : node
+            A node in the causal DAG.
+
+        Returns
+        -------
+        children : Iterator
+            An iterator of the children of node 'n'.
+        """
+        return self.dag.successors(n)
+
+    def parents(self, n):
+        """Returns an iterator over parents of node n.
+
+        Parameters
+        ----------
+        n : node
+            A node in the causal DAG.
+
+        Returns
+        -------
+        parents : Iterator
+            An iterator of the parents of node 'n'.
+        """
+        return self.dag.predecessors(n)
 
     def do(self, nodes):
         """Apply a do-intervention on nodes to causal graph.
@@ -310,12 +388,12 @@ class CausalGraph:
             The mutilated graph.
         """
         # check that nodes and dependencies are same length
-        if (not isinstance(dependencies, str)) and \
-            (not len(nodes) == len(dependencies)):
-                raise ValueError(
-                    f'The number of nodes {len(nodes)} should match '
-                    f'the number of dependencies {len(dependencies)}.')
-        
+        if (not isinstance(dependencies, str)) and (not len(nodes) == len(dependencies)):
+            raise ValueError(
+                f"The number of nodes {len(nodes)} should match "
+                f"the number of dependencies {len(dependencies)}."
+            )
+
         assert all(node in self.nodes for node in nodes)
 
         # create copies of total graph
@@ -327,7 +405,7 @@ class CausalGraph:
             # results in removing the node from the bidirected graph
             bd_graph.remove_node(node)
 
-            if dependencies == 'original':
+            if dependencies == "original":
                 continue
 
             # remove any edges with parents into the nodes
@@ -343,6 +421,8 @@ class CausalGraph:
 
     def is_acyclic(self):
         """Check if graph is acyclic."""
+        from causal_networkx.algorithms.dag import is_directed_acyclic_graph
+
         return is_directed_acyclic_graph(self)
 
     def subgraph(self, nodes):
@@ -359,14 +439,13 @@ class CausalGraph:
         ``self.dag`` and ``self.c_component_graph``.
         """
         nx.draw_networkx(self.dag)
-        nx.draw_networkx(self.c_component_graph, 
-            connectionstyle="arc3,rad=-0.4",
-            style='dotted')
+        nx.draw_networkx(self.c_component_graph, connectionstyle="arc3,rad=-0.4", style="dotted")
 
     def topag(self):
         pass
 
     def tomag(self):
+        # add http://proceedings.mlr.press/v124/hu20a/hu20a.pdf algorithm
         pass
 
     def _classify_three_structure(self, a, b, c):
@@ -388,30 +467,10 @@ class CausalGraph:
         raise ValueError("Unsure how to classify ({},{},{})".format(a, b, c))
 
     def is_unshielded_collider(self, a, b, c):
-        pass
-
-
-class MAG(CausalGraph):
-    """Maximal ancestral graph (MAG).
-
-    MAGs only have 1 edge between any 2 nodes. However,
-    there are now different types of edges, which represent
-    different things. The conditional independences are preserved
-    between a causal graph and the associated MAG.
-
-    Undirected edges = networkx.Graph
-    Normal directed edges = networkx.DiGraph
-
-    Parameters
-    ----------
-    CausalGraph : _type_
-        _description_
-
-    
-    """
-    def __init__(self, incoming_graph_data=None, incoming_latent_data=None, **attr) -> None:
-        super().__init__(incoming_graph_data, incoming_latent_data, **attr)
-    pass
+        """Check if unshielded collider."""
+        return self._classify_three_structure(a, b, c) == "collider" and not (
+            self.has_edge(a, c) or self.has_edge(c, a)
+        )
 
 
 class EdgeType(Enum):
@@ -432,8 +491,12 @@ class EdgeType(Enum):
 
     ->, <-, <->, o->, <-o, o-o
     """
+
     arrow = "arrow"
     circle = "circle"
+
+    def __contains__(self, item):
+        return item in self.__members__.values()
 
 
 class PAG(nx.DiGraph):
@@ -448,6 +511,7 @@ class PAG(nx.DiGraph):
     a taile, or an arrow.
     - "arrow": Indicates that all DAGs within this equivalence class
     has an arrow (i.e. "->").
+    - "undirected": Indicates a selection bias. TODO
 
     The entire PAG is represented by one `networkx.DiGraph` with
     edge attributes indicating which type of endpoint the edge has.
@@ -457,6 +521,7 @@ class PAG(nx.DiGraph):
     CausalGraph : _type_
         _description_
     """
+
     def __init__(self, incoming_graph_data=None, **attr) -> None:
         super().__init__(incoming_graph_data, **attr)
 
@@ -491,7 +556,7 @@ class PAG(nx.DiGraph):
         >>> G.add_edge(*e)  # single edge as tuple of two nodes
         >>> G.add_edges_from([(1, 2)])  # add edges from iterable container
         """
-        super().add_edge(u_of_edge, v_of_edge, type='arrow')
+        super().add_edge(u_of_edge, v_of_edge, type="arrow")
 
     def add_uncertain_edge(self, u_of_edge, v_of_edge):
         """Add a directed edge between u and v.
@@ -511,7 +576,7 @@ class PAG(nx.DiGraph):
         add_edge
 
         """
-        super().add_edge(u_of_edge, v_of_edge, type='circle')
+        super().add_edge(u_of_edge, v_of_edge, type="circle")
 
     def add_edges_from(self, ebunch_to_add):
         """Add all the edges in ebunch_to_add.
@@ -545,7 +610,7 @@ class PAG(nx.DiGraph):
         >>> G.add_edges_from([(1, 2), (2, 3)], weight=3)
         >>> G.add_edges_from([(3, 4), (1, 4)], label="WN2898")
         """
-        super().add_edges_from(ebunch_to_add, type='arrow')
+        super().add_edges_from(ebunch_to_add, type="arrow")
 
     def add_uncertain_edges_from(self, ebunch_to_add):
         """Add all the edges in ebunch_to_add.
@@ -579,7 +644,57 @@ class PAG(nx.DiGraph):
         >>> G.add_edges_from([(1, 2), (2, 3)], weight=3)
         >>> G.add_edges_from([(3, 4), (1, 4)], label="WN2898")
         """
-        super().add_edges_from(ebunch_to_add, type='circle')
+        super().add_edges_from(ebunch_to_add, type="circle")
+
+    def orient_edge(self, u, v, edge_type: str):
+        """Orient an edge a certain way.
+
+        Parameters
+        ----------
+        u : node
+            The parent node
+        v : node
+            The node that 'u' points to in the graph.
+        edge_type : str
+            An edge type as specified in `EdgeType`.
+
+        Raises
+        ------
+        ValueError
+            If 'edge_type' is not in the `EdgeType` enumeration.
+        """
+        if edge_type not in EdgeType:
+            raise ValueError(
+                f"edge_type must be one of {EdgeType}. You passed "
+                f"{edge_type} which is unsupported."
+            )
+
+        nx.set_edge_attributes(self, {(u, v): {"type": edge_type}})
+
+    def edge_type(self, u, v):
+        """Return the edge type associated between u and v."""
+        if not self.has_edge(u, v):
+            raise RuntimeError(f"Graph does not contain an edge " f"between {u} and {v}.")
+        return self[u][v]["type"]
+
+    def has_edge(self, u, v, edge_type=None):
+        """Check if graph has edge between 'u', and 'v' with optional 'edge_type'."""
+        if edge_type not in EdgeType:
+            raise ValueError(
+                f"edge_type must be one of {EdgeType}. You passed "
+                f"{edge_type} which is unsupported."
+            )
+
+        has_adj = super().has_edge(u, v)
+        if edge_type is None:
+            return has_adj
+        elif has_adj and self[u][v]["type"] == edge_type:
+            return True
+        return False
+
+    def has_adjacency(self, u, v):
+        """Check if there is adjacency among nodes 'u' and 'v'."""
+        return self.has_edge(u, v) or self.has_edge(v, u)
 
     def draw(self):
         pass
@@ -597,69 +712,48 @@ class PAG(nx.DiGraph):
         pass
 
     def is_def_collider(self, node1, node2, node3):
-        edge1 = self.get_edge(node1, node2)
-        edge2 = self.get_edge(node2, node3)
+        """Check if <node1, node2, node3> path forms a definite collider.
 
-        if edge1 is None or edge2 is None:
-            return False
+        I.e. node1 *-> node2 <-* node3.
 
-        return str(edge1.get_proximal_endpoint(node2)) == "ARROW" and str(edge2.get_proximal_endpoint(node2)) == "ARROW"
+        Parameters
+        ----------
+        node1 : node
+            A node on the path to check.
+        node2 : node
+            A node on the path to check.
+        node3 : node
+            A node on the path to check.
 
-    # return the endpoint nearest to the given node; returns NoneType if the
-    # given node is not along the edge
-    def get_proximal_endpoint(self, node: Node) -> Endpoint | None:
-        if self.node1 is node:
-            return self.endpoint1
-        else:
-            if self.node2 is node:
-                return self.endpoint2
-            else:
-                return None
-
-    # return the endpoint furthest from the given node; returns NoneType if the
-    # given node is not along the edge
-    def get_distal_endpoint(self, node: Node) -> Endpoint | None:
-        if self.node1 is node:
-            return self.endpoint2
-        else:
-            if self.node2 is node:
-                return self.endpoint1
-            else:
-                return None
-
-    # traverses the edge in an undirected fashion: given one node along the
-    # edge, returns the node at the opposite end of the edge
-    def get_distal_node(self, node: Node) -> Node | None:
-        if self.node1 is node:
-            return self.node2
-        else:
-            if self.node2 is node:
-                return self.node1
-            else:
-                return None
+        Returns
+        -------
+        is_collider : bool
+            Whether or not the path is a definite collider.
+        """
+        return self.has_edge(node1, node2, "arrow") and self.has_edge(node3, node2, "arrow")
 
     def is_def_noncollider(self, node1, node2, node3):
-        edges = self.get_node_edges(node2)
-        circle12 = False
-        circle23 = False
+        """Check if <node1, node2, node3> path forms a definite non-collider.
 
-        for edge in edges:
-            _node1 = edge.get_distal_node(node2) == node1
-            _node3 = edge.get_distal_node(node2) == node3
+        I.e. node1 *-* node2 -> node3, or node1 <- node2 *-* node3
 
-            if _node1 and edge.points_toward(node1):
-                return True
-            if _node3 and edge.points_toward(node3):
-                return True
+        Parameters
+        ----------
+        node1 : node
+            A node on the path to check.
+        node2 : node
+            A node on the path to check.
+        node3 : node
+            A node on the path to check.
 
-            if _node1 and edge.get_proximal_endpoint(node2) == Endpoint.CIRCLE:
-                circle12 = True
-            if _node3 and edge.get_proximal_endpoint(node2) == Endpoint.CIRCLE:
-                circle23 = True
-            if circle12 and circle23 and not self.is_adjacent_to(node1, node2):
-                return True
-
-        return False
+        Returns
+        -------
+        is_noncollider : bool
+            Whether or not the path is a definite non-collider.
+        """
+        condition_one = self.has_edge(node2, node3, "arrow") and not self.has_edge(node3, node2)
+        condition_two = self.has_edge(node2, node1, "arrow") and not self.has_edge(node1, node2)
+        return condition_one or condition_two
 
     def is_edge_visible(self, u, v):
         pass
