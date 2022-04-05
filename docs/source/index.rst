@@ -15,31 +15,30 @@ Contents
    :maxdepth: 2
    :caption: Getting started:
 
-   installation
-   overview
    CHANGELOG
+   overview
+   installation
+   api
 
 .. toctree::
    :hidden:
    :caption: Development
 
-   License <https://raw.githubusercontent.com/allenai/causal-networkx/main/LICENSE>
+   License <https://raw.githubusercontent.com/adma2392/causal-networkx/main/LICENSE>
    CONTRIBUTING
    GitHub Repository <https://github.com/adam2392/causal-networkx>
 
 Team
 ----
 
-**causal-networkx** is developed and maintained by the AllenNLP team, backed by
-`the Allen Institute for Artificial Intelligence (AI2) <https://allenai.org/>`_.
-AI2 is a non-profit institute with the mission to contribute to humanity through high-impact AI research and engineering.
+**causal-networkx** is developed and maintained by adam2392.
 To learn more about who specifically contributed to this codebase, see
 `our contributors <https://github.com/adam2392/causal-networkx/graphs/contributors>`_ page.
 
 License
 -------
 
-**causal-networkx** is licensed under `Apache 2.0 <https://www.apache.org/licenses/LICENSE-2.0>`_.
+**causal-networkx** is licensed under `BSD 3.0 <https://opensource.org/licenses/BSD-3-Clause>`_.
 A full copy of the license can be found `on GitHub <https://github.com/adam2392/causal-networkx/blob/main/LICENSE>`_.
 
 Indices and tables

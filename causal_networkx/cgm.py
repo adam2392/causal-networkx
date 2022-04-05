@@ -101,11 +101,11 @@ class NetworkXMixin:
 
     def add_node(self, node_for_adding, **attr):
         self.dag.add_node(node_for_adding=node_for_adding, **attr)
-        self.c_component_graph.add_node(node_for_adding=node_for_adding, **attr)
+        # self.c_component_graph.add_node(node_for_adding=node_for_adding, **attr)
 
     def add_nodes_from(self, nodes_for_adding, **attr):
         self.dag.add_nodes_from(nodes_for_adding, **attr)
-        self.c_component_graph.add_nodes_from(nodes_for_adding, **attr)
+        # self.c_component_graph.add_nodes_from(nodes_for_adding, **attr)
 
     def remove_node(self, n):
         self.dag.remove_node(n)
@@ -116,7 +116,10 @@ class NetworkXMixin:
 
     def remove_nodes_from(self, ebunch):
         self.dag.remove_nodes_from(ebunch)
-        self.c_component_graph.remove_nodes_from(ebunch)
+        try:
+            self.c_component_graph.remove_nodes_from(ebunch)
+        except NetworkXError as e:
+            return
 
     def copy(self):
         return CausalGraph(self.dag.copy(), self.c_component_graph.copy(), **self.dag.graph)
@@ -255,12 +258,15 @@ class CausalGraph(NetworkXMixin):
     def c_components(self) -> List[Set]:
         """Generate confounded components of the graph.
 
+        TODO: Improve runtime since this iterates over a list twice.
+
         Returns
         -------
         comp : List of sets
-            _description_
+            The c-components.
         """
-        return nx.connected_components(self.c_component_graph)
+        c_comps = nx.connected_components(self.c_component_graph)
+        return [comp for comp in c_comps if len(comp) > 1]
 
     def add_bidirected_edge(self, u_of_edge, v_of_edge, **attr) -> None:
         """Add a bidirected edge between u and v.
@@ -668,8 +674,40 @@ class PAG(nx.DiGraph):
                 f"edge_type must be one of {EdgeType}. You passed "
                 f"{edge_type} which is unsupported."
             )
+        if not self.has_edge(u, v):
+            self.add_edge(u, v)
 
         nx.set_edge_attributes(self, {(u, v): {"type": edge_type}})
+
+    def children(self, n):
+        """Returns an iterator over children of node n.
+
+        Parameters
+        ----------
+        n : node
+            A node in the causal DAG.
+
+        Returns
+        -------
+        children : Iterator
+            An iterator of the children of node 'n'.
+        """
+        return self.successors(n)
+
+    def parents(self, n):
+        """Returns an iterator over parents of node n.
+
+        Parameters
+        ----------
+        n : node
+            A node in the causal DAG.
+
+        Returns
+        -------
+        parents : Iterator
+            An iterator of the parents of node 'n'.
+        """
+        return self.predecessors(n)
 
     def edge_type(self, u, v):
         """Return the edge type associated between u and v."""

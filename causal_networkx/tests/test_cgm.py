@@ -1,12 +1,10 @@
 import pytest
 
-import numpy as np
 import networkx as nx
 from causal_networkx.cgm import CausalGraph
 
 
-class TestNetworkxGraph:
-    """Test CausalGraph relevant networkx properties."""
+class TestGraph:
     def setup_method(self):
         # start every graph with the confounded graph
         # 0 -> 1, 0 -> 2 with 1 <--> 0
@@ -17,6 +15,10 @@ class TestNetworkxGraph:
         ed1, ed2 = ({}, {})
         incoming_graph_data = {0: {1: ed1, 2: ed2}}
         self.G = self.Graph(incoming_graph_data, incoming_latent_data)
+
+
+class TestNetworkxGraph(TestGraph):
+    """Test CausalGraph relevant networkx properties."""
 
     def test_data_input(self):
         G = self.Graph({1: [2], 2: [1]}, name="test")
@@ -37,7 +39,7 @@ class TestNetworkxGraph:
         G.add_node(0)
         assert 0 in G
         assert 0 in G.dag
-        assert 0 in G.c_component_graph
+        assert 0 not in G.c_component_graph
         # test add attributes
         G.add_node(1, c="red")
         G.add_node(2, c="blue")
@@ -59,7 +61,7 @@ class TestNetworkxGraph:
         for i in [0, 1, 2]:
             assert i in G
             assert i in G.dag
-            assert i in G.c_component_graph
+            assert i not in G.c_component_graph
         # test add attributes
         G.add_nodes_from([0, 1, 2], c="red")
         assert G.nodes[0]["c"] == "red"
@@ -244,8 +246,9 @@ class TestNetworkxGraph:
         G.add_edge(2, 1, foo=ll)
 
 
-class TestCausalGraph(TestNetworkxGraph):
+class TestCausalGraph(TestGraph):
     """Test relevant causal graph properties."""
+
     def test_do_intervention(self):
         pass
 
@@ -257,7 +260,7 @@ class TestCausalGraph(TestNetworkxGraph):
 
     def test_children_and_parents(self):
         pass
-    
+
 
 # class TestEdgeSubgraph:
 #     """Unit tests for the :meth:`Graph.edge_subgraph` method."""

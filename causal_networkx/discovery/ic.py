@@ -1,6 +1,6 @@
 from typing import Callable, Union, Dict, Set
 from itertools import combinations, permutations
-from collections import defaultdict
+from collections import defaultdict, deque
 
 import numpy as np
 import networkx as nx
@@ -69,7 +69,7 @@ class FCI(ConstraintDiscovery):
         self.selection_bias = selection_bias
         self.augmented = augmented
 
-    def _orient_colliders(self, graph: PAG, sep_set: Dict[Dict[Set]]):
+    def _orient_colliders(self, graph: PAG, sep_set: Dict[str, Dict[str, Set]]):
         """Orient colliders given a graph and separation set.
 
         Parameters
@@ -230,30 +230,92 @@ class FCI(ConstraintDiscovery):
         path between v and c for u, u o-* c, u in SepSet(v, c),
         orient u -> c. Else, orient a <-> u <-> c.
 
+        A discriminating path, p, is one where:
+        - p has at least 3 edges
+        - u is non-endpoint and u-c
+        - v is not adjacent to c
+        - every vertex between v and u is a collider on p and parent of y
+
         Parameters
         ----------
         graph : PAG
             _description_
         """
         path = []
+        added_arrows = False
 
         for u in graph.nodes:
             for (a, c) in combinations(graph.neighbors(u), 2):
-                if not graph.has_edge(c, a):
+                # a must point to c for us to begin a discriminating path and
+                # not be bi-directional
+                if not graph.has_edge(a, c, "arrow") or graph.has_edge(c, a, "arrow"):
                     continue
 
-                if not graph.has_edge(u, c, "arrow"):
+                # c must also point to u with a circle edge
+                # check u o-* c
+                if not graph.has_edge(c, u, "circle"):
                     continue
+
+                # keep track of paths of certain nodes that were already explored
+                explored_nodes = set()
+                explored_nodes.add(c)
+                explored_nodes.add(u)
+
+                # c parents
+                cparents = graph.parents(c)
+
+                # keep track of the distance searched
+                distance = 0
+
+                # keep track of the previous nodes, i.e. to build a path
+                # from node (key) to its child along the path (value)
+                descendant_nodes = dict()
 
                 # now look for a discriminating path between v and c for  u.
+                path = deque([c])
+                while 1:
+                    node_i = path.popleft()
 
-                # look for parents of node  'a'
+                    # check distance criterion to prevent checking very long paths
+                    distance += 1
+                    if distance > 0 and distance > (
+                        1000 if self.max_path_length == np.inf else self.max_path_length
+                    ):
+                        return added_arrows
 
-                # verify that nodes point into 'a'
+                    # check all  parents of node_i to see if we can find
+                    # a discriminating path
+                    node_i_pa = graph.parents(node_i)
+                    for node_next in node_i_pa:
+                        if node_next in explored_nodes:
+                            continue
 
-                # check if node was already explored
+                        descendant_nodes[node_next] = node_i
+                        node_i_child = descendant_nodes[node_i]
 
-                # check if it is a definite collider
+                        # check that the next node is a definite collider
+                        if not graph.is_def_collider(node_next, node_i, node_i_child):
+                            continue
+
+                        # all nodes along a disc. path must be parent of 'c'
+                        # else it is the end of a discriminating path
+                        if not graph.has_adjacency(node_next, c) and node_next != c:
+                            # now check if u is in SepSet(v, c)
+                            if u in sep_set[node_next][c]:
+                                # orient u -> c
+                                graph.remove_edge(c, u)
+                                graph.orient_edge(u, c, "arrow")
+                            else:
+                                # orient u <-> c
+                                graph.orient_edge(u, c, "arrow")
+                                graph.orient_edge(c, u, "arrow")
+                            added_arrows = True
+
+                        # update 'c' parents
+                        if node_next in cparents:
+                            path.append(node_next)
+                            explored_nodes.add(node_next)
+        return added_arrows
 
     def _apply_rule5(self, graph: PAG):
         pass
@@ -282,16 +344,9 @@ class FCI(ConstraintDiscovery):
                     r2_add = self._apply_rule2(graph, u, a, c)
                     r3_add = self._apply_rule3(graph, u, a, c)
 
-        # check if there is a directed path from A to B and an edge
-        # between A, B, then can orient A into B
-
-        # otherwise, if B is a collider in <A,B,C> triplet,
-        # B is adjacent to D and D is in the separating set between
-        # A and C, then can orient D into B.
-
-        # If U is a definite discriminating path between A and B for M,
-        # P and R are adjacent to M on the path U, and P-M-R is
-        # a triangle, then
+                    # check if we should continue or not
+                    if all(added_edges for added_edges in [r1_add, r2_add, r3_add]):
+                        break
 
     def fit(self, X: pd.DataFrame):
         # learn the skeleton of the graph
@@ -299,107 +354,17 @@ class FCI(ConstraintDiscovery):
 
         # convert the undirected skeleton graph to a PAG, where
         # all left-over edges have a "circle" endpoint
+        pag = PAG(skel_graph, name="PAG derived with FCI")
+        nx.set_edge_attributes(pag, values="circle", name="type")
 
         # orient colliders
+        self._orient_colliders(pag, sep_set)
 
         # run the rest of the rules to orient as many edges
         # as possible
+        self._apply_rules_1to3(pag)
 
-        nodes = []
-        for i in range(dataset.shape[1]):
-            node = GraphNode(f"X{i + 1}")
-            node.add_attribute("id", i)
-            nodes.append(node)
+        # then run rule 4
 
-        # reorient all edges with CIRCLE Endpoint
-        ori_edges = graph.get_graph_edges()
-        for ori_edge in ori_edges:
-            graph.remove_edge(ori_edge)
-            ori_edge.set_endpoint1(Endpoint.CIRCLE)
-            ori_edge.set_endpoint2(Endpoint.CIRCLE)
-            graph.add_edge(ori_edge)
-
-        sp = SepsetsPossibleDsep(
-            dataset,
-            graph,
-            independence_test_method,
-            alpha,
-            background_knowledge,
-            depth,
-            max_path_length,
-            verbose,
-            cache_variables_map=cache_variables_map,
-        )
-
-        rule0(graph, nodes, sep_sets, background_knowledge, verbose)
-
-        waiting_to_deleted_edges = []
-
-        for edge in graph.get_graph_edges():
-            node_x = edge.get_node1()
-            node_y = edge.get_node2()
-
-            sep_set = sp.get_sep_set(node_x, node_y)
-
-            if sep_set is not None:
-                waiting_to_deleted_edges.append((node_x, node_y, sep_set))
-
-        for waiting_to_deleted_edge in waiting_to_deleted_edges:
-            dedge_node_x, dedge_node_y, dedge_sep_set = waiting_to_deleted_edge
-            graph.remove_edge(graph.get_edge(dedge_node_x, dedge_node_y))
-            sep_sets[(graph.node_map[dedge_node_x], graph.node_map[dedge_node_y])] = dedge_sep_set
-
-            if verbose:
-                message = (
-                    "Possible DSEP Removed "
-                    + dedge_node_x.get_name()
-                    + " --- "
-                    + dedge_node_y.get_name()
-                    + " sepset = ["
-                )
-                for ss in dedge_sep_set:
-                    message += graph.nodes[ss].get_name() + " "
-                message += "]"
-                print(message)
-
-        reorientAllWith(graph, Endpoint.CIRCLE)
-        rule0(graph, nodes, sep_sets, background_knowledge, verbose)
-
-        change_flag = True
-        first_time = True
-
-        while change_flag:
-            change_flag = False
-            change_flag = rulesR1R2cycle(graph, background_knowledge, change_flag, verbose)
-            change_flag = ruleR3(graph, sep_sets, background_knowledge, change_flag, verbose)
-
-            if change_flag or (
-                first_time
-                and background_knowledge is not None
-                and len(background_knowledge.forbidden_rules_specs) > 0
-                and len(background_knowledge.required_rules_specs) > 0
-                and len(background_knowledge.tier_map.keys()) > 0
-            ):
-                change_flag = ruleR4B(
-                    graph,
-                    max_path_length,
-                    dataset,
-                    independence_test_method,
-                    alpha,
-                    sep_sets,
-                    change_flag,
-                    background_knowledge,
-                    cache_variables_map,
-                    verbose,
-                )
-
-                first_time = False
-
-                if verbose:
-                    print("Epoch")
-
-        graph.set_pag(True)
-
-        edges = get_color_edges(graph)
-
-        return graph, edges
+        self.graph_ = pag
+        return self

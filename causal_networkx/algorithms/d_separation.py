@@ -1,3 +1,4 @@
+import numpy as np
 import networkx as nx
 from networkx.algorithms import d_separated as nx_d_separated
 
@@ -69,4 +70,16 @@ def d_separated(G: CausalGraph, x, y, z):
     explicit_G = convert_latent_to_unobserved_confounders(G)
 
     # run d-separation
+    if isinstance(x, np.ndarray):
+        x = set(list(x))
+    else:
+        x = set(x)
+    if isinstance(y, np.ndarray):
+        y = set(list(y))
+    else:
+        y = set(y)
+    if isinstance(z, np.ndarray):
+        z = set(list(z))
+    else:
+        z = set(z)
     return nx_d_separated(explicit_G, x, y, z)

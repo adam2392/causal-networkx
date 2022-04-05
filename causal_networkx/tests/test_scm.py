@@ -53,14 +53,34 @@ def test_scm_induced_graph():
     )
     G = scm.get_causal_graph()
 
-    expected_c_comps = [("x", "y")]
-
+    expected_c_comps = [{"x", "y"}]
+    c_components = list(G.c_components)
     assert isinstance(G, CausalGraph)
-    assert G.nodes == set("x", "y", "z")
-    assert G.c_components == expected_c_comps
+    assert c_components == expected_c_comps
+    assert all(node in G.nodes for node in ["x", "y", "z"])
 
 
-def test_scm_sampling():
+def test_scm_sample():
+    func_uz = lambda: rng.negative_binomial(n=1, p=0.25)
+    func_uxy = lambda: rng.binomial(n=1, p=0.4)
+    func_x = lambda u_xy: 2 * u_xy
+    func_y = lambda x, u_xy, z: x + u_xy + z
+    func_z = lambda u_z: u_z
+
+    # construct the SCM and the corresponding causal graph
+    scm = StructuralCausalModel(
+        exogenous={
+            "u_xy": func_uxy,
+            "u_z": func_uz,
+        },
+        endogenous={"x": func_x, "y": func_y, "z": func_z},
+    )
+
+    sample_df = scm.sample(n=100)
+    assert all(x is not None for x in sample_df.to_numpy().flatten())
+
+
+def test_scm_sampling_faithfulness():
     """Test sampling from an SCM."""
     func_uxy = rng.uniform
     func_uz = rng.uniform
@@ -77,6 +97,7 @@ def test_scm_sampling():
     sample_df = scm.sample()
     assert sample_df.shape == (1000, 3)
     assert_array_equal(sample_df["y"].values, sample_df["x"].values)
+    assert all(x is not None for x in sample_df)
 
     # test that sampling preserves conditional independence
     scm = StructuralCausalModel(

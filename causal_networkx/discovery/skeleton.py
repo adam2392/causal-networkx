@@ -1,6 +1,7 @@
 from typing import Callable, Set, Dict
 from itertools import combinations, permutations
 
+import numpy as np
 import networkx as nx
 import pandas as pd
 
@@ -9,7 +10,7 @@ def learn_skeleton_graph(
     X: pd.DataFrame,
     graph: nx.Graph,
     fixed_edges: nx.Graph,
-    sep_set: Dict[Dict[Set]],
+    sep_set: Dict[str, Dict[str, Set]],
     ci_estimator: Callable,
     alpha: float = 0.05,
     max_cond_set_size: int = None,
@@ -46,6 +47,9 @@ def learn_skeleton_graph(
         The discovered graph from data. Stored using an undirected
         graph.
     """
+    if max_cond_set_size is None:
+        max_cond_set_size = np.inf
+
     nodes = graph.nodes
     size_cond_set = 0
 

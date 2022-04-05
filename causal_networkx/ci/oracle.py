@@ -1,4 +1,4 @@
-from ctypes import Union
+from typing import Union
 import networkx as nx
 
 from causal_networkx.cgm import CausalGraph

@@ -1,7 +1,7 @@
 Installation
 ============
 
-**causal-networkx** supports Python >= 3.7.
+**causal-networkx** supports Python >= 3.8.
 
 ## Installing with `pip`
 

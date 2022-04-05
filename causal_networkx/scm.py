@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Callable, Dict
 import inspect
 
@@ -13,6 +14,9 @@ class StructuralCausalModel:
         Assumes that all exogenous variables are independent of
         each other. That is no exogenous variable is a function
         of other exogenous variables passed in.
+
+        This assumes the causal independence mechanism, where all
+        exogenous variables are independent of each other.
 
         Parameters
         ----------
@@ -91,13 +95,14 @@ class StructuralCausalModel:
         for _ in range(n):
             self.symbolic_runtime = dict()
 
-            # sample all latent variables
+            # sample all latent variables, which are independent
             for exog, exog_func in self.exogenous.items():
                 self.symbolic_runtime[exog] = exog_func()
 
             # sample now all observed variables
             for endog, endog_func in self.endogenous.items():
                 endog_value = self._sample_function(endog_func, self.symbolic_runtime)
+
                 if endog not in self.symbolic_runtime:
                     self.symbolic_runtime[endog] = endog_value
 
@@ -127,8 +132,10 @@ class StructuralCausalModel:
         # get all variable names that we still need to sample
         # then recursively call function to sample all variables
         to_sample_vars = [name for name in input_vars if name not in result_table]
+
         for name in to_sample_vars:
             result_table[name] = self._sample_function(self.endogenous[name], result_table)
+        return func(*[result_table[name] for name in input_vars])
 
     def get_causal_graph(self) -> CausalGraph:
         """Computes the induced causal diagram.
@@ -140,28 +147,29 @@ class StructuralCausalModel:
             the SCM.
         """
         edge_list = []
-        latent_edge_list = []
-        isolated_nodes = []
+        latent_edge_dict = defaultdict(set)
 
         # form the edge lists
         for end_var, end_input_vars in self.causal_dependencies.items():
-            # edge case where there is no input
-            if end_input_vars == []:
-                isolated_nodes.append(end_var)
-
             # for every input variable, form either an edge, or a latent edge
             for input_var in end_input_vars:
                 if input_var in self.endogenous:
                     edge_list.append((input_var, end_var))
                 elif input_var in self.exogenous:
-                    latent_edge_list.append((input_var, end_var))
+                    latent_edge_dict[input_var].add(end_var)
+
+        # add latent edges
+        latent_edge_list = []
+        for _, pc_comps in latent_edge_dict.items():
+            if len(pc_comps) == 2:
+                latent_edge_list.append(pc_comps)
 
         G = CausalGraph(
             incoming_graph_data=edge_list,
             incoming_latent_data=latent_edge_list,
             name="Induced Causal Graph from SCM",
         )
-        for node in isolated_nodes:
+        for node in self.endogenous.keys():
             G.add_node(node)
 
         return G
