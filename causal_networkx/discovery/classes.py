@@ -1,5 +1,5 @@
 from typing import Callable, Union
-from itertools import combinations
+import itertools
 from collections import defaultdict
 
 import numpy as np
@@ -104,7 +104,7 @@ class ConstraintDiscovery:
 
             # since we are not starting from a complete graph,
             # find the separating sets
-            for (node_i, node_j) in combinations(graph.nodes):
+            for (node_i, node_j) in itertools.combinations(graph.nodes):
                 if not graph.has_edge(node_i, node_j):
                     sep_set[node_i][node_j] = None
                     sep_set[node_j][node_i] = None

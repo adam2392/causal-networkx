@@ -40,3 +40,9 @@ sphinx-autodoc-typehints
 
 # For parsing and comparing version numbers.
 packaging
+
+check-manifest
+pydocstyle
+codespell
+# for independence testing
+# scikit-learn

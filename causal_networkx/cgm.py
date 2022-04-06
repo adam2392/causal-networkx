@@ -1,12 +1,14 @@
-from enum import Enum
 from typing import Set, List
 
+import numpy as np
 import networkx as nx
 from networkx import NetworkXError
 
+from causal_networkx.config import EdgeType
+
 
 class NetworkXMixin:
-    """Suite of overriden methods of Networkx Graphs.
+    """Suite of overridden methods of Networkx Graphs.
 
     Assumes the subclass will store a DiGraph in 'dag' and
     a Graph in 'c_component_graph'.
@@ -14,7 +16,7 @@ class NetworkXMixin:
 
     @property
     def name(self):
-        """String identifier of the graph.
+        """Name as a string identifier of the graph.
 
         This graph attribute appears in the attribute dict G.graph
         keyed by the string `"name"`. as well as an attribute (technically
@@ -34,12 +36,12 @@ class NetworkXMixin:
 
         Clears edges in the DiGraph and the bidirected undirected graph.
         """
-        self.dag.clear_edges()
-        self.c_component_graph.clear_edges()
+        for graph in self._graphs:
+            graph.clear_edges()
 
     def clear(self):
-        self.dag.clear()
-        self.c_component_graph.clear()
+        for graph in self._graphs:
+            graph.clear()
 
     @property
     def edges(self):
@@ -99,27 +101,33 @@ class NetworkXMixin:
     def __getitem__(self, n):
         return self.dag[n]
 
+    def __hash__(self) -> int:
+        all_edges = []
+        for graph in self._graphs:
+            all_edges.extend(graph.edges)
+        return hash(tuple(all_edges))
+
     def add_node(self, node_for_adding, **attr):
         self.dag.add_node(node_for_adding=node_for_adding, **attr)
-        # self.c_component_graph.add_node(node_for_adding=node_for_adding, **attr)
 
     def add_nodes_from(self, nodes_for_adding, **attr):
         self.dag.add_nodes_from(nodes_for_adding, **attr)
-        # self.c_component_graph.add_nodes_from(nodes_for_adding, **attr)
 
     def remove_node(self, n):
-        self.dag.remove_node(n)
-        try:
-            self.c_component_graph.remove_node(n)
-        except NetworkXError as e:
-            return
+        for graph in self._graphs:
+            try:
+                graph.remove_node(n)
+            except NetworkXError as e:
+                if isinstance(graph, nx.DiGraph):
+                    raise (e)
 
     def remove_nodes_from(self, ebunch):
-        self.dag.remove_nodes_from(ebunch)
-        try:
-            self.c_component_graph.remove_nodes_from(ebunch)
-        except NetworkXError as e:
-            return
+        for graph in self._graphs:
+            try:
+                graph.remove_nodes_from(ebunch)
+            except NetworkXError as e:
+                if isinstance(graph, nx.DiGraph):
+                    raise (e)
 
     def copy(self):
         return CausalGraph(self.dag.copy(), self.c_component_graph.copy(), **self.dag.graph)
@@ -192,6 +200,40 @@ class NetworkXMixin:
         """Return the total number of edges possibly with weights."""
         return self.dag.size(weight) + self.c_component_graph.size(weight)
 
+    def degree(self, n):
+        return self.dag.degree(n)
+
+
+class GraphSampleMixin:
+    def sample(self, n=1000):
+        df_values = []
+
+        # construct truth-table based on the SCM
+        for _ in range(n):
+            # sample now all observed variables
+            for endog, endog_func in self.endogenous.items():
+                endog_value = self._sample_function(endog_func, self.symbolic_runtime)
+
+                if endog not in self.symbolic_runtime:
+                    self.symbolic_runtime[endog] = endog_value
+
+            # add each sample to
+            df_values.append(self.symbolic_runtime)
+
+        # now convert the final sample to a dataframe
+        result_df = pd.DataFrame(df_values)
+
+        if not include_latents:
+            # remove latent variable columns
+            result_df.drop(self.exogenous.keys(), axis=1, inplace=True)
+        else:
+            # make sure to order the columns with latents first
+            def key(x):
+                return x not in self.exogenous.keys()
+
+            result_df = result_df[sorted(result_df, key=key)]
+        return result_df
+
 
 # TODO: implement graph views for CausalGraph
 class CausalGraph(NetworkXMixin):
@@ -247,12 +289,61 @@ class CausalGraph(NetworkXMixin):
     in different functions, compared to ``networkx``.
     """
 
+    _full_graph: nx.DiGraph
+    _graphs: List[nx.Graph]
+    _current_hash: int
+
     def __init__(self, incoming_graph_data=None, incoming_latent_data=None, **attr) -> None:
         # create the DAG of observed variables
         self.dag = nx.DiGraph(incoming_graph_data, **attr)
 
         # form the bidirected edge graph
         self.c_component_graph = nx.Graph(incoming_latent_data, **attr)
+
+        # create a list of the internal graphs
+        self._graphs = [self.dag, self.c_component_graph]
+
+        # keep track of the full graph
+        self._full_graph = None
+        self._current_hash = None
+
+        # number of edges allowed between nodes
+        self.allowed_edges = np.inf
+
+    def _edge_error_check(self, u_of_edge, v_of_edge):
+        pass
+
+    def compute_full_graph(self) -> nx.DiGraph:
+        """Compute the full graph.
+
+        Converts all bidirected edges to latent unobserved common causes.
+        That is, if 'x <-> y', then it will transform to 'x <- [z] -> y'
+        where [z] is "unobserved".
+
+        TODO: add selection edges too
+
+        Returns
+        -------
+        full_graph : nx.DiGraph
+            The full graph.
+
+        Notes
+        -----
+        The computation of the full graph is optimized by memoization of the
+        hash of the edge list. When the hash does not change, it implies the
+        edge list has not changed.
+
+        Thus the conversion will not occur and the full graph will be read
+        from memory.
+        """
+        from causal_networkx.utils import convert_latent_to_unobserved_confounders
+
+        if self._current_hash != hash(self):
+            explicit_G = convert_latent_to_unobserved_confounders(self)
+            self._full_graph = explicit_G
+            self._current_hash = hash(self)
+
+        return self._full_graph
 
     @property
     def c_components(self) -> List[Set]:
@@ -272,7 +363,9 @@ class CausalGraph(NetworkXMixin):
         """Add a bidirected edge between u and v.
 
         The nodes u and v will be automatically added if they are
-        not already in the graph.
+        not already in the graph. Moreover, they will be added
+        to the underlying DiGraph, which stores all regular
+        directed edges.
 
         Parameters
         ----------
@@ -301,6 +394,40 @@ class CausalGraph(NetworkXMixin):
 
         # add the bidirected arrow in
         self.c_component_graph.add_edge(u_of_edge, v_of_edge, **attr)
+
+    def remove_bidirected_edge(self, u_of_edge, v_of_edge, remove_isolate: bool = True) -> None:
+        """Remove a bidirected edge between u and v.
+
+        The nodes u and v will be automatically added if they are
+        not already in the graph.
+
+        Parameters
+        ----------
+        u_of_edge, v_of_edge : nodes
+            Nodes can be, for example, strings or numbers.
+            Nodes must be hashable (and not None) Python objects.
+        remove_isolate : bool
+            Whether or not to remove isolated nodes after the removal
+            of the bidirected edge. Default is True.
+
+        See Also
+        --------
+        nx.MultiDiGraph.add_edges_from : add a collection of edges
+        nx.MultiDiGraph.add_edge       : add an edge
+
+        Notes
+        -----
+        ...
+        """
+        # add the bidirected arrow in
+        self.c_component_graph.remove_edge(u_of_edge, v_of_edge)
+
+        # remove nodes if they are isolated after removal of bidirected edges
+        if remove_isolate:
+            if u_of_edge in self.dag and nx.is_isolate(self.dag, u_of_edge):
+                self.dag.remove_node(u_of_edge)
+            if v_of_edge in self.dag and nx.is_isolate(self.dag, v_of_edge):
+                self.dag.remove_node(v_of_edge)
 
     def children(self, n):
         """Returns an iterator over children of node n.
@@ -479,33 +606,11 @@ class CausalGraph(NetworkXMixin):
         )
 
 
-class EdgeType(Enum):
-    """Enumeration of different causal edges.
-
-    Categories
-    ----------
-    arrow : str
-        Signifies ">", or "<" edge. That is a normal
-        directed edge.
-    circle : str
-        Signifies "o" endpoint. That is an uncertain edge,
-        meaning it could be a tail, or an arrow.
-
-    Notes
-    -----
-    The possible edges between two nodes thus are:
-
-    ->, <-, <->, o->, <-o, o-o
-    """
-
-    arrow = "arrow"
-    circle = "circle"
-
-    def __contains__(self, item):
-        return item in self.__members__.values()
-
-
-class PAG(nx.DiGraph):
+# TODO: inherit from CausalGraph
+# - DAG for normal edges
+# - Graph for bidirected edges
+# - additional graph for undirected edges
+class PAG(CausalGraph):
     """Partial ancestral graph (PAG).
 
     An equivalence class of MAGs, which represent a large
@@ -528,8 +633,21 @@ class PAG(nx.DiGraph):
         _description_
     """
 
-    def __init__(self, incoming_graph_data=None, **attr) -> None:
-        super().__init__(incoming_graph_data, **attr)
+    def __init__(
+        self, incoming_graph_data=None, incoming_latent_data=None, graph_edge_type=None, **attr
+    ) -> None:
+        # construct the causal graph
+        super().__init__(incoming_graph_data, incoming_latent_data, **attr)
+
+        # set edge types for circle or non-circle
+        if incoming_graph_data is not None and graph_edge_type is None:
+            raise RuntimeError("Please specify edge types for incoming_graph_data.")
+        elif incoming_graph_data is None and graph_edge_type is not None:
+            raise RuntimeError("Edge type is specified, but incoming graph data is not specified.")
+        elif incoming_graph_data is not None and graph_edge_type is not None:
+            if graph_edge_type not in EdgeType:
+                raise ValueError(f"{graph_edge_type} not supported. Please use one of {EdgeType}.")
+            nx.set_edge_attributes(self, values=graph_edge_type, name="type")
 
     def add_edge(self, u_of_edge, v_of_edge):
         """Add a directed edge between u and v.
@@ -564,7 +682,7 @@ class PAG(nx.DiGraph):
         """
         super().add_edge(u_of_edge, v_of_edge, type="arrow")
 
-    def add_uncertain_edge(self, u_of_edge, v_of_edge):
+    def add_uncertain_edge(self, u_of_edge, v_of_edge, bidirected: bool = False):
         """Add a directed edge between u and v.
 
         The nodes u and v will be automatically added if they are
@@ -575,6 +693,9 @@ class PAG(nx.DiGraph):
         u_of_edge, v_of_edge : nodes
             Nodes can be, for example, strings or numbers.
             Nodes must be hashable (and not None) Python objects.
+        bidirected : bool
+            Whether or not to also add an uncertain edge
+            from ``v_of_edge`` to ``u_of_edge``.
 
         See Also
         --------
@@ -583,6 +704,8 @@ class PAG(nx.DiGraph):
 
         """
         super().add_edge(u_of_edge, v_of_edge, type="circle")
+        if bidirected:
+            super().add_edge(v_of_edge, u_of_edge, type="circle")
 
     def add_edges_from(self, ebunch_to_add):
         """Add all the edges in ebunch_to_add.
@@ -712,12 +835,12 @@ class PAG(nx.DiGraph):
     def edge_type(self, u, v):
         """Return the edge type associated between u and v."""
         if not self.has_edge(u, v):
-            raise RuntimeError(f"Graph does not contain an edge " f"between {u} and {v}.")
+            raise RuntimeError(f"Graph does not contain an edge between {u} and {v}.")
         return self[u][v]["type"]
 
     def has_edge(self, u, v, edge_type=None):
         """Check if graph has edge between 'u', and 'v' with optional 'edge_type'."""
-        if edge_type not in EdgeType:
+        if edge_type is not None and edge_type not in EdgeType:
             raise ValueError(
                 f"edge_type must be one of {EdgeType}. You passed "
                 f"{edge_type} which is unsupported."
@@ -795,4 +918,40 @@ class PAG(nx.DiGraph):
 
     def is_edge_visible(self, u, v):
         pass
-        # Given a MAG M , a directed edge A → B in M is visible if there is a vertex C not adjacent to B, such that either there is an edge between C and A that is into A, or there is a collider path between C and A that is into A and every vertex on the path is a parent of B. Otherwise A → B is said to be invisible.
+        # Given a MAG M , a directed edge A → B in M is visible if there is a
+        # vertex C not adjacent to B, such that either there is an edge between
+        # C and A that is into A, or there is a collider path between C and A
+        # that is into A and every vertex on the path is a parent of B.
+        # Otherwise A → B is said to be invisible.
+
+    def add_bidirected_edge(self, u_of_edge, v_of_edge) -> None:
+        """Add a bidirected edge between u and v.
+
+        The nodes u and v will be automatically added if they are
+        not already in the graph.
+
+        Parameters
+        ----------
+        u_of_edge, v_of_edge : nodes
+            Nodes can be, for example, strings or numbers.
+            Nodes must be hashable (and not None) Python objects.
+
+        See Also
+        --------
+        nx.MultiDiGraph.add_edges_from : add a collection of edges
+        nx.MultiDiGraph.add_edge       : add an edge
+
+        Notes
+        -----
+        ...
+        """
+        # if the nodes connected are not in the dag, then
+        # add them into the observed variable graph
+        if u_of_edge not in self:
+            self.add_node(u_of_edge)
+        if v_of_edge not in self:
+            self.add_node(v_of_edge)
+
+        # add the bidirected arrow by adding an arrow in both directions
+        self.add_edge(u_of_edge, v_of_edge)
+        self.add_edge(v_of_edge, u_of_edge)

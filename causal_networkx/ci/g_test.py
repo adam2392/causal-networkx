@@ -1,6 +1,6 @@
 # This code was originally adapted from https://github.com/keiichishima/gsq
 # and heavily refactored and modified.
-from typing import Set, Tuple, Union
+from typing import Set, Tuple, Union, List
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
@@ -10,7 +10,7 @@ from scipy.stats import chi2
 def _calculate_contingency_tble(
     x: Union[int, str],
     y: Union[int, str],
-    sep_set: Set,
+    sep_set: Union[List, Set],
     dof: int,
     data: NDArray,
     nlevels_x: int,
@@ -231,6 +231,8 @@ def g_square_binary(
     Notes
     -----
     The G^2 statistic for binary outcome 'a' and 'b' is:
+
+    ..math::
 
         2 * \sum_{a,b} S^{a,b}_{ij} ln(\frac{s^{ab}_{ij} M}{s_i^a s_j^b})
 

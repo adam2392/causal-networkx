@@ -114,10 +114,12 @@ class StructuralCausalModel:
 
         if not include_latents:
             # remove latent variable columns
-            result_df.drop(self.exogenous.keys(), inplace=True)
+            result_df.drop(self.exogenous.keys(), axis=1, inplace=True)
         else:
             # make sure to order the columns with latents first
-            key = lambda x: x not in self.exogenous.keys()
+            def key(x):
+                return x not in self.exogenous.keys()
+
             result_df = result_df[sorted(result_df, key=key)]
         return result_df
 

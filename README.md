@@ -18,7 +18,7 @@ This package aims at serving as a framework for representing causal models and s
 Documentation is hosted on `readthedocs`.
 
 # Installation
-Installation is best done via `pip` or `conda`. For developers, they can also install from source using `pip`.
+Installation is best done via `pip` or `conda`. For developers, they can also install from source using `pip`. See [installation page](TBD) for full details.
 
 ## Dependencies
 

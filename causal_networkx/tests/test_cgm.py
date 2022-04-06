@@ -249,6 +249,69 @@ class TestNetworkxGraph(TestGraph):
 class TestCausalGraph(TestGraph):
     """Test relevant causal graph properties."""
 
+    def test_hash(self):
+        G = self.G
+        current_hash = hash(G)
+        assert G._current_hash is None
+
+        G.add_bidirected_edge("1", "2")
+        new_hash = hash(G)
+        assert current_hash != new_hash
+
+        G.remove_bidirected_edge("1", "2")
+        assert current_hash == hash(G)
+
+    def test_full_graph(self):
+        G = self.G
+        # the current hash should match after computing full graphs
+        current_hash = hash(G)
+        G.compute_full_graph()
+        assert current_hash == G._current_hash
+        G.compute_full_graph()
+        assert current_hash == G._current_hash
+
+        # after adding a new edge, the hash should change and
+        # be different
+        G.add_bidirected_edge("1", "2")
+        new_hash = hash(G)
+        assert new_hash != G._current_hash
+
+        # once the hash is computed, it should be the same again
+        G.compute_full_graph()
+        assert new_hash == G._current_hash
+
+        # removing the bidirected edge should result in the same
+        # hash again
+        G.remove_bidirected_edge("1", "2")
+        assert current_hash != G._current_hash
+        G.compute_full_graph()
+        assert current_hash == G._current_hash
+
+        # different orders of edges shouldn't matter
+        G_copy = G.copy()
+        G.add_bidirected_edge("1", "2")
+        G.add_bidirected_edge("2", "3")
+        G_hash = hash(G)
+        G_copy.add_bidirected_edge("2", "3")
+        G_copy.add_bidirected_edge("1", "2")
+        copy_hash = hash(G_copy)
+        assert G_hash == copy_hash
+
+    def test_bidirected_edge(self):
+        # add bidirected edge to an isolated node
+        G = self.G
+        G.add_bidirected_edge("1", "2")
+        G.remove_bidirected_edge("1", "2", remove_isolate=False)
+        assert "2" in G
+        assert nx.is_isolate(G, "2")
+
+        G.add_bidirected_edge("1", "2")
+        G.remove_bidirected_edge("1", "2")
+        assert "2" not in G
+
+    def test_children_and_parents(self):
+        pass
+
     def test_do_intervention(self):
         pass
 
@@ -256,9 +319,6 @@ class TestCausalGraph(TestGraph):
         pass
 
     def test_c_components(self):
-        pass
-
-    def test_children_and_parents(self):
         pass
 
 

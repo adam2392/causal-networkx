@@ -1,6 +1,7 @@
 from typing import Callable, Union, Dict, Set
-from itertools import combinations, permutations
-from collections import defaultdict, deque
+from itertools import combinations
+from collections import deque
+import logging
 
 import numpy as np
 import networkx as nx
@@ -8,7 +9,9 @@ import pandas as pd
 
 from causal_networkx import CausalGraph, PAG
 from causal_networkx.discovery.classes import ConstraintDiscovery
-from causal_networkx.discovery.skeleton import learn_skeleton_graph
+
+
+logger = logging.getLogger()
 
 
 class FCI(ConstraintDiscovery):
@@ -22,6 +25,7 @@ class FCI(ConstraintDiscovery):
         max_path_length: int = None,
         selection_bias: bool = False,
         augmented: bool = False,
+        max_iter: int = 1000,
         **ci_estimator_kwargs,
     ):
         """The Fast Causal Inference (FCI) algorithm for causal discovery.
@@ -68,6 +72,7 @@ class FCI(ConstraintDiscovery):
         self.max_path_length = max_path_length
         self.selection_bias = selection_bias
         self.augmented = augmented
+        self.max_iter = max_iter
 
     def _orient_colliders(self, graph: PAG, sep_set: Dict[str, Dict[str, Set]]):
         """Orient colliders given a graph and separation set.
@@ -86,18 +91,20 @@ class FCI(ConstraintDiscovery):
                 # v_i and v_j, else this is a "shielded" collider.
                 # Then check to see if 'u' is in the separating
                 # set. If it is not, then there is a collider.
-                if not self.graph.has_edge(v_i, v_j) and u not in sep_set[v_i][v_j]:
-                    self.graph.orient_edge(v_i, u, "arrow")
-                    self.graph.orient_edge(v_j, u, "arrow")
-                else:
-                    # definite non-collider
-                    test = 1
+                if not graph.has_edge(v_i, v_j) and u not in sep_set[v_i][v_j]:
+                    graph.orient_edge(v_i, u, "arrow")
+                    graph.orient_edge(v_j, u, "arrow")
+                    print(f"orienting edges {v_i} -> {u} and {v_j} -> {u}")
+
+                # else:
+                # definite non-collider
+                # test = 1
 
     def _apply_rule1(self, graph: PAG, u, a, c) -> bool:
         """Apply rule 1 of the FCI algorithm.
 
         If A *-> u o-o C, A and C are not adjacent,
-        then we can orient the triple as A o-> u -> C.
+        then we can orient the triple as A *-> u -> C.
 
         Parameters
         ----------
@@ -135,7 +142,7 @@ class FCI(ConstraintDiscovery):
     def _apply_rule2(self, graph: PAG, u, a, c):
         """Apply rule 2 of FCI algorithm.
 
-        If A -> u *-> C, or A *-> u -> C, and A o-o C, then
+        If A -> u *-> C, or A *-> u -> C, and A *-o C, then
         orient A *-> C.
 
         Parameters
@@ -336,7 +343,9 @@ class FCI(ConstraintDiscovery):
         pass
 
     def _apply_rules_1to3(self, graph: PAG):
-        while 1:
+        idx = 0
+        finished = False
+        while idx < self.max_iter and not finished:
             for u in graph.nodes():
                 for (a, c) in combinations(graph.neighbors(u), 2):
                     # apply R1-3 of FCI recursively
@@ -345,8 +354,10 @@ class FCI(ConstraintDiscovery):
                     r3_add = self._apply_rule3(graph, u, a, c)
 
                     # check if we should continue or not
-                    if all(added_edges for added_edges in [r1_add, r2_add, r3_add]):
+                    if not all(added_edges for added_edges in [r1_add, r2_add, r3_add]):
+                        finished = True
                         break
+            idx += 1
 
     def fit(self, X: pd.DataFrame):
         # learn the skeleton of the graph
@@ -354,11 +365,11 @@ class FCI(ConstraintDiscovery):
 
         # convert the undirected skeleton graph to a PAG, where
         # all left-over edges have a "circle" endpoint
-        pag = PAG(skel_graph, name="PAG derived with FCI")
-        nx.set_edge_attributes(pag, values="circle", name="type")
+        pag = PAG(skel_graph, name="PAG derived with FCI", edge_type="circle")
 
         # orient colliders
         self._orient_colliders(pag, sep_set)
+        self.orient_coll_graph = pag.copy()
 
         # run the rest of the rules to orient as many edges
         # as possible
@@ -366,5 +377,6 @@ class FCI(ConstraintDiscovery):
 
         # then run rule 4
 
+        self.skel_graph = skel_graph
         self.graph_ = pag
         return self

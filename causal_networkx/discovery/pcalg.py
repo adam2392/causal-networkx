@@ -1,14 +1,11 @@
 from typing import Callable, Union
 from itertools import combinations
-from collections import defaultdict
 
-import numpy as np
 import networkx as nx
 import pandas as pd
 
 from causal_networkx import CausalGraph
 from causal_networkx.discovery.classes import ConstraintDiscovery
-from causal_networkx.discovery.skeleton import learn_skeleton_graph
 
 
 def _has_both_edges(dag, i, j):
