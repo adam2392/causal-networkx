@@ -28,17 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         python: ['3.8', '3.9', '3.10']
-        task:
-          - name: Test
-            run: |
-              pytest -v --color=yes tests/
-          
-          - name: Upload coverage stats to codecov
-            if: "matrix.python == '3.10'"
-            uses: codecov/codecov-action@v1
-            with:
-              file: ./coverage.xml
-
+ 
         include:
           - python: '3.10'
             task:
