@@ -176,7 +176,6 @@ class Test_FCI:
         )
         expected_pag.add_bidirected_edge("x1", "x2")
         expected_pag.add_bidirected_edge("x4", "x5")
-        from pprint import pprint
 
         for dat in pag.edges.data():
             print(dat)

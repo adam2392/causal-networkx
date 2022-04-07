@@ -54,7 +54,7 @@ jobs:
           - python: '3.10'
             task:
               name: Docs
-              run: cd docs && make html
+              run: make docs
 
     steps:
       - uses: actions/checkout@v3
