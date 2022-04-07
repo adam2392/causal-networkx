@@ -1,15 +1,14 @@
-from typing import Callable, Union, Dict, Set
-from itertools import combinations
-from collections import deque
 import logging
+from collections import deque
+from itertools import combinations
+from typing import Callable, Dict, Set, Union
 
-import numpy as np
 import networkx as nx
+import numpy as np
 import pandas as pd
 
-from causal_networkx import CausalGraph, PAG
+from causal_networkx import PAG, CausalGraph
 from causal_networkx.discovery.classes import ConstraintDiscovery
-
 
 logger = logging.getLogger()
 
@@ -246,7 +245,9 @@ class FCI(ConstraintDiscovery):
         Parameters
         ----------
         graph : PAG
-            _description_
+            PAG to orient.
+        sep_set : set
+            The separating set to check.
         """
         path = []
         added_arrows = False
@@ -360,6 +361,18 @@ class FCI(ConstraintDiscovery):
             idx += 1
 
     def fit(self, X: pd.DataFrame):
+        """Perform causal discovery algorithm.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            The dataset.
+
+        Returns
+        -------
+        self : instance of FCI
+            FCI instance with fitted attributes.
+        """
         # learn the skeleton of the graph
         skel_graph, sep_set = self._learn_skeleton(X)
 

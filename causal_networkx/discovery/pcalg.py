@@ -1,5 +1,5 @@
-from typing import Callable, Union
 from itertools import combinations
+from typing import Callable, Union
 
 import networkx as nx
 import pandas as pd

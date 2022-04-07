@@ -1,6 +1,6 @@
+import networkx as nx
 import pytest
 
-import networkx as nx
 from causal_networkx.cgm import CausalGraph
 
 
@@ -238,6 +238,7 @@ class TestNetworkxGraph(TestGraph):
         )
 
     def add_attributes(self, G):
+        """Test adding edges with attributes to graph."""
         G.dag.graph["foo"] = []
         G.nodes[0]["foo"] = []
         G.remove_edge(1, 2)
@@ -250,6 +251,7 @@ class TestCausalGraph(TestGraph):
     """Test relevant causal graph properties."""
 
     def test_hash(self):
+        """Test hashing a causal graph."""
         G = self.G
         current_hash = hash(G)
         assert G._current_hash is None
@@ -262,6 +264,7 @@ class TestCausalGraph(TestGraph):
         assert current_hash == hash(G)
 
     def test_full_graph(self):
+        """Test computing a full graph from causal graph."""
         G = self.G
         # the current hash should match after computing full graphs
         current_hash = hash(G)
@@ -298,6 +301,7 @@ class TestCausalGraph(TestGraph):
         assert G_hash == copy_hash
 
     def test_bidirected_edge(self):
+        """Test bidirected edge functions."""
         # add bidirected edge to an isolated node
         G = self.G
         G.add_bidirected_edge("1", "2")
@@ -310,15 +314,19 @@ class TestCausalGraph(TestGraph):
         assert "2" not in G
 
     def test_children_and_parents(self):
+        """Test working with children and parents."""
         pass
 
     def test_do_intervention(self):
+        """Test do interventions with causal graph."""
         pass
 
     def test_soft_intervention(self):
+        """Test soft interventions with causal graph."""
         pass
 
     def test_c_components(self):
+        """Test working with c-components in causal graph."""
         pass
 
 
@@ -394,15 +402,3 @@ class TestCausalGraph(TestGraph):
 
 #         """
 #         assert self.G.graph is self.H.graph
-
-
-def test_c_components():
-    pass
-
-
-def test_causal_graph_intervention():
-    pass
-
-
-def test_causal_graph_properties():
-    pass

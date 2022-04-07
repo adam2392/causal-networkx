@@ -1,7 +1,7 @@
-from typing import Set, List
+from typing import List, Set
 
-import numpy as np
 import networkx as nx
+import numpy as np
 from networkx import NetworkXError
 
 from causal_networkx.config import EdgeType
@@ -29,6 +29,7 @@ class NetworkXMixin:
         self.dag["name"] = s
 
     def get_edge_data(self, u, v, default=None):
+        """Get edge data from underlying DiGraph."""
         return self.dag.get_edge_data(u, v, default)
 
     def clear_edges(self):
@@ -40,11 +41,13 @@ class NetworkXMixin:
             graph.clear_edges()
 
     def clear(self):
+        """Remove all nodes and edges in graphs."""
         for graph in self._graphs:
             graph.clear()
 
     @property
     def edges(self):
+        """Directed edges."""
         return self.dag.edges
 
     @property
@@ -56,18 +59,23 @@ class NetworkXMixin:
         return self.dag.nodes  # ).union(set(self.c_component_graph.nodes))
 
     def number_of_nodes(self):
+        """Return number of nodes in graph."""
         return len(self.nodes)
 
     def number_of_edges(self, u=None, v=None):
+        """Return number of directed edges in graph."""
         return self.dag.number_of_edges(u=u, v=v)
 
     def number_of_bidirected_edges(self, u=None, v=None):
+        """Return number of bidirected edges in graph."""
         return self.c_component_graph.number_of_edges(u=u, v=v)
 
     def has_node(self, n):
+        """Check if graph has node 'n'."""
         return n in self
 
     def has_edge(self, u, v):
+        """Check if graph has edge (u, v)."""
         return self.dag.has_edge(u, v)
 
     def __str__(self):
@@ -82,7 +90,7 @@ class NetworkXMixin:
         )
 
     def __contains__(self, n):
-        """Returns True if n is a node, False otherwise. Use: 'n in G'.
+        """Return True if n is a node, False otherwise. Use: 'n in G'.
 
         Examples
         --------
@@ -108,12 +116,15 @@ class NetworkXMixin:
         return hash(tuple(all_edges))
 
     def add_node(self, node_for_adding, **attr):
+        """Add node to causal graph."""
         self.dag.add_node(node_for_adding=node_for_adding, **attr)
 
     def add_nodes_from(self, nodes_for_adding, **attr):
+        """Add nodes to causal graph."""
         self.dag.add_nodes_from(nodes_for_adding, **attr)
 
     def remove_node(self, n):
+        """Remove node in causal graphs."""
         for graph in self._graphs:
             try:
                 graph.remove_node(n)
@@ -122,6 +133,7 @@ class NetworkXMixin:
                     raise (e)
 
     def remove_nodes_from(self, ebunch):
+        """Remove nodes from causal graph."""
         for graph in self._graphs:
             try:
                 graph.remove_nodes_from(ebunch)
@@ -130,6 +142,7 @@ class NetworkXMixin:
                     raise (e)
 
     def copy(self):
+        """Return a copy of the causal graph."""
         return CausalGraph(self.dag.copy(), self.c_component_graph.copy(), **self.dag.graph)
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):
@@ -185,15 +198,19 @@ class NetworkXMixin:
         self.dag.add_edge(u_of_edge, v_of_edge, **attr)
 
     def remove_edges_from(self, ebunch):
+        """Remove directed edges."""
         self.dag.remove_edges_from(ebunch)
 
     def remove_edge(self, u, v):
+        """Remove directed edge."""
         self.dag.remove_edge(u, v)
 
     def add_edges_from(self, ebunch, **attr):
+        """Add directed edges."""
         self.dag.add_edges_from(ebunch, **attr)
 
     def order(self):
+        """Return the order of the DiGraph."""
         return self.dag.order()
 
     def size(self, weight=None):
@@ -201,11 +218,13 @@ class NetworkXMixin:
         return self.dag.size(weight) + self.c_component_graph.size(weight)
 
     def degree(self, n):
+        """Compute the degree of the DiGraph."""
         return self.dag.degree(n)
 
 
 class GraphSampleMixin:
     def sample(self, n=1000):
+        """Sample from a graph."""
         df_values = []
 
         # construct truth-table based on the SCM
@@ -221,18 +240,18 @@ class GraphSampleMixin:
             df_values.append(self.symbolic_runtime)
 
         # now convert the final sample to a dataframe
-        result_df = pd.DataFrame(df_values)
+        # result_df = pd.DataFrame(df_values)
 
-        if not include_latents:
-            # remove latent variable columns
-            result_df.drop(self.exogenous.keys(), axis=1, inplace=True)
-        else:
-            # make sure to order the columns with latents first
-            def key(x):
-                return x not in self.exogenous.keys()
+        # if not include_latents:
+        #     # remove latent variable columns
+        #     result_df.drop(self.exogenous.keys(), axis=1, inplace=True)
+        # else:
+        #     # make sure to order the columns with latents first
+        #     def key(x):
+        #         return x not in self.exogenous.keys()
 
-            result_df = result_df[sorted(result_df, key=key)]
-        return result_df
+        #     result_df = result_df[sorted(result_df, key=key)]
+        # return result_df
 
 
 # TODO: implement graph views for CausalGraph
@@ -430,7 +449,7 @@ class CausalGraph(NetworkXMixin):
                 self.dag.remove_node(v_of_edge)
 
     def children(self, n):
-        """Returns an iterator over children of node n.
+        """Return an iterator over children of node n.
 
         Parameters
         ----------
@@ -445,7 +464,7 @@ class CausalGraph(NetworkXMixin):
         return self.dag.successors(n)
 
     def parents(self, n):
-        """Returns an iterator over parents of node n.
+        """Return an iterator over parents of node n.
 
         Parameters
         ----------
@@ -506,7 +525,7 @@ class CausalGraph(NetworkXMixin):
 
         Parameters
         ----------
-        node : nodes
+        nodes : nodes
             A node within the graph.
         dependencies : list of nodes | str, optional
             What dependencies are now relevant for the node,
@@ -559,9 +578,11 @@ class CausalGraph(NetworkXMixin):
         return is_directed_acyclic_graph(self)
 
     def subgraph(self, nodes):
+        """Create a causal subgraph of just certain nodes."""
         pass
 
     def edge_subgraph(self, edges):
+        """Create a causal subgraph of just certain edges."""
         pass
 
     def draw(self):
@@ -574,17 +595,13 @@ class CausalGraph(NetworkXMixin):
         nx.draw_networkx(self.dag)
         nx.draw_networkx(self.c_component_graph, connectionstyle="arc3,rad=-0.4", style="dotted")
 
-    def topag(self):
-        pass
-
     def tomag(self):
+        """Convert corresponding causal DAG to a MAG."""
         # add http://proceedings.mlr.press/v124/hu20a/hu20a.pdf algorithm
         pass
 
     def _classify_three_structure(self, a, b, c):
-        """
-        Classify three structure as a chain, fork or collider.
-        """
+        """Classify three structure as a chain, fork or collider."""
         if self.dag.has_edge(a, b) and self.dag.has_edge(b, c):
             return "chain"
 
@@ -803,7 +820,7 @@ class PAG(CausalGraph):
         nx.set_edge_attributes(self, {(u, v): {"type": edge_type}})
 
     def children(self, n):
-        """Returns an iterator over children of node n.
+        """Return an iterator over children of node n.
 
         Parameters
         ----------
@@ -818,7 +835,7 @@ class PAG(CausalGraph):
         return self.successors(n)
 
     def parents(self, n):
-        """Returns an iterator over parents of node n.
+        """Return an iterator over parents of node n.
 
         Parameters
         ----------
@@ -858,18 +875,19 @@ class PAG(CausalGraph):
         return self.has_edge(u, v) or self.has_edge(v, u)
 
     def draw(self):
+        """Draw the graph."""
         pass
 
     def possible_children(self, n):
+        """Possible children of node 'n'."""
         pass
 
     def possible_parents(self, n):
+        """Possible parents of node 'n'."""
         pass
 
     def pc_components(self):
-        pass
-
-    def cpc_components(self):
+        """Possible c-components."""
         pass
 
     def is_def_collider(self, node1, node2, node3):
@@ -917,6 +935,7 @@ class PAG(CausalGraph):
         return condition_one or condition_two
 
     def is_edge_visible(self, u, v):
+        """Check if edge (u, v) is visible, or not."""
         pass
         # Given a MAG M , a directed edge A → B in M is visible if there is a
         # vertex C not adjacent to B, such that either there is an edge between
@@ -941,9 +960,6 @@ class PAG(CausalGraph):
         nx.MultiDiGraph.add_edges_from : add a collection of edges
         nx.MultiDiGraph.add_edge       : add an edge
 
-        Notes
-        -----
-        ...
         """
         # if the nodes connected are not in the dag, then
         # add them into the observed variable graph

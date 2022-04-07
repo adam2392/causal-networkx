@@ -4,5 +4,5 @@
 #
 # License: BSD (3-clause)
 
+from .cgm import PAG, CausalGraph
 from .scm import StructuralCausalModel
-from .cgm import CausalGraph, PAG

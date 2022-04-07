@@ -1,9 +1,9 @@
-from typing import Callable, Union
 import itertools
 from collections import defaultdict
+from typing import Callable, Union
 
-import numpy as np
 import networkx as nx
+import numpy as np
 import pandas as pd
 
 from causal_networkx import CausalGraph

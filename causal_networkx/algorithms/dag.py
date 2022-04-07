@@ -1,12 +1,13 @@
+from networkx.algorithms import (
+    is_directed_acyclic_graph as nx_is_directed_acyclic_graph,
+)
 from networkx.algorithms import topological_sort as nx_topological_sort
-from networkx.algorithms import is_directed_acyclic_graph as nx_is_directed_acyclic_graph
 
 from causal_networkx.cgm import CausalGraph
 
 
 def is_directed_acyclic_graph(G):
-    """Returns True if the graph `G` is a directed acyclic graph (DAG) or
-    False if not.
+    """Check if `G` is a directed acyclic graph (DAG) or not.
 
     Parameters
     ----------

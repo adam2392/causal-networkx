@@ -1,6 +1,7 @@
 # This code was originally adapted from https://github.com/keiichishima/gsq
 # and heavily refactored and modified.
-from typing import Set, Tuple, Union, List
+from typing import List, Set, Tuple, Union
+
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
@@ -359,6 +360,7 @@ def g_square_discrete(
 
 if __name__ == "__main__":
     from math import frexp
+
     from causal_networkx.ci.tests import testdata
 
     dm = np.array([testdata.bin_data]).reshape((5000, 5))

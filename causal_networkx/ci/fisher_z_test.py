@@ -1,9 +1,9 @@
-from typing import Union, Set
 from math import log, sqrt
+from typing import Set, Union
 
 import numpy as np
-from numpy.typing import NDArray
 import pandas as pd
+from numpy.typing import NDArray
 from scipy.stats import norm
 
 

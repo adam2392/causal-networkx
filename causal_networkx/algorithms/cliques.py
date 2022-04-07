@@ -1,4 +1,5 @@
 from typing import Iterator
+
 from causal_networkx.cgm import CausalGraph
 
 

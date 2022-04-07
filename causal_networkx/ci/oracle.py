@@ -1,8 +1,9 @@
 from typing import Union
+
 import networkx as nx
 
-from causal_networkx.cgm import CausalGraph
 from causal_networkx.algorithms.d_separation import d_separated
+from causal_networkx.cgm import CausalGraph
 
 
 class Oracle:

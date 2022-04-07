@@ -1,8 +1,7 @@
-import pytest
-
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
+import pytest
 
 from causal_networkx.ci import g_square_binary, g_square_discrete
 from causal_networkx.ci.tests.testdata import bin_data, dis_data

@@ -1,8 +1,8 @@
-from typing import Callable, Set, Dict
 from itertools import combinations, permutations
+from typing import Callable, Dict, Set
 
-import numpy as np
 import networkx as nx
+import numpy as np
 import pandas as pd
 
 

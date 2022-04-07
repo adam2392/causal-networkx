@@ -1,12 +1,12 @@
-import pytest
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
+import pytest
 
-from causal_networkx.scm import StructuralCausalModel
 from causal_networkx.cgm import PAG, CausalGraph
-from causal_networkx.discovery import FCI
 from causal_networkx.ci import Oracle
+from causal_networkx.discovery import FCI
+from causal_networkx.scm import StructuralCausalModel
 
 
 class Test_FCI:
@@ -136,7 +136,8 @@ class Test_FCI:
 
     @pytest.mark.skip()
     def test_fci_complex(self):
-        """Test FCI algorithm with more complex graph.
+        """
+        Test FCI algorithm with more complex graph.
 
         Use Figure 2 from [1].
 

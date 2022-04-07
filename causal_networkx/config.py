@@ -1,7 +1,9 @@
-from enum import EnumMeta, Enum
+from enum import Enum, EnumMeta
 
 
-class MetaEnum(EnumMeta):  # noqa
+class MetaEnum(EnumMeta):
+    """Meta enumeration."""
+
     def __contains__(cls, item):
         """Check that item is contained in the Enumeration."""
         try:
@@ -28,6 +30,7 @@ class EdgeType(Enum, metaclass=MetaEnum):
     The possible edges between two nodes thus are:
 
     ->, <-, <->, o->, <-o, o-o
+
     """
 
     arrow = "arrow"

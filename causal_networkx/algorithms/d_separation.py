@@ -1,10 +1,7 @@
-from typing import Iterable
 import numpy as np
-import networkx as nx
 from networkx.algorithms import d_separated as nx_d_separated
 
 from causal_networkx.cgm import CausalGraph
-from causal_networkx.utils import convert_latent_to_unobserved_confounders
 
 
 def d_separated(G: CausalGraph, x, y, z):
@@ -39,6 +36,7 @@ def d_separated(G: CausalGraph, x, y, z):
     -----
     This wraps the networkx implementation, which only allows DAGs. Since
     ``CausalGraph`` is not represented.
+
     """
     # get the full graph
     explicit_G = G.compute_full_graph()
