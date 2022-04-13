@@ -1,4 +1,6 @@
-from typing import List, Set
+from __future__ import annotations
+
+from typing import List, Optional, Set
 
 import networkx as nx
 import numpy as np
@@ -58,6 +60,12 @@ class NetworkXMixin:
         """
         return self.dag.nodes  # ).union(set(self.c_component_graph.nodes))
 
+    def has_adjacency(self, u, v):
+        """Check if there is any edge between u and v."""
+        if any(graph.has_edge(u, v) for graph in self._graphs):
+            return True
+        return False
+
     def number_of_nodes(self):
         """Return number of nodes in graph."""
         return len(self.nodes)
@@ -115,7 +123,7 @@ class NetworkXMixin:
 
     def __hash__(self) -> int:
         all_edges = []
-        for graph in self._graphs:
+        for graph in self._graphs:  # type: ignore
             all_edges.extend(graph.edges)
         return hash(tuple(all_edges))
 
@@ -328,7 +336,8 @@ class CausalGraph(NetworkXMixin):
     """
 
     _graphs: List[nx.Graph]
-    _current_hash: int
+    _current_hash: Optional[int]
+    _full_graph: Optional[nx.DiGraph]
     _cond_set: Set
 
     def __init__(
@@ -404,7 +413,7 @@ class CausalGraph(NetworkXMixin):
             self._current_hash = hash(self)
 
         if to_networkx:
-            return nx.DiGraph(self._full_graph.dag)
+            return nx.DiGraph(self._full_graph.dag)  # type: ignore
 
         return self._full_graph
 
@@ -838,7 +847,7 @@ class PAG(CausalGraph):
         elif edge_type == EdgeType.arrow.value:
             add_edge_func = self.add_edge
         elif edge_type == EdgeType.circle.value:
-            add_edge_func = self.add_circle_edge
+            add_edge_func = self.add_circle_edge  # type: ignore
         elif edge_type == EdgeType.bidirected.value:
             add_edge_func = self.add_bidirected_edge
 
@@ -919,17 +928,19 @@ class PAG(CausalGraph):
             self._current_hash = hash(self)
 
         if to_networkx:
-            return nx.DiGraph(self._full_graph.dag)
+            return nx.DiGraph(self._full_graph.dag)  # type: ignore
         return self._full_graph
 
     def edge_type(self, u, v):
         """Return the edge type associated between u and v."""
         if self.has_edge(u, v):
-            return
-        if not self.has_edge(u, v) and not self.has_bidirected_edge(u, v):
+            return EdgeType.arrow.value
+        elif self.has_bidirected_edge(u, v):
+            return EdgeType.bidirected.value
+        elif self.has_circle_edge(u, v):
+            return EdgeType.circle.value
+        else:
             raise RuntimeError(f"Graph does not contain an edge between {u} and {v}.")
-
-        return self[u][v]["type"]
 
     def draw(self):
         """Draw the graph."""

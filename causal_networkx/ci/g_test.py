@@ -68,7 +68,7 @@ def _calculate_contingency_tble(
                 if zidx == 0:
                     kdx += data[z][row_idx]  # data[row_idx, z]
                 else:
-                    lprod = np.prod(list(map(lambda x: levels[x], sep_set[:zidx])))
+                    lprod = np.prod(list(map(lambda x: levels[x], sep_set[:zidx])))  # type: ignore
                     kdx += data[z][row_idx] * lprod
 
         # increment the co-occurrence found
@@ -282,7 +282,7 @@ def g_square_discrete(
     y: Union[int, str],
     sep_set: Set,
     levels=None,
-) -> float:
+) -> Tuple[float, float]:
     """G square test for discrete data.
 
     Parameters
@@ -302,6 +302,8 @@ def g_square_discrete(
 
     Returns
     -------
+    G2 : float
+        The G^2 test statistic.
     p_val : float
         the p-value of conditional independence.
     """

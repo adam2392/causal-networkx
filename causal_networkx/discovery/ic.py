@@ -162,7 +162,7 @@ class FCI(ConstraintDiscovery):
         """
         added_arrows = False
         # check that a *-o c edge exists
-        if graph.has_edge(a, c, "circle"):
+        if graph.has_circle_edge(a, c):
             # check that a -> u *-> c
             condition_one = (
                 graph.edge_type(a, u) == "arrow"
@@ -208,7 +208,7 @@ class FCI(ConstraintDiscovery):
         # check that a and c are not adjacent
         if not graph.has_edge(a, c) and not graph.has_edge(c, a):
             # check that a *-> u <-* c
-            condition_one = graph.has_edge(a, u, "arrow") and graph.has_edge(c, u, "arrow")
+            condition_one = graph.has_edge(a, u) and graph.has_edge(c, u)
             if not condition_one:  # add quick check here to skip non-relevant u nodes
                 return added_arrows
 
@@ -219,11 +219,11 @@ class FCI(ConstraintDiscovery):
                     continue
 
                 # check that v *-o u is in the edge set
-                if not graph.has_edge(v, u, "circle"):
+                if not graph.has_circle_edge(v, u):
                     continue
 
                 # check that a *-o v o-* c
-                condition_two = graph.has_edge(a, v, "circle") and graph.has_edge(c, v, "circle")
+                condition_two = graph.has_circle_edge(a, v) and graph.has_circle_edge(c, v)
                 if condition_one and condition_two:
                     graph.orient_edge(v, u, "arrow")
                     added_arrows = True
@@ -249,19 +249,18 @@ class FCI(ConstraintDiscovery):
         sep_set : set
             The separating set to check.
         """
-        path = []
         added_arrows = False
 
         for u in graph.nodes:
             for (a, c) in combinations(graph.neighbors(u), 2):
                 # a must point to c for us to begin a discriminating path and
                 # not be bi-directional
-                if not graph.has_edge(a, c, "arrow") or graph.has_edge(c, a, "arrow"):
+                if not graph.has_edge(a, c) or graph.has_edge(c, a):
                     continue
 
                 # c must also point to u with a circle edge
                 # check u o-* c
-                if not graph.has_edge(c, u, "circle"):
+                if not graph.has_circle_edge(c, u):
                     continue
 
                 # keep track of paths of certain nodes that were already explored

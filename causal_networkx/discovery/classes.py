@@ -1,6 +1,6 @@
 import itertools
 from collections import defaultdict
-from typing import Callable, Union
+from typing import Callable, Dict, Optional, Set, Union
 
 import networkx as nx
 import numpy as np
@@ -13,7 +13,7 @@ from causal_networkx.discovery.skeleton import learn_skeleton_graph
 # TODO: Add ways to fix directed edges
 # TODO: Add ways to initialize graph with edges rather then undirected
 class ConstraintDiscovery:
-    graph_: CausalGraph
+    graph_: Optional[CausalGraph]
 
     def __init__(
         self,
@@ -90,7 +90,7 @@ class ConstraintDiscovery:
         nodes = X.columns.values
 
         # keep track of separating sets
-        sep_set = defaultdict(lambda: defaultdict(set))
+        sep_set: Dict[str, Dict[str, Set]] = defaultdict(lambda: defaultdict(set))
 
         # initialize the starting graph
         if self.init_graph is None:
@@ -106,10 +106,10 @@ class ConstraintDiscovery:
 
             # since we are not starting from a complete graph,
             # find the separating sets
-            for (node_i, node_j) in itertools.combinations(graph.nodes):
+            for (node_i, node_j) in itertools.combinations(*graph.nodes):
                 if not graph.has_edge(node_i, node_j):
-                    sep_set[node_i][node_j] = None
-                    sep_set[node_j][node_i] = None
+                    sep_set[node_i][node_j] = set()
+                    sep_set[node_j][node_i] = set()
 
         # check on fixed edges and keep track
         fixed_edges = set()

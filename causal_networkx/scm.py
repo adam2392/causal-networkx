@@ -47,6 +47,8 @@ class StructuralCausalModel:
 
     """
 
+    symbolic_runtime: Dict[str, float]
+
     def __init__(self, exogenous: Dict[str, Callable], endogenous: Dict[str, Callable]) -> None:
         self.symbolic_runtime = dict()
 
