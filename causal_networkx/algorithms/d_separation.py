@@ -1,11 +1,9 @@
 from typing import Union
 
-import networkx as nx
 import numpy as np
 from networkx.algorithms import d_separated as nx_d_separated
 
 from causal_networkx.cgm import PAG, CausalGraph
-from causal_networkx.utils import _integrate_circle_edges_to_graph
 
 
 def d_separated(G: Union[CausalGraph, PAG], x, y, z):

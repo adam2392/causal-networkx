@@ -1,5 +1,4 @@
 import networkx as nx
-import py
 import pytest
 
 from causal_networkx.algorithms import d_separated

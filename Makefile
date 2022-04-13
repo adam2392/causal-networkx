@@ -41,4 +41,5 @@ run-checks :
 	flake8 .
 	mypy .
 	pydocstyle codespell-error check-manifest
-	CUDA_VISIBLE_DEVICES='' pytest -v --color=yes --doctest-modules tests/ causal_networkx/
+	
+# CUDA_VISIBLE_DEVICES='' pytest -v --color=yes --doctest-modules tests/ causal_networkx/
