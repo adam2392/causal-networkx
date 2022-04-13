@@ -1,10 +1,14 @@
+from typing import Union
+
+import networkx as nx
 import numpy as np
 from networkx.algorithms import d_separated as nx_d_separated
 
-from causal_networkx.cgm import CausalGraph
+from causal_networkx.cgm import PAG, CausalGraph
+from causal_networkx.utils import _integrate_circle_edges_to_graph
 
 
-def d_separated(G: CausalGraph, x, y, z):
+def d_separated(G: Union[CausalGraph, PAG], x, y, z):
     """Check d-separation among 'x' and 'y' given 'z' in graph G.
 
     This algorithm wraps `networkx.algorithms.d_separated`, but
@@ -30,6 +34,7 @@ def d_separated(G: CausalGraph, x, y, z):
     See Also
     --------
     causal_networkx.CausalGraph
+    causal_networkx.algorithms.m_separated
     networkx.algorithms.d_separated
 
     Notes
@@ -38,21 +43,31 @@ def d_separated(G: CausalGraph, x, y, z):
     ``CausalGraph`` is not represented.
 
     """
-    # get the full graph
-    explicit_G = G.compute_full_graph()
+    # get the full graph by converting bidirected edges into latent confounders
+    # and keeping the directed edges
+    explicit_G = G.compute_full_graph(to_networkx=True)
 
     # run d-separation
     if isinstance(x, np.ndarray):
         x = set(list(x))
     elif isinstance(x, str):
         x = set([x])
+    elif type(x) == int or float:
+        x = set([x])
+
     if isinstance(y, np.ndarray):
         y = set(list(y))
     elif isinstance(y, str):
+        y = set([y])
+    elif type(y) == int or float:
         y = set([y])
     if isinstance(z, np.ndarray):
         z = set(list(z))
     elif isinstance(z, str):
         z = set([z])
+    elif type(z) in (int, float):
+        z = set([z])
 
+    # make sure there are always conditioned on the conditioning set
+    z = z.union(G._cond_set)
     return nx_d_separated(explicit_G, x, y, z)

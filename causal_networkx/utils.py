@@ -3,7 +3,7 @@ from typing import Callable
 
 import networkx as nx
 
-from causal_networkx.cgm import CausalGraph
+from causal_networkx.cgm import PAG, CausalGraph
 
 
 def _check_ci_estimator(ci_estimator: Callable):
@@ -76,7 +76,7 @@ def _sample_cg(
     return cg
 
 
-def convert_latent_to_unobserved_confounders(G: CausalGraph) -> nx.DiGraph:
+def convert_latent_to_unobserved_confounders(G: CausalGraph) -> CausalGraph:
     """Convert all bidirected edges to unobserved confounders.
 
     Parameters
@@ -86,10 +86,110 @@ def convert_latent_to_unobserved_confounders(G: CausalGraph) -> nx.DiGraph:
 
     Returns
     -------
-    G_copy : nx.DiGraph
+    G_copy : CausalGraph
         A networkx DiGraph that is a fully specified DAG with unobserved
         variables added in place of bidirected edges.
+    """
+    uc_label = "Unobserved Confounders"
+    G_copy = G.copy()
 
+    # for every bidirected edge, add a new node
+    for idx, latent_edge in enumerate(G.c_component_graph.edges):
+        G_copy.add_node(f"U{idx}", label=uc_label, observed="no")
+
+        # then add edges from the new UC to the nodes
+        G_copy.add_edge(f"U{idx}", latent_edge[0])
+        G_copy.add_edge(f"U{idx}", latent_edge[1])
+
+        # remove the actual bidirected edge
+        G_copy.remove_bidirected_edge(*latent_edge)
+
+    return G_copy
+
+
+def _integrate_circle_edges_to_graph(G: PAG):
+    """Add circle edges into a graph.
+
+    Represents circle edges using additional nodes that are added
+    into the graph, to "preserve" m-separation properties. Since
+    a circle edges represents uncertainty about the edge type, we
+    will add all edges possible regarding the uncertainty.
+
+    Parameters
+    ----------
+    G : PAG
+        The PAG.
+
+    Returns
+    -------
+    G_copy : CausalGraph
+        The causal graph with the modified edges.
+
+    Notes
+    -----
+    Even though A <-o B can be A <- B, or A <- UC -> B
+
+    The circle edges that are possible can be represented in a
+    full graph as:
+
+    - A <-o B is turned to A <- UC <- B, and A <- UE -> B since that
+    the edges restrict to A <-* B, preserving a possible collider
+    at node A
+    - A o-o B is turned to A -> UC -> B and A <- UE <- B. In this case,
+    we want to preserve a possible collider at both nodes A and B.
+
+    where unobserved confounders (UC), or unobserved common effects (UE)
+    are added to the graph.
+    """
+    if not isinstance(G, PAG):
+        raise ValueError(f"Graph {G} should be a PAG.")
+
+    G_copy = G.copy()
+    required_conditioning_set = set()
+
+    # for every bidirected edge, add a new node
+    for idx, circle_edge in enumerate(G.circle_edge_graph.edges):
+        # check if there is a bidirected circle edge
+        if G.has_circle_edge(circle_edge[1], circle_edge[0]):
+            # create unobserved confounder
+            G_copy.add_edge(f"U{idx}", circle_edge[0])
+            G_copy.add_edge(f"U{idx}", circle_edge[1])
+
+            # create an "unobserved" common effect
+            # that will always be conditioned on
+            # then add edges from the nodes to the new UE
+            G_copy.add_edge(circle_edge[0], f"UE{idx}")
+            G_copy.add_edge(circle_edge[1], f"UE{idx}")
+            required_conditioning_set.add(f"UE{idx}")
+        else:
+            # there is a <-o, or o-> edge between these two nodes
+            # create a path from A -> uc -> B
+            G_copy.add_edge(circle_edge[0], f"uma{idx}")
+            G_copy.add_edge(f"uma{idx}", circle_edge[1])
+
+            # now add an unobserved confounder
+            G_copy.add_edge(f"umb{idx}", circle_edge[0])
+            G_copy.add_edge(f"umb{idx}", circle_edge[1])
+
+        G_copy.remove_circle_edge(*circle_edge)
+
+    return G_copy, required_conditioning_set
+
+
+# TODO: integrat into causal graph
+def convert_selection_vars_to_common_effects(G: CausalGraph) -> nx.DiGraph:
+    """Convert all undirected edges to unobserved common effects.
+
+    Parameters
+    ----------
+    G : CausalGraph
+        A causal graph with undirected edges.
+
+    Returns
+    -------
+    G_copy : CausalGraph
+        A causal graph that is a fully specified DAG with unobserved
+        selection variables added in place of undirected edges.
     """
     uc_label = "Unobserved Confounders"
 

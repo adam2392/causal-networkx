@@ -1,7 +1,9 @@
 import networkx as nx
+import py
 import pytest
 
-from causal_networkx.cgm import CausalGraph
+from causal_networkx.algorithms import d_separated
+from causal_networkx.cgm import PAG, CausalGraph
 
 
 class TestGraph:
@@ -9,7 +11,7 @@ class TestGraph:
         # start every graph with the confounded graph
         # 0 -> 1, 0 -> 2 with 1 <--> 0
         self.Graph = CausalGraph
-        incoming_latent_data = [("0", "1")]
+        incoming_latent_data = [(0, 1)]
 
         # build dict-of-dict-of-dict K3
         ed1, ed2 = ({}, {})
@@ -148,7 +150,7 @@ class TestNetworkxGraph(TestGraph):
         G.dag.graph["name"] = "K3"
         G.clear()
         assert list(G.nodes) == []
-        assert G.dag.graph == {}
+        assert all(graph.graph == {} for graph in G._graphs)
 
     def test_clear_edges(self):
         G = self.G.copy()
@@ -313,6 +315,19 @@ class TestCausalGraph(TestGraph):
         G.remove_bidirected_edge("1", "2")
         assert "2" not in G
 
+    def test_d_separation(self):
+        G = self.G
+        # add collider on 0
+        G.add_edge(3, 0)
+
+        # normal d-separation statements should hold
+        assert not d_separated(G, 1, 2, set())
+        assert d_separated(G, 1, 2, 0)
+
+        # test collider works on bidirected edge
+        assert not d_separated(G, 3, 1, set())
+        assert not d_separated(G, 3, 1, 0)
+
     def test_children_and_parents(self):
         """Test working with children and parents."""
         pass
@@ -328,6 +343,76 @@ class TestCausalGraph(TestGraph):
     def test_c_components(self):
         """Test working with c-components in causal graph."""
         pass
+
+
+class TestPAG(TestCausalGraph):
+    def setup_method(self):
+        # setup the causal graph in previous method
+        super().setup_method()
+        self.Graph = PAG
+        self.G = PAG(self.G.dag, self.G.c_component_graph)
+
+        # also setup a PAG with uncertain edges
+        self.PAG = self.G.copy()
+        self.PAG.add_circle_edge(1, 4, bidirected=True)
+
+    def test_hash_with_circles(self):
+        G = self.G
+        current_hash = hash(G)
+        assert G._current_hash is None
+
+        G.add_circle_edge(1, 0)
+        new_hash = hash(G)
+        assert current_hash != new_hash
+
+        G.remove_circle_edge(1, 0)
+        assert current_hash == hash(G)
+
+    def test_add_circle_edge(self):
+        G = self.G
+        assert not G.has_edge(1, 3)
+
+        # if we try to add a circle edge to a new node
+        # where there is no arrow already without specifying
+        # bidirected, then an error will be raised
+        with pytest.raises(RuntimeError, match="There is no directed"):
+            G.add_circle_edge(1, 3)
+        G.add_circle_edge(1, 3, bidirected=True)
+        assert not G.has_edge(1, 3)
+        assert G.has_circle_edge(1, 3)
+
+    def test_remove_circle_edge(self):
+        G = self.PAG
+        assert G.has_circle_edge(1, 4)
+        G.remove_circle_edge(1, 4)
+        assert not G.has_circle_edge(1, 4)
+
+    def test_orient_edge(self):
+        G = self.PAG
+        G.orient_edge(1, 4, "arrow")
+        assert G.has_edge(1, 4)
+        assert not G.has_circle_edge(1, 4)
+
+        with pytest.raises(ValueError, match="edge_type must be"):
+            G.orient_edge(1, 4, "circl")
+        assert G.has_edge(1, 4)
+        assert not G.has_circle_edge(1, 4)
+
+    def test_m_separation(self):
+        G = self.PAG
+        assert not d_separated(G, 0, 4, set())
+        assert not d_separated(G, 0, 4, 1)
+
+        # check various cases
+        G.add_edge(4, 3)
+        assert not d_separated(G, 3, 1, set())
+        assert d_separated(G, 3, 1, 4)
+
+        # check what happens in the other direction
+        G.remove_edge(4, 3)
+        G.add_edge(3, 4)
+        assert not d_separated(G, 3, 1, set())
+        assert not d_separated(G, 3, 1, 4)
 
 
 # class TestEdgeSubgraph:

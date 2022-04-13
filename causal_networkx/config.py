@@ -24,6 +24,8 @@ class EdgeType(Enum, metaclass=MetaEnum):
     circle : str
         Signifies "o" endpoint. That is an uncertain edge,
         meaning it could be a tail, or an arrow.
+    bidirected : str
+        Signifies a bidirected edge.
 
     Notes
     -----
@@ -35,3 +37,4 @@ class EdgeType(Enum, metaclass=MetaEnum):
 
     arrow = "arrow"
     circle = "circle"
+    bidirected = "bidirected"

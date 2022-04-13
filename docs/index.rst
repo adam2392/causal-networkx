@@ -15,10 +15,10 @@ Contents
    :maxdepth: 2
    :caption: Getting started:
 
-   CHANGELOG
    overview
    installation
    api
+   whats_new
 
 .. toctree::
    :hidden:

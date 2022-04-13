@@ -78,6 +78,10 @@ class NetworkXMixin:
         """Check if graph has edge (u, v)."""
         return self.dag.has_edge(u, v)
 
+    def has_bidirected_edge(self, u, v):
+        """Check if graph has bidirected edge (u, v)."""
+        return self.c_component_graph.has_edge(u, v)
+
     def __str__(self):
         return "".join(
             [
@@ -143,7 +147,7 @@ class NetworkXMixin:
 
     def copy(self):
         """Return a copy of the causal graph."""
-        return CausalGraph(self.dag.copy(), self.c_component_graph.copy(), **self.dag.graph)
+        return self.__class__(*self._graphs, **self.dag.graph)
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):
         """Add an edge between u and v.
@@ -287,6 +291,10 @@ class CausalGraph(NetworkXMixin):
         sparse matrix, or PyGraphviz graph. The edges in this graph represent
         bidirected edges, which are represented using a `networkx.Graph`.
 
+    incoming_selection_bias : input graph (optional, default: None)
+        Data to initialize selection bias graph. Currently,
+        not used or implemented.
+
     attr : keyword arguments, optional (default= no attributes)
         Attributes to add to graph as key=value pairs.
 
@@ -294,6 +302,17 @@ class CausalGraph(NetworkXMixin):
     --------
     networkx.DiGraph
     networkx.Graph
+
+    Subclassing
+    -----------
+    All causal graphs are a mixture of graphs that represent the different
+    types of edges possible. For example, a causal graph consists of two
+    types of edges, directed, and bidirected. Each type of edge has the
+    following operations:
+
+    - has_<edge_type>_edge: Check if graph has this specific type of edge.
+    - add_<edge_type>_edge: Add a specific edge type to the graph.
+    - remove_<edge_type>_edge: Remove a specific edge type to the graph.
 
     Notes
     -----
@@ -308,31 +327,53 @@ class CausalGraph(NetworkXMixin):
     in different functions, compared to ``networkx``.
     """
 
-    _full_graph: nx.DiGraph
     _graphs: List[nx.Graph]
     _current_hash: int
+    _cond_set: Set
 
-    def __init__(self, incoming_graph_data=None, incoming_latent_data=None, **attr) -> None:
+    def __init__(
+        self,
+        incoming_graph_data=None,
+        incoming_latent_data=None,
+        incoming_selection_bias=None,
+        **attr,
+    ) -> None:
         # create the DAG of observed variables
         self.dag = nx.DiGraph(incoming_graph_data, **attr)
 
         # form the bidirected edge graph
         self.c_component_graph = nx.Graph(incoming_latent_data, **attr)
 
-        # create a list of the internal graphs
-        self._graphs = [self.dag, self.c_component_graph]
+        # form selection bias graph
+        # self.selection_bias_graph = nx.Graph(incoming_selection_bias, **attr)
 
         # keep track of the full graph
         self._full_graph = None
         self._current_hash = None
 
+        # the conditioning set used in d-separation
+        # keep track of variables that are always conditioned on
+        self._cond_set = set()
+
+        # set the internal graph properties
+        self._set_internal_graph_properties()
+
+    def _set_internal_graph_properties(self):
+        # create a list of the internal graphs
+        self._graphs = [self.dag, self.c_component_graph]
+
         # number of edges allowed between nodes
         self.allowed_edges = np.inf
+
+    @property
+    def bidirected_edges(self):
+        """Directed edges."""
+        return self.c_component_graph.edges
 
     def _edge_error_check(self, u_of_edge, v_of_edge):
         pass
 
-    def compute_full_graph(self) -> nx.DiGraph:
+    def compute_full_graph(self, to_networkx: bool = False):
         """Compute the full graph.
 
         Converts all bidirected edges to latent unobserved common causes.
@@ -361,6 +402,9 @@ class CausalGraph(NetworkXMixin):
             explicit_G = convert_latent_to_unobserved_confounders(self)
             self._full_graph = explicit_G
             self._current_hash = hash(self)
+
+        if to_networkx:
+            return nx.DiGraph(self._full_graph.dag)
 
         return self._full_graph
 
@@ -622,11 +666,12 @@ class CausalGraph(NetworkXMixin):
             self.has_edge(a, c) or self.has_edge(c, a)
         )
 
+    def neighbors(self, u):
+        """Get all adjacent nodes of 'u'."""
+        pass
 
-# TODO: inherit from CausalGraph
-# - DAG for normal edges
-# - Graph for bidirected edges
-# - additional graph for undirected edges
+
+# TODO: implement m-separation algorithm
 class PAG(CausalGraph):
     """Partial ancestral graph (PAG).
 
@@ -635,14 +680,15 @@ class PAG(CausalGraph):
     is only one edge between any two nodes, but there are
     different types of edges.
 
-    - "circle": Denotes uncertainty in the edge type. Can be either
-    a taile, or an arrow.
-    - "arrow": Indicates that all DAGs within this equivalence class
-    has an arrow (i.e. "->").
-    - "undirected": Indicates a selection bias. TODO
+    The entire PAG is represented using multiple `networkx` graphs:
+    - directed edges (normal arrows): `networkx.DiGraph`
+    - bidirected edges (indicating latent confounder): `networkx.DiGraph`
+    - circular edges (indicating uncertainty in edge type): `networkx.DiGraph`
+    - undirected edges (indicating selection bias): `networkx.Graph`. Currently
+    not implemented or used.
 
-    The entire PAG is represented by one `networkx.DiGraph` with
-    edge attributes indicating which type of endpoint the edge has.
+    Together, these graphs are joined together to form an efficient
+    representation of the PAG.
 
     Parameters
     ----------
@@ -651,56 +697,50 @@ class PAG(CausalGraph):
     """
 
     def __init__(
-        self, incoming_graph_data=None, incoming_latent_data=None, graph_edge_type=None, **attr
+        self,
+        incoming_graph_data=None,
+        incoming_latent_data=None,
+        incoming_uncertain_data=None,
+        incoming_selection_data=None,
+        **attr,
     ) -> None:
+        self.circle_edge_graph = nx.DiGraph(incoming_uncertain_data, **attr)
+
         # construct the causal graph
-        super().__init__(incoming_graph_data, incoming_latent_data, **attr)
+        super().__init__(incoming_graph_data, incoming_latent_data, incoming_selection_data, **attr)
 
-        # set edge types for circle or non-circle
-        if incoming_graph_data is not None and graph_edge_type is None:
-            raise RuntimeError("Please specify edge types for incoming_graph_data.")
-        elif incoming_graph_data is None and graph_edge_type is not None:
-            raise RuntimeError("Edge type is specified, but incoming graph data is not specified.")
-        elif incoming_graph_data is not None and graph_edge_type is not None:
-            if graph_edge_type not in EdgeType:
-                raise ValueError(f"{graph_edge_type} not supported. Please use one of {EdgeType}.")
-            nx.set_edge_attributes(self, values=graph_edge_type, name="type")
+    def _set_internal_graph_properties(self):
+        self._graphs = [
+            self.dag,
+            self.c_component_graph,
+            self.circle_edge_graph,
+        ]
 
-    def add_edge(self, u_of_edge, v_of_edge):
-        """Add a directed edge between u and v.
+        # number of allowed edges between any two nodes
+        self.allowed_edges = 1
 
-        The nodes u and v will be automatically added if they are
-        not already in the graph.
+    def __str__(self):
+        return "".join(
+            [
+                type(self).__name__,
+                f" named {self.name!r}" if self.name else "",
+                f" with {self.number_of_nodes()} nodes, ",
+                f"{self.number_of_edges()} edges, ",
+                f"{self.number_of_bidirected_edges()} bidirected edges and ",
+                f"{self.number_of_circle_edges()} circle edges.",
+            ]
+        )
 
-        Parameters
-        ----------
-        u_of_edge, v_of_edge : nodes
-            Nodes can be, for example, strings or numbers.
-            Nodes must be hashable (and not None) Python objects.
+    @property
+    def circle_edges(self):
+        return self.circle_edge_graph.edges
 
-        See Also
-        --------
-        add_edges_from : add a collection of edges
-        add_uncertain_edge
+    def number_of_circle_edges(self, u=None, v=None):
+        """Return number of bidirected edges in graph."""
+        return self.circle_edge_graph.number_of_edges(u=u, v=v)
 
-        Notes
-        -----
-        Adding an edge that already exists updates the edge data.
-
-        Examples
-        --------
-        The following all add the edge e=(1, 2) to graph G:
-
-        >>> G = nx.Graph()  # or DiGraph, MultiGraph, MultiDiGraph, etc
-        >>> e = (1, 2)
-        >>> G.add_edge(1, 2)  # explicit two-node form
-        >>> G.add_edge(*e)  # single edge as tuple of two nodes
-        >>> G.add_edges_from([(1, 2)])  # add edges from iterable container
-        """
-        super().add_edge(u_of_edge, v_of_edge, type="arrow")
-
-    def add_uncertain_edge(self, u_of_edge, v_of_edge, bidirected: bool = False):
-        """Add a directed edge between u and v.
+    def add_circle_edge(self, u_of_edge, v_of_edge, bidirected: bool = False):
+        """Add a circle edge between u and v.
 
         The nodes u and v will be automatically added if they are
         not already in the graph.
@@ -720,12 +760,21 @@ class PAG(CausalGraph):
         add_edge
 
         """
-        super().add_edge(u_of_edge, v_of_edge, type="circle")
+        if not self.dag.has_edge(v_of_edge, u_of_edge) and not bidirected:
+            raise RuntimeError(
+                f"There is no directed edge from {v_of_edge} to {u_of_edge}. "
+                f"Adding a single circle edge is redundant. Are you sure you "
+                f"do not intend on adding a bidrected edge?"
+            )
+        self.circle_edge_graph.add_edge(u_of_edge, v_of_edge)
         if bidirected:
-            super().add_edge(v_of_edge, u_of_edge, type="circle")
+            self.circle_edge_graph.add_edge(v_of_edge, u_of_edge)
 
-    def add_edges_from(self, ebunch_to_add):
+    def add_circle_edges_from(self, ebunch_to_add):
         """Add all the edges in ebunch_to_add.
+
+        If you want to add bidirected circle edges, you must pass in
+        both (A, B) and (B, A).
 
         Parameters
         ----------
@@ -756,41 +805,13 @@ class PAG(CausalGraph):
         >>> G.add_edges_from([(1, 2), (2, 3)], weight=3)
         >>> G.add_edges_from([(3, 4), (1, 4)], label="WN2898")
         """
-        super().add_edges_from(ebunch_to_add, type="arrow")
+        self.circle_edge_graph.add_edges_from(ebunch_to_add)
 
-    def add_uncertain_edges_from(self, ebunch_to_add):
-        """Add all the edges in ebunch_to_add.
+    def remove_circle_edge(self, u, v):
+        self.circle_edge_graph.remove_edge(u, v)
 
-        Parameters
-        ----------
-        ebunch_to_add : container of edges
-            Each edge given in the container will be added to the
-            graph. The edges must be given as 2-tuples (u, v) or
-            3-tuples (u, v, d) where d is a dictionary containing edge data.
-
-        See Also
-        --------
-        add_edge : add a single edge
-        add_uncertain_edge : convenient way to add uncertain edges
-
-        Notes
-        -----
-        Adding the same edge twice has no effect but any edge data
-        will be updated when each duplicate edge is added.
-
-        Examples
-        --------
-        >>> G = nx.Graph()  # or DiGraph, MultiGraph, MultiDiGraph, etc
-        >>> G.add_edges_from([(0, 1), (1, 2)])  # using a list of edge tuples
-        >>> e = zip(range(0, 3), range(1, 4))
-        >>> G.add_edges_from(e)  # Add the path graph 0-1-2-3
-
-        Associate data to edges
-
-        >>> G.add_edges_from([(1, 2), (2, 3)], weight=3)
-        >>> G.add_edges_from([(3, 4), (1, 4)], label="WN2898")
-        """
-        super().add_edges_from(ebunch_to_add, type="circle")
+    def has_circle_edge(self, u, v):
+        return self.circle_edge_graph.has_edge(u, v)
 
     def orient_edge(self, u, v, edge_type: str):
         """Orient an edge a certain way.
@@ -814,10 +835,22 @@ class PAG(CausalGraph):
                 f"edge_type must be one of {EdgeType}. You passed "
                 f"{edge_type} which is unsupported."
             )
-        if not self.has_edge(u, v):
-            self.add_edge(u, v)
+        elif edge_type == EdgeType.arrow.value:
+            add_edge_func = self.add_edge
+        elif edge_type == EdgeType.circle.value:
+            add_edge_func = self.add_circle_edge
+        elif edge_type == EdgeType.bidirected.value:
+            add_edge_func = self.add_bidirected_edge
 
-        nx.set_edge_attributes(self, {(u, v): {"type": edge_type}})
+        # check what kind of edge it is first and remove it
+        if self.has_edge(u, v):
+            self.remove_edge(u, v)
+        elif self.has_bidirected_edge(u, v):
+            self.remove_bidirected_edge(u, v)
+        elif self.has_circle_edge(u, v):
+            self.remove_circle_edge(u, v)
+
+        add_edge_func(u, v)
 
     def children(self, n):
         """Return an iterator over children of node n.
@@ -849,30 +882,54 @@ class PAG(CausalGraph):
         """
         return self.predecessors(n)
 
+    def compute_full_graph(self, to_networkx: bool = False):
+        """Computes the full graph from a PAG.
+
+        Adds bidirected edges as latent confounders. Also adds circle edges
+        as latent confounders and either:
+
+        - an unobserved mediatior
+        - or an unobserved common effect
+
+        The unobserved commone effect will be always conditioned on to
+        preserve our notion of m-separation in PAGs.
+
+        Parameters
+        ----------
+        to_networkx : bool, optional
+            Whether to return the graph as a DAG DiGraph, by default False.
+
+        Returns
+        -------
+        _full_graph : PAG | nx.DiGraph
+            The full directed DAG.
+        """
+        from causal_networkx.utils import _integrate_circle_edges_to_graph
+
+        if self._current_hash != hash(self):
+            # first convert latent variables
+            explicit_G = super().compute_full_graph()
+
+            # now integrate circle edges
+            explicit_G, required_conditioning_set = _integrate_circle_edges_to_graph(explicit_G)
+
+            # update class variables
+            self._cond_set = required_conditioning_set
+            self._full_graph = explicit_G
+            self._current_hash = hash(self)
+
+        if to_networkx:
+            return nx.DiGraph(self._full_graph.dag)
+        return self._full_graph
+
     def edge_type(self, u, v):
         """Return the edge type associated between u and v."""
-        if not self.has_edge(u, v):
+        if self.has_edge(u, v):
+            return
+        if not self.has_edge(u, v) and not self.has_bidirected_edge(u, v):
             raise RuntimeError(f"Graph does not contain an edge between {u} and {v}.")
+
         return self[u][v]["type"]
-
-    def has_edge(self, u, v, edge_type=None):
-        """Check if graph has edge between 'u', and 'v' with optional 'edge_type'."""
-        if edge_type is not None and edge_type not in EdgeType:
-            raise ValueError(
-                f"edge_type must be one of {EdgeType}. You passed "
-                f"{edge_type} which is unsupported."
-            )
-
-        has_adj = super().has_edge(u, v)
-        if edge_type is None:
-            return has_adj
-        elif has_adj and self[u][v]["type"] == edge_type:
-            return True
-        return False
-
-    def has_adjacency(self, u, v):
-        """Check if there is adjacency among nodes 'u' and 'v'."""
-        return self.has_edge(u, v) or self.has_edge(v, u)
 
     def draw(self):
         """Draw the graph."""
@@ -942,32 +999,3 @@ class PAG(CausalGraph):
         # C and A that is into A, or there is a collider path between C and A
         # that is into A and every vertex on the path is a parent of B.
         # Otherwise A → B is said to be invisible.
-
-    def add_bidirected_edge(self, u_of_edge, v_of_edge) -> None:
-        """Add a bidirected edge between u and v.
-
-        The nodes u and v will be automatically added if they are
-        not already in the graph.
-
-        Parameters
-        ----------
-        u_of_edge, v_of_edge : nodes
-            Nodes can be, for example, strings or numbers.
-            Nodes must be hashable (and not None) Python objects.
-
-        See Also
-        --------
-        nx.MultiDiGraph.add_edges_from : add a collection of edges
-        nx.MultiDiGraph.add_edge       : add an edge
-
-        """
-        # if the nodes connected are not in the dag, then
-        # add them into the observed variable graph
-        if u_of_edge not in self:
-            self.add_node(u_of_edge)
-        if v_of_edge not in self:
-            self.add_node(v_of_edge)
-
-        # add the bidirected arrow by adding an arrow in both directions
-        self.add_edge(u_of_edge, v_of_edge)
-        self.add_edge(v_of_edge, u_of_edge)

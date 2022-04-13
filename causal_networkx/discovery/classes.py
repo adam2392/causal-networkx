@@ -13,6 +13,8 @@ from causal_networkx.discovery.skeleton import learn_skeleton_graph
 # TODO: Add ways to fix directed edges
 # TODO: Add ways to initialize graph with edges rather then undirected
 class ConstraintDiscovery:
+    graph_: CausalGraph
+
     def __init__(
         self,
         ci_estimator: Callable,
