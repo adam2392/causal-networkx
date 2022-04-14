@@ -32,6 +32,16 @@ black:
 	fi;
 	@echo "black passed"
 
+isort:
+	@if command -v isort > /dev/null; then \
+		echo "Running isort"; \
+		isort causal_networkx examples; \
+	else \
+		echo "isort not found, please install it!"; \
+		exit 1; \
+	fi;
+	@echo "isort passed"
+
 check:
 	@$(MAKE) -k black pydocstyle codespell-error check-manifest
 

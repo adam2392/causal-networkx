@@ -83,18 +83,20 @@ class FCI(ConstraintDiscovery):
         sep_set : Dict[Dict[Set]]
             The separating set between any two nodes.
         """
-        # for every node in the PAG, evaluate neighbors to
+        # for every node in the PAG, evaluate neighbors that have any edge
         for u in graph.nodes:
             for v_i, v_j in combinations(graph.neighbors(u), 2):
-                # Check that there is no edge between
+                # Check that there is no edge of any type between
                 # v_i and v_j, else this is a "shielded" collider.
                 # Then check to see if 'u' is in the separating
                 # set. If it is not, then there is a collider.
-                if not graph.has_edge(v_i, v_j) and u not in sep_set[v_i][v_j]:
-                    graph.orient_edge(v_i, u, "arrow")
-                    graph.orient_edge(v_j, u, "arrow")
-                    print(f"orienting edges {v_i} -> {u} and {v_j} -> {u}")
+                if not graph.has_adjacency(v_i, v_j) and u not in sep_set[v_i][v_j]:
+                    logger.debug(f"orienting collider: {v_i} -> {u} and {v_j} -> {u}")
 
+                    if graph.has_circle_edge(v_i, u):
+                        graph.orient_circle_edge(v_i, u, "arrow")
+                    if graph.has_circle_edge(v_j, u):
+                        graph.orient_circle_edge(v_j, u, "arrow")
                 # else:
                 # definite non-collider
                 # test = 1
@@ -123,17 +125,18 @@ class FCI(ConstraintDiscovery):
         """
         added_arrows = False
         # check that a and c are not adjacent
-        if not graph.has_edge(a, c) and not graph.has_edge(c, a):
+        if not graph.has_adjacency(a, c): # has_edge(a, c) and not graph.has_edge(c, a):
             # check a *-> u o-o c
             if (
                 graph.edge_type(a, u) == "arrow"
                 and graph.edge_type(u, c) == "circle"
                 and graph.edge_type(c, u) == "circle"
             ):
+                logger.debug(f'Rule 1: Orienting edge {u} o-o {c} to {u} -> {c}.')
                 # orient the edge from u to c and delete
                 # the edge from c to u
-                graph.orient_edge(u, c, "arrow")
-                graph.remove_edge(c, u)
+                graph.orient_circle_edge(u, c, "arrow")
+                graph.orient_circle_edge(c, u, 'tail')
                 added_arrows = True
 
         return added_arrows
@@ -166,19 +169,21 @@ class FCI(ConstraintDiscovery):
             # check that a -> u *-> c
             condition_one = (
                 graph.edge_type(a, u) == "arrow"
-                and graph.edge_type(u, c) == "arrow"
+                and graph.edge_type(u, c) in ["arrow", 'bidirected']
                 and not graph.has_edge(u, a)
             )
 
             # check that a *-> u -> c
             condition_two = (
-                graph.edge_type(a, u) == "arrow"
+                graph.edge_type(a, u) in ["arrow", 'bidirected']
                 and graph.edge_type(u, c) == "arrow"
                 and not graph.has_edge(c, u)
             )
+
             if condition_one or condition_two:
+                logger.debug(f'Rule 2: Orienting circle edge to {a} -> {c}')
                 # orient a *-> c
-                graph.orient_edge(a, c, "arrow")
+                graph.orient_circle_edge(a, c, "arrow")
                 added_arrows = True
         return added_arrows
 
@@ -225,11 +230,11 @@ class FCI(ConstraintDiscovery):
                 # check that a *-o v o-* c
                 condition_two = graph.has_circle_edge(a, v) and graph.has_circle_edge(c, v)
                 if condition_one and condition_two:
-                    graph.orient_edge(v, u, "arrow")
+                    graph.orient_circle_edge(v, u, "arrow")
                     added_arrows = True
         return added_arrows
 
-    def _apply_rule4(self, graph: PAG, sep_set):
+    def _apply_rule4(self, graph: PAG, u, a, c, sep_set):
         """Apply rule 4 of FCI algorithm.
 
         If a path, U = <v, ..., a, u, c> is a discriminating
@@ -238,91 +243,103 @@ class FCI(ConstraintDiscovery):
 
         A discriminating path, p, is one where:
         - p has at least 3 edges
-        - u is non-endpoint and u-c
+        - u is non-endpoint and u is adjacent to c
         - v is not adjacent to c
-        - every vertex between v and u is a collider on p and parent of y
+        - every vertex between v and u is a collider on p and parent of c
 
         Parameters
         ----------
         graph : PAG
             PAG to orient.
+        u : node
+            A node in the graph.
+        a : node
+            A node in the graph.
+        c : node
+            A node in the graph.
         sep_set : set
             The separating set to check.
+        
+        Notes
+        -----
         """
         added_arrows = False
+        explored_nodes = dict()
 
-        for u in graph.nodes:
-            for (a, c) in combinations(graph.neighbors(u), 2):
-                # a must point to c for us to begin a discriminating path and
-                # not be bi-directional
-                if not graph.has_edge(a, c) or graph.has_edge(c, a):
+        # a must point to c for us to begin a discriminating path and
+        # not be bi-directional
+        if not graph.has_edge(a, c) or graph.has_edge(c, a):
+            return added_arrows, explored_nodes
+
+        # c must also point to u with a circle edge
+        # check u o-* c
+        if not graph.has_circle_edge(c, u):
+            return added_arrows, explored_nodes
+
+        # c parents
+        cparents = graph.parents(c)
+
+        # keep track of the distance searched
+        distance = 0
+
+        # keep track of the previous nodes, i.e. to build a path
+        # from node (key) to its child along the path (value)
+        descendant_nodes = dict()
+        descendant_nodes[c] = u
+
+        # keep track of paths of certain nodes that were already explored
+        explored_nodes[c] = None
+        explored_nodes[u] = None
+
+        # now look for a discriminating path between v and c for  u.
+        path = deque([c])
+        while not len(path) == 0:
+            node_i = path.popleft()
+
+            # check distance criterion to prevent checking very long paths
+            distance += 1
+            if distance > 0 and distance > (
+                1000 if self.max_path_length == np.inf else self.max_path_length
+            ):
+                return added_arrows
+
+            # check all parents of node_i to see if we can find
+            # a discriminating path
+            node_i_pa = graph.parents(node_i)
+            for node_next in node_i_pa:
+                if node_next in explored_nodes:
                     continue
 
-                # c must also point to u with a circle edge
-                # check u o-* c
-                if not graph.has_circle_edge(c, u):
+                descendant_nodes[node_next] = node_i
+                node_i_child = descendant_nodes[node_i]
+
+                # check that the next node is a definite collider
+                if not graph.is_def_collider(node_next, node_i, node_i_child):
+                    print('Next node is not a definite collider', node_next)
                     continue
+                
+                # all nodes along a disc. path must be parent of 'c'
+                # else it is the end of a discriminating path
+                if not graph.has_adjacency(node_next, c) and node_next != c:
+                    logger.debug(f'Reached the end of the discriminating path with {node_next}.')
+                    
+                    # now check if u is in SepSet(v, c)
+                    if u in sep_set[node_next][c]:
+                        # orient u -> c
+                        graph.remove_edge(c, u)
+                        graph.orient_circle_edge(u, c, "arrow")
+                    else:
+                        # orient u <-> c
+                        graph.orient_circle_edge(u, c, "arrow")
+                        graph.orient_circle_edge(c, u, "arrow")
+                    added_arrows = True
+                    break
 
-                # keep track of paths of certain nodes that were already explored
-                explored_nodes = set()
-                explored_nodes.add(c)
-                explored_nodes.add(u)
-
-                # c parents
-                cparents = graph.parents(c)
-
-                # keep track of the distance searched
-                distance = 0
-
-                # keep track of the previous nodes, i.e. to build a path
-                # from node (key) to its child along the path (value)
-                descendant_nodes = dict()
-
-                # now look for a discriminating path between v and c for  u.
-                path = deque([c])
-                while 1:
-                    node_i = path.popleft()
-
-                    # check distance criterion to prevent checking very long paths
-                    distance += 1
-                    if distance > 0 and distance > (
-                        1000 if self.max_path_length == np.inf else self.max_path_length
-                    ):
-                        return added_arrows
-
-                    # check all  parents of node_i to see if we can find
-                    # a discriminating path
-                    node_i_pa = graph.parents(node_i)
-                    for node_next in node_i_pa:
-                        if node_next in explored_nodes:
-                            continue
-
-                        descendant_nodes[node_next] = node_i
-                        node_i_child = descendant_nodes[node_i]
-
-                        # check that the next node is a definite collider
-                        if not graph.is_def_collider(node_next, node_i, node_i_child):
-                            continue
-
-                        # all nodes along a disc. path must be parent of 'c'
-                        # else it is the end of a discriminating path
-                        if not graph.has_adjacency(node_next, c) and node_next != c:
-                            # now check if u is in SepSet(v, c)
-                            if u in sep_set[node_next][c]:
-                                # orient u -> c
-                                graph.remove_edge(c, u)
-                                graph.orient_edge(u, c, "arrow")
-                            else:
-                                # orient u <-> c
-                                graph.orient_edge(u, c, "arrow")
-                                graph.orient_edge(c, u, "arrow")
-                            added_arrows = True
-
-                        # update 'c' parents
-                        if node_next in cparents:
-                            path.append(node_next)
-                            explored_nodes.add(node_next)
-        return added_arrows
+                # update 'c' parents
+                if node_next in cparents:
+                    path.append(node_next)
+                    explored_nodes[node_next] = None
+        return added_arrows, explored_nodes
 
     def _apply_rule5(self, graph: PAG):
         pass
@@ -342,7 +359,7 @@ class FCI(ConstraintDiscovery):
     def _apply_rule10(self, graph: PAG):
         pass
 
-    def _apply_rules_1to3(self, graph: PAG):
+    def _apply_rules_1to3(self, graph: PAG, sep_set: Set):
         idx = 0
         finished = False
         while idx < self.max_iter and not finished:
@@ -353,8 +370,13 @@ class FCI(ConstraintDiscovery):
                     r2_add = self._apply_rule2(graph, u, a, c)
                     r3_add = self._apply_rule3(graph, u, a, c)
 
+                    change_flag, _ = any([r1_add, r2_add, r3_add])
+                    
+                    # apply R4, orienting discriminating paths
+                    r4_add = self._apply_rule4(graph, u, a, c, sep_set)
+
                     # check if we should continue or not
-                    if not all(added_edges for added_edges in [r1_add, r2_add, r3_add]):
+                    if not all(added_edges for added_edges in [r1_add, r2_add, r3_add, r4_add]):
                         finished = True
                         break
             idx += 1
@@ -377,7 +399,8 @@ class FCI(ConstraintDiscovery):
 
         # convert the undirected skeleton graph to a PAG, where
         # all left-over edges have a "circle" endpoint
-        pag = PAG(skel_graph, name="PAG derived with FCI", edge_type="circle")
+        pag = PAG(incoming_uncertain_data=skel_graph,
+            name="PAG derived with FCI")
 
         # orient colliders
         self._orient_colliders(pag, sep_set)
@@ -385,7 +408,7 @@ class FCI(ConstraintDiscovery):
 
         # run the rest of the rules to orient as many edges
         # as possible
-        self._apply_rules_1to3(pag)
+        self._apply_rules_1to3(pag, sep_set)
 
         # then run rule 4
 

@@ -305,17 +305,18 @@ class TestCausalGraph(TestGraph):
         """Test bidirected edge functions."""
         # add bidirected edge to an isolated node
         G = self.G
-        G.add_bidirected_edge("1", "2")
-        G.remove_bidirected_edge("1", "2", remove_isolate=False)
-        assert "2" in G
-        assert nx.is_isolate(G, "2")
+        G.add_bidirected_edge(1, 5)
+        G.remove_bidirected_edge(1, 5, remove_isolate=False)
+        assert 5 in G
+        assert nx.is_isolate(G, 5)
 
-        G.add_bidirected_edge("1", "2")
-        G.remove_bidirected_edge("1", "2")
-        assert "2" not in G
+        G.add_bidirected_edge(1, 5)
+        G.remove_bidirected_edge(1, 5)
+        print(G.nodes)
+        assert 5 not in G
 
     def test_d_separation(self):
-        G = self.G
+        G = self.G.copy()
         # add collider on 0
         G.add_edge(3, 0)
 
@@ -323,9 +324,20 @@ class TestCausalGraph(TestGraph):
         assert not d_separated(G, 1, 2, set())
         assert d_separated(G, 1, 2, 0)
 
-        # test collider works on bidirected edge
+        # when we add an edge from 0 -> 1
+        # there is no d-separation statement
         assert not d_separated(G, 3, 1, set())
         assert not d_separated(G, 3, 1, 0)
+
+        # test collider works on bidirected edge
+        # 1 <-> 0
+        G.remove_edge(0, 1)
+        assert d_separated(G, 3, 1, set())
+        assert not d_separated(G, 3, 1, 0)
+
+    # def test_add_multiple_edges(self):
+    #     G = self.G
+        # since there is a directed edge from 
 
     def test_children_and_parents(self):
         """Test working with children and parents."""
@@ -347,28 +359,32 @@ class TestCausalGraph(TestGraph):
 class TestPAG(TestCausalGraph):
     def setup_method(self):
         # setup the causal graph in previous method
+        # start every graph with the confounded graph
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
         super().setup_method()
         self.Graph = PAG
-        self.G = PAG(self.G.dag, self.G.c_component_graph)
+        self.PAG = PAG(self.G.dag)
+        # handle the bidirected edge from 0 to 1
+        self.PAG.remove_edge(0, 1)
+        self.PAG.add_bidirected_edge(0, 1)
 
         # also setup a PAG with uncertain edges
-        self.PAG = self.G.copy()
         self.PAG.add_circle_edge(1, 4, bidirected=True)
 
     def test_hash_with_circles(self):
-        G = self.G
+        G = self.PAG
         current_hash = hash(G)
         assert G._current_hash is None
 
-        G.add_circle_edge(1, 0)
+        G.add_circle_edge(1, 0, bidirected=True)
         new_hash = hash(G)
         assert current_hash != new_hash
 
-        G.remove_circle_edge(1, 0)
+        G.remove_circle_edge(1, 0, bidirected=True)
         assert current_hash == hash(G)
 
     def test_add_circle_edge(self):
-        G = self.G
+        G = self.PAG
         assert not G.has_edge(1, 3)
 
         # if we try to add a circle edge to a new node
@@ -386,14 +402,14 @@ class TestPAG(TestCausalGraph):
         G.remove_circle_edge(1, 4)
         assert not G.has_circle_edge(1, 4)
 
-    def test_orient_edge(self):
+    def test_orient_circle_edge(self):
         G = self.PAG
-        G.orient_edge(1, 4, "arrow")
+        G.orient_circle_edge(1, 4, "arrow")
         assert G.has_edge(1, 4)
         assert not G.has_circle_edge(1, 4)
 
         with pytest.raises(ValueError, match="edge_type must be"):
-            G.orient_edge(1, 4, "circl")
+            G.orient_circle_edge(1, 4, "circl")
         assert G.has_edge(1, 4)
         assert not G.has_circle_edge(1, 4)
 

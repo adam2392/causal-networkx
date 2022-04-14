@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from itertools import chain
 from typing import List, Optional, Set
 
 import networkx as nx
@@ -322,6 +322,9 @@ class CausalGraph(NetworkXMixin):
     - add_<edge_type>_edge: Add a specific edge type to the graph.
     - remove_<edge_type>_edge: Remove a specific edge type to the graph.
 
+    All nodes are "stored" in ``self.dag``, which allows for isolated nodes
+    that only have say bidirected edges pointing to it.
+
     Notes
     -----
     The data structure underneath the hood is stored in two networkx graphs:
@@ -366,6 +369,12 @@ class CausalGraph(NetworkXMixin):
 
         # set the internal graph properties
         self._set_internal_graph_properties()
+
+        # make sure to add all nodes to the dag
+        for graph in self._graphs:
+            for node in graph.nodes:
+                if node not in self:
+                    self.dag.add_node(node)
 
     def _set_internal_graph_properties(self):
         # create a list of the internal graphs
@@ -463,6 +472,12 @@ class CausalGraph(NetworkXMixin):
             self.dag.add_node(u_of_edge)
         if v_of_edge not in self.dag:
             self.dag.add_node(v_of_edge)
+
+        # remove edges if they are in another part of the graph
+        # if self.dag.has_edge(u_of_edge, v_of_edge):
+        #     self.dag.remove_edge(u_of_edge, v_of_edge)
+        # if self.dag.has_edge(v_of_edge, u_of_edge):
+        #     self.dag.remove_edge(v_of_edge, u_of_edge)
 
         # add the bidirected arrow in
         self.c_component_graph.add_edge(u_of_edge, v_of_edge, **attr)
@@ -675,10 +690,6 @@ class CausalGraph(NetworkXMixin):
             self.has_edge(a, c) or self.has_edge(c, a)
         )
 
-    def neighbors(self, u):
-        """Get all adjacent nodes of 'u'."""
-        pass
-
 
 # TODO: implement m-separation algorithm
 class PAG(CausalGraph):
@@ -775,6 +786,13 @@ class PAG(CausalGraph):
                 f"Adding a single circle edge is redundant. Are you sure you "
                 f"do not intend on adding a bidrected edge?"
             )
+        # if the nodes connected are not in the dag, then
+        # add them into the observed variable graph
+        if u_of_edge not in self.dag:
+            self.dag.add_node(u_of_edge)
+        if v_of_edge not in self.dag:
+            self.dag.add_node(v_of_edge)
+
         self.circle_edge_graph.add_edge(u_of_edge, v_of_edge)
         if bidirected:
             self.circle_edge_graph.add_edge(v_of_edge, u_of_edge)
@@ -816,14 +834,16 @@ class PAG(CausalGraph):
         """
         self.circle_edge_graph.add_edges_from(ebunch_to_add)
 
-    def remove_circle_edge(self, u, v):
+    def remove_circle_edge(self, u, v, bidirected: bool=False):
         self.circle_edge_graph.remove_edge(u, v)
+        if bidirected:
+            self.circle_edge_graph.remove_edge(v, u)
 
     def has_circle_edge(self, u, v):
         return self.circle_edge_graph.has_edge(u, v)
 
-    def orient_edge(self, u, v, edge_type: str):
-        """Orient an edge a certain way.
+    def orient_circle_edge(self, u, v, edge_type: str):
+        """Orient circle edge into an arrowhead, or tail.
 
         Parameters
         ----------
@@ -844,22 +864,28 @@ class PAG(CausalGraph):
                 f"edge_type must be one of {EdgeType}. You passed "
                 f"{edge_type} which is unsupported."
             )
-        elif edge_type == EdgeType.arrow.value:
-            add_edge_func = self.add_edge
-        elif edge_type == EdgeType.circle.value:
-            add_edge_func = self.add_circle_edge  # type: ignore
-        elif edge_type == EdgeType.bidirected.value:
-            add_edge_func = self.add_bidirected_edge
 
-        # check what kind of edge it is first and remove it
-        if self.has_edge(u, v):
-            self.remove_edge(u, v)
-        elif self.has_bidirected_edge(u, v):
-            self.remove_bidirected_edge(u, v)
-        elif self.has_circle_edge(u, v):
+        if not self.has_circle_edge(u, v):
+            raise RuntimeError(f'There is no circle edge between {u} and {v}.')
+
+        # If there is a circle edge from u -o v, then
+        # the subgraph either has u <-o v, or u o-o v
+        if self.has_edge(v, u) and edge_type == EdgeType.arrow.value:
+            # when we orient (u,v) now as an arrowhead, it is a bidirected arrow
+            self.remove_edge(v, u)
             self.remove_circle_edge(u, v)
-
-        add_edge_func(u, v)
+            self.add_bidirected_edge(u, v)
+        elif self.has_edge(v, u) and edge_type == EdgeType.tail.value:
+            # when we orient (u,v) now as a tail, we just need to remove the circle edge
+            self.remove_circle_edge(u, v)
+        elif self.has_circle_edge(v, u):
+            # In this case, we have a bidirected circle edge
+            # we only need to remove the circle edge and orient
+            # it as a normal edge
+            self.remove_circle_edge(u, v)
+            self.add_edge(u, v)
+        else:  # noqa
+            raise RuntimeError('The current PAG is invalid.')
 
     def children(self, n):
         """Return an iterator over children of node n.
@@ -889,7 +915,10 @@ class PAG(CausalGraph):
         parents : Iterator
             An iterator of the parents of node 'n'.
         """
-        return self.predecessors(n)
+        return chain(*[graph.predecessors(n) for graph in self._graphs])
+        # for graph in self._graphs:
+        #     yield 
+        # return self.predecessors(n)
 
     def compute_full_graph(self, to_networkx: bool = False):
         """Computes the full graph from a PAG.
@@ -977,7 +1006,12 @@ class PAG(CausalGraph):
         is_collider : bool
             Whether or not the path is a definite collider.
         """
-        return self.has_edge(node1, node2, "arrow") and self.has_edge(node3, node2, "arrow")
+        # check arrow from node1 into node2
+        condition_one =  self.has_edge(node1, node2) or self.has_bidirected_edge(node1, node2)
+        
+        # check arrow from node2 into node1
+        condition_two =  self.has_edge(node3, node2) or self.has_bidirected_edge(node3, node2)
+        return condition_one and condition_two
 
     def is_def_noncollider(self, node1, node2, node3):
         """Check if <node1, node2, node3> path forms a definite non-collider.
@@ -1010,3 +1044,11 @@ class PAG(CausalGraph):
         # C and A that is into A, or there is a collider path between C and A
         # that is into A and every vertex on the path is a parent of B.
         # Otherwise A → B is said to be invisible.
+
+    def neighbors(self, u):
+        """Get all adjacent nodes of 'u' with any edge to/from it."""
+        nghbrs = []
+        for graph in self._graphs:
+            if u in graph:
+                nghbrs.extend(list(graph.neighbors(u)))
+        return nghbrs
