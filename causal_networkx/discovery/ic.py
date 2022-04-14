@@ -1,7 +1,8 @@
 import logging
 from collections import deque
-from itertools import combinations
+from itertools import chain, combinations
 from typing import Callable, Dict, Set, Union
+from warnings import warn
 
 import networkx as nx
 import numpy as np
@@ -125,18 +126,18 @@ class FCI(ConstraintDiscovery):
         """
         added_arrows = False
         # check that a and c are not adjacent
-        if not graph.has_adjacency(a, c): # has_edge(a, c) and not graph.has_edge(c, a):
+        if not graph.has_adjacency(a, c):  # has_edge(a, c) and not graph.has_edge(c, a):
             # check a *-> u o-o c
             if (
                 graph.edge_type(a, u) == "arrow"
                 and graph.edge_type(u, c) == "circle"
                 and graph.edge_type(c, u) == "circle"
             ):
-                logger.debug(f'Rule 1: Orienting edge {u} o-o {c} to {u} -> {c}.')
+                logger.debug(f"Rule 1: Orienting edge {u} o-o {c} to {u} -> {c}.")
                 # orient the edge from u to c and delete
                 # the edge from c to u
                 graph.orient_circle_edge(u, c, "arrow")
-                graph.orient_circle_edge(c, u, 'tail')
+                graph.orient_circle_edge(c, u, "tail")
                 added_arrows = True
 
         return added_arrows
@@ -169,19 +170,19 @@ class FCI(ConstraintDiscovery):
             # check that a -> u *-> c
             condition_one = (
                 graph.edge_type(a, u) == "arrow"
-                and graph.edge_type(u, c) in ["arrow", 'bidirected']
+                and graph.edge_type(u, c) in ["arrow", "bidirected"]
                 and not graph.has_edge(u, a)
             )
 
             # check that a *-> u -> c
             condition_two = (
-                graph.edge_type(a, u) in ["arrow", 'bidirected']
+                graph.edge_type(a, u) in ["arrow", "bidirected"]
                 and graph.edge_type(u, c) == "arrow"
                 and not graph.has_edge(c, u)
             )
 
             if condition_one or condition_two:
-                logger.debug(f'Rule 2: Orienting circle edge to {a} -> {c}')
+                logger.debug(f"Rule 2: Orienting circle edge to {a} -> {c}")
                 # orient a *-> c
                 graph.orient_circle_edge(a, c, "arrow")
                 added_arrows = True
@@ -259,7 +260,7 @@ class FCI(ConstraintDiscovery):
             A node in the graph.
         sep_set : set
             The separating set to check.
-        
+
         Notes
         -----
         """
@@ -268,7 +269,7 @@ class FCI(ConstraintDiscovery):
 
         # a must point to c for us to begin a discriminating path and
         # not be bi-directional
-        if not graph.has_edge(a, c) or graph.has_edge(c, a):
+        if not graph.has_edge(a, c) or graph.has_bidirected_edge(c, a):
             return added_arrows, explored_nodes
 
         # c must also point to u with a circle edge
@@ -276,7 +277,12 @@ class FCI(ConstraintDiscovery):
         if not graph.has_circle_edge(c, u):
             return added_arrows, explored_nodes
 
-        # c parents
+        # 'a' cannot be a definite collider if there is no arrow pointing from
+        # u to a either as: u -> a, or u <-> a
+        if not graph.has_edge(u, a) and not graph.has_bidirected_edge(u, a):
+            return added_arrows, explored_nodes
+
+        # parents of c form the discriminating path
         cparents = graph.parents(c)
 
         # keep track of the distance searched
@@ -290,55 +296,131 @@ class FCI(ConstraintDiscovery):
         # keep track of paths of certain nodes that were already explored
         explored_nodes[c] = None
         explored_nodes[u] = None
+        explored_nodes[a] = None
 
-        # now look for a discriminating path between v and c for  u.
-        path = deque([c])
+        # start off with the valid triple <a, u, c>
+        # - u is adjacent to c
+        # - u has an arrow pointing to a
+        # - TBD a is a definite collider
+        # - TBD endpoint is not adjacent to c
+        explored_list = [c, u, a]
+
+        # now add 'a' to the queue and begin exploring
+        # adjacent nodes that are connected with bidirected edges
+        path = deque([a])
         while not len(path) == 0:
-            node_i = path.popleft()
+            this_node = path.popleft()
 
             # check distance criterion to prevent checking very long paths
             distance += 1
+            print(self.max_path_length, distance)
             if distance > 0 and distance > (
                 1000 if self.max_path_length == np.inf else self.max_path_length
             ):
-                return added_arrows
+                warn(f'Did not finish checking discriminating path in {self} because the path '
+                     f'length exceeded {self.max_path_length}.')
+                return added_arrows, explored_nodes
 
-            # check all parents of node_i to see if we can find
-            # a discriminating path
-            node_i_pa = graph.parents(node_i)
-            for node_next in node_i_pa:
-                if node_next in explored_nodes:
+            # now we check all neighbors to this_node that are pointing to it
+            # either with a direct edge, or a bidirected edge
+            for next_node in chain(
+                graph.parents(this_node), graph.c_component_graph.neighbors(this_node)
+            ):
+
+                # now check all bidirected connections with this_node
+                # for next_node in graph.c_component_graph.neighbors(this_node):
+                # if we have already explored this neighbor, then it is
+                # already along the potentially discriminating path
+                if next_node in explored_nodes:
                     continue
 
-                descendant_nodes[node_next] = node_i
-                node_i_child = descendant_nodes[node_i]
+                # This node is a definite collider since there was
+                # confirmed an arrow pointing towards 'this_node'
+                # and 'next_node' is connected to it via a bidirected arrow.
+                # Check if it is now the end of the discriminating path.
+                # Note we now have 3 edges in the path by construction.
+                if not graph.has_adjacency(next_node, c) and next_node != c:
+                    logger.debug(f"Reached the end of the discriminating path with {next_node}.")
 
-                # check that the next node is a definite collider
-                if not graph.is_def_collider(node_next, node_i, node_i_child):
-                    print('Next node is not a definite collider', node_next)
-                    continue
-                
-                # all nodes along a disc. path must be parent of 'c'
-                # else it is the end of a discriminating path
-                if not graph.has_adjacency(node_next, c) and node_next != c:
-                    logger.debug(f'Reached the end of the discriminating path with {node_next}.')
-                    
                     # now check if u is in SepSet(v, c)
-                    if u in sep_set[node_next][c]:
-                        # orient u -> c
-                        graph.remove_edge(c, u)
-                        graph.orient_circle_edge(u, c, "arrow")
+                    # handle edge case where sep_set is empty.
+                    if next_node in sep_set:
+                        if u in sep_set[next_node][c]:
+                            # orient u -> c
+                            graph.remove_edge(c, u)
+                            graph.orient_circle_edge(u, c, "arrow")
                     else:
                         # orient u <-> c
-                        graph.orient_circle_edge(u, c, "arrow")
-                        graph.orient_circle_edge(c, u, "arrow")
+                        if graph.has_circle_edge(u, c):
+                            graph.orient_circle_edge(u, c, "arrow")
+                        if graph.has_circle_edge(c, u):
+                            graph.orient_circle_edge(c, u, "arrow")
                     added_arrows = True
+                    explored_list.append(next_node)
+                    explored_nodes[next_node] = None
                     break
 
-                # update 'c' parents
-                if node_next in cparents:
-                    path.append(node_next)
-                    explored_nodes[node_next] = None
+                # If we didn't reach the end of the discriminating path,
+                # then we can add 'next_node' to the path. This only occurs
+                # if 'next_node' is a valid new entry, which requires it
+                # to be a part of the parents of 'c'.
+                if next_node in cparents:
+                    # since it is a parent, we can now add it to the path queue
+                    path.append(next_node)
+                    explored_list.append(next_node)
+                    explored_nodes[next_node] = None
+
+        # now look for a discriminating path between v and c for u.
+        # path = deque([c])
+        # while not len(path) == 0:
+        #     # get the current node to evaluate
+        #     node_i = path.popleft()
+
+        #     # check distance criterion to prevent checking very long paths
+        #     distance += 1
+        #     if distance > 0 and distance > (
+        #         1000 if self.max_path_length == np.inf else self.max_path_length
+        #     ):
+        #         return added_arrows, explored_nodes
+
+        #     # check all bidirected
+
+        #     # check all parents of node_i to see if we can find
+        #     # a discriminating path
+        #     node_i_pa = graph.parents(node_i)
+        #     for node_next in node_i_pa:
+        #         if node_next in explored_nodes:
+        #             continue
+
+        #         descendant_nodes[node_next] = node_i
+        #         node_i_child = descendant_nodes[node_i]
+
+        #         # check that the next node is a definite collider
+        #         if not graph.is_def_collider(node_next, node_i, node_i_child):
+        #             print('Next node is not a definite collider', node_next)
+        #             continue
+
+        #         # all nodes along a disc. path must be parent of 'c'
+        #         # else it is the end of a discriminating path
+        #         if not graph.has_adjacency(node_next, c) and node_next != c:
+        #             logger.debug(f'Reached the end of the discriminating path with {node_next}.')
+
+        #             # now check if u is in SepSet(v, c)
+        #             if u in sep_set[node_next][c]:
+        #                 # orient u -> c
+        #                 graph.remove_edge(c, u)
+        #                 graph.orient_circle_edge(u, c, "arrow")
+        #             else:
+        #                 # orient u <-> c
+        #                 graph.orient_circle_edge(u, c, "arrow")
+        #                 graph.orient_circle_edge(c, u, "arrow")
+        #             added_arrows = True
+        #             break
+
+        #         # update 'c' parents
+        #         if node_next in cparents:
+        #             path.append(node_next)
+        #             explored_nodes[node_next] = None
         return added_arrows, explored_nodes
 
     def _apply_rule5(self, graph: PAG):
@@ -370,10 +452,10 @@ class FCI(ConstraintDiscovery):
                     r2_add = self._apply_rule2(graph, u, a, c)
                     r3_add = self._apply_rule3(graph, u, a, c)
 
-                    change_flag, _ = any([r1_add, r2_add, r3_add])
-                    
+                    change_flag = any([r1_add, r2_add, r3_add])
+
                     # apply R4, orienting discriminating paths
-                    r4_add = self._apply_rule4(graph, u, a, c, sep_set)
+                    r4_add, _ = self._apply_rule4(graph, u, a, c, sep_set)
 
                     # check if we should continue or not
                     if not all(added_edges for added_edges in [r1_add, r2_add, r3_add, r4_add]):
@@ -399,8 +481,7 @@ class FCI(ConstraintDiscovery):
 
         # convert the undirected skeleton graph to a PAG, where
         # all left-over edges have a "circle" endpoint
-        pag = PAG(incoming_uncertain_data=skel_graph,
-            name="PAG derived with FCI")
+        pag = PAG(incoming_uncertain_data=skel_graph, name="PAG derived with FCI")
 
         # orient colliders
         self._orient_colliders(pag, sep_set)

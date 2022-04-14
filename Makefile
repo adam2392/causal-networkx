@@ -25,7 +25,7 @@ pydocstyle:
 black:
 	@if command -v black > /dev/null; then \
 		echo "Running black"; \
-		black --check causal_networkx examples; \
+		black causal_networkx examples; \
 	else \
 		echo "black not found, please install it!"; \
 		exit 1; \
@@ -50,6 +50,8 @@ run-checks :
 	black --check .
 	flake8 .
 	mypy .
-	pydocstyle codespell-error check-manifest
+	pydocstyle 
+	codespell-error 
+	check-manifest
 	
 # CUDA_VISIBLE_DEVICES='' pytest -v --color=yes --doctest-modules tests/ causal_networkx/

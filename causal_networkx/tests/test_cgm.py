@@ -337,7 +337,7 @@ class TestCausalGraph(TestGraph):
 
     # def test_add_multiple_edges(self):
     #     G = self.G
-        # since there is a directed edge from 
+    # since there is a directed edge from
 
     def test_children_and_parents(self):
         """Test working with children and parents."""
@@ -363,6 +363,7 @@ class TestPAG(TestCausalGraph):
         # 0 -> 1, 0 -> 2 with 1 <--> 0
         super().setup_method()
         self.Graph = PAG
+        print(self.G.dag.edges)
         self.PAG = PAG(self.G.dag)
         # handle the bidirected edge from 0 to 1
         self.PAG.remove_edge(0, 1)
@@ -370,6 +371,16 @@ class TestPAG(TestCausalGraph):
 
         # also setup a PAG with uncertain edges
         self.PAG.add_circle_edge(1, 4, bidirected=True)
+
+    def test_wrong_construction(self):
+        # PAGs only allow one type of edge between any two nodes
+        edge_list = [
+            ("x4", "x1"),
+            ("x2", "x5"),
+        ]
+        latent_edge_list = [("x1", "x2"), ("x4", "x5"), ("x4", "x1")]
+        with pytest.raises(RuntimeError, match="There are multiple edges"):
+            PAG(edge_list, incoming_latent_data=latent_edge_list)
 
     def test_hash_with_circles(self):
         G = self.PAG
@@ -415,6 +426,9 @@ class TestPAG(TestCausalGraph):
 
     def test_m_separation(self):
         G = self.PAG
+        print(G.edges)
+        print(G.bidirected_edges)
+        print(G.circle_edges)
         assert not d_separated(G, 0, 4, set())
         assert not d_separated(G, 0, 4, 1)
 

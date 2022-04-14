@@ -6,6 +6,7 @@ mypy==0.942
 
 # Automatic code formatting
 black==22.3.0
+black[jupyter]
 isort==5.10.1
 
 # Running tests
@@ -44,5 +45,6 @@ packaging
 check-manifest
 pydocstyle
 codespell
+
 # for independence testing
-# scikit-learn
+scikit-learn
