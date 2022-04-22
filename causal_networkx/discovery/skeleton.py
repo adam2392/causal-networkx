@@ -101,7 +101,7 @@ def learn_skeleton_graph(
                 sep_nodes.remove(j)
             else:
                 # perform conditioning independence testing on all combinations
-                sep_nodes = possibly_d_sep_sets(pag, i, j, max_path_length=max_path_length)
+                sep_nodes = possibly_d_sep_sets(pag, i, j, max_path_length=max_path_length)  # type: ignore
 
             # check that number of adjacencies is greater then the
             # cardinality of the conditioning set

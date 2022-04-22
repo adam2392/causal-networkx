@@ -1,6 +1,6 @@
 import logging
 from itertools import combinations, permutations
-from typing import Callable, Dict, Set, Tuple, Union
+from typing import Any, Callable, Dict, Set, Tuple, Union
 
 import networkx as nx
 import numpy as np
@@ -252,7 +252,7 @@ class FCI(ConstraintDiscovery):
                     added_arrows = True
         return added_arrows
 
-    def _apply_rule4(self, graph: PAG, u, a, c, sep_set) -> bool:
+    def _apply_rule4(self, graph: PAG, u, a, c, sep_set) -> Tuple[bool, Dict]:
         """Apply rule 4 of FCI algorithm.
 
         If a path, U = <v, ..., a, u, c> is a discriminating
@@ -283,7 +283,7 @@ class FCI(ConstraintDiscovery):
         ...
         """
         added_arrows = False
-        explored_nodes = dict()
+        explored_nodes: Dict[Any, None] = dict()
 
         # a must point to c for us to begin a discriminating path and
         # not be bi-directional
@@ -412,7 +412,9 @@ class FCI(ConstraintDiscovery):
                 # check that <a, u> is potentially directed
                 if graph.is_possibly_directed(a, u):
                     # check that A - u - v, ..., c is an uncovered pd path
-                    _, path_exists = uncovered_pd_path(graph, u, c, prev_node=a)
+                    _, path_exists = uncovered_pd_path(
+                        graph, u, c, max_path_length=self.max_path_length, prev_node=a
+                    )
 
                     # orient A o-> C to A -> C
                     if path_exists:
@@ -453,7 +455,7 @@ class FCI(ConstraintDiscovery):
             Whether or not arrows were modified in the graph.
         """
         added_arrows = False
-        a_to_u_path = []
+        # a_to_u_path = []
 
         # Check A o-> C
         if graph.has_circle_edge(c, a) and graph.has_edge(a, c):
@@ -470,23 +472,24 @@ class FCI(ConstraintDiscovery):
                         continue
 
                     # get the uncovered pd path from A to u just once
-                    if idx == 0:
-                        a_to_u_path, found_uncovered_pd_path = uncovered_pd_path(graph, a, u)
+                    # if idx == 0:
+                    #     a_to_u_path, found_uncovered_pd_path = uncovered_pd_path(graph, a, u)
 
-                    # get the uncovered pd path from A to v
-                    a_to_v_path, found_uncovered_pd_path = uncovered_pd_path(graph, a, v)
+                    # # get the uncovered pd path from A to v
+                    # a_to_v_path, found_uncovered_pd_path = uncovered_pd_path(
+                    # graph, a, v, max_path_length=self.max_path_length, )
 
                     # check that m and w are distinct
-                    paths_distinct = a_to_u_path[-2] == a_to_v_path[-2]
+                    # paths_distinct = a_to_u_path[-2] == a_to_v_path[-2]
 
                     # orient A o-> C to A -> C
-                    if paths_distinct:
-                        logger.debug(f"Rule 10: Orienting edge {a} o-> {c} to {a} -> {c}.")
-                        graph.orient_circle_edge(c, a, "tail")
-                        added_arrows = True
+                    # if paths_distinct:
+                    #     logger.debug(f"Rule 10: Orienting edge {a} o-> {c} to {a} -> {c}.")
+                    #     graph.orient_circle_edge(c, a, "tail")
+                    #     added_arrows = True
         return added_arrows
 
-    def _apply_rules_1to10(self, graph: PAG, sep_set: Set):
+    def _apply_rules_1to10(self, graph: PAG, sep_set: Dict[str, Dict[str, Set[Any]]]):
         idx = 0
         finished = False
         while idx < self.max_iter and not finished:
@@ -540,7 +543,9 @@ class FCI(ConstraintDiscovery):
                 break
             idx += 1
 
-    def _learn_better_skeleton(self, X, pag: nx.Graph, sep_set: Set, fixed_edges: Set = set()):
+    def _learn_better_skeleton(
+        self, X, pag: nx.Graph, sep_set: Dict[str, Dict[str, Set[Any]]], fixed_edges: Set = set()
+    ):
         from causal_networkx.discovery.skeleton import learn_skeleton_graph
 
         adj_graph = pag.to_adjacency_graph()

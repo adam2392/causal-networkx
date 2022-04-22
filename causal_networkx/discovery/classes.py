@@ -1,6 +1,6 @@
 import itertools
 from collections import defaultdict
-from typing import Callable, Dict, Optional, Set, Union
+from typing import Any, Callable, Dict, Optional, Set, Union
 
 import networkx as nx
 import numpy as np
@@ -14,6 +14,7 @@ from causal_networkx.discovery.skeleton import learn_skeleton_graph
 # TODO: Add ways to initialize graph with edges rather then undirected
 class ConstraintDiscovery:
     graph_: Optional[CausalGraph]
+    separating_sets_: Optional[Dict[str, Dict[str, Set[Any]]]]
 
     def __init__(
         self,
@@ -101,7 +102,11 @@ class ConstraintDiscovery:
         return graph, sep_set, fixed_edges
 
     def _learn_skeleton_from_neighbors(
-        self, X: pd.DataFrame, graph: nx.Graph, sep_set: Set, fixed_edges: Set = set()
+        self,
+        X: pd.DataFrame,
+        graph: nx.Graph,
+        sep_set: Dict[str, Dict[str, Set[Any]]],
+        fixed_edges: Set = set(),
     ):
         """Learns the skeleton of a causal DAG using pairwise independence testing.
 

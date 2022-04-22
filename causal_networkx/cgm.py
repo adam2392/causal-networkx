@@ -1060,7 +1060,7 @@ class PAG(CausalGraph):
             self._check_adding_edge(u, v, edge_type)
 
     def _check_adding_edge(self, u_of_edge, v_of_edge, edge_type):
-        """Check compatability among internal graphs when adding an edge of a certain type.
+        """Check compatibility among internal graphs when adding an edge of a certain type.
 
         Parameters
         ----------

@@ -1,6 +1,7 @@
 import logging
 from collections import deque
 from itertools import chain
+from typing import Any, Dict, List, Optional, Set, Tuple
 from warnings import warn
 
 import networkx as nx
@@ -11,9 +12,7 @@ from causal_networkx.cgm import PAG
 logger = logging.getLogger()
 
 
-def possibly_d_sep_sets(
-    graph: PAG, node_x, node_y=None, max_path_length: int = np.inf
-):
+def possibly_d_sep_sets(graph: PAG, node_x, node_y=None, max_path_length: int = np.inf):
     """Find all PDS sets between node_x and node_y.
 
     Possibly d-separting (PDS) sets are adjacency paths from 'node_x' to
@@ -49,12 +48,12 @@ def possibly_d_sep_sets(
     distance = 0
     edge = None
     # possibly d-sep set
-    dsep = set()
+    dsep: Set[Any] = set()
 
     # a queue to
-    q = deque()
+    q: deque = deque()
     seen_edges = set()
-    node_list = []
+    node_list: Optional[List[Any]] = []
 
     # keep track of previous nodes along the path for every node
     # along a path
@@ -205,9 +204,9 @@ def discriminating_path(graph: PAG, u, a, c, max_path_length: int):
     if max_path_length == np.inf:
         max_path_length = 1000
 
-    explored_nodes = dict()
+    explored_nodes: Dict[Any, None] = dict()
     found_discriminating_path = False
-    disc_path = []
+    disc_path: List[Any] = []
 
     # parents of c form the discriminating path
     cparents = graph.parents(c)
@@ -300,7 +299,7 @@ def discriminating_path(graph: PAG, u, a, c, max_path_length: int):
 
     # return the actual uncovered pd path
     if found_discriminating_path:
-        disc_path = deque([])
+        disc_path = deque([])  # type: ignore
         disc_path.append(next_node)
         while disc_path[-1] != c:
             disc_path.append(descendant_nodes[disc_path[-1]])
@@ -311,7 +310,7 @@ def discriminating_path(graph: PAG, u, a, c, max_path_length: int):
     return explored_nodes, found_discriminating_path, disc_path
 
 
-def uncovered_pd_path(graph: PAG, u, c, max_path_length: int, prev_node=None):
+def uncovered_pd_path(graph: PAG, u, c, max_path_length: int, prev_node=None) -> Tuple[List, bool]:
     """Compute uncovered potentially directed path from a to u to c.
 
     Parameters
@@ -328,9 +327,9 @@ def uncovered_pd_path(graph: PAG, u, c, max_path_length: int, prev_node=None):
     if max_path_length == np.inf:
         max_path_length = 1000
 
-    explored_nodes = dict()
+    explored_nodes: Dict[Any, None] = dict()
     found_uncovered_pd_path = False
-    uncovered_pd_path = []
+    uncovered_pd_path: List[Any] = []
 
     # keep track of the distance searched
     distance = 0
@@ -398,7 +397,7 @@ def uncovered_pd_path(graph: PAG, u, c, max_path_length: int, prev_node=None):
 
     # return the actual uncovered pd path
     if found_uncovered_pd_path:
-        uncovered_pd_path = deque([])
+        uncovered_pd_path = deque([])  # type: ignore
         uncovered_pd_path.append(c)
         while uncovered_pd_path[-1] != u:
             uncovered_pd_path.append(descendant_nodes[uncovered_pd_path[-1]])

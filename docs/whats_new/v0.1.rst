@@ -13,7 +13,7 @@ Version 0.1
 Changelog
 ---------
 
-- Implement and test the FCI algorithm, by `Adam Li`_
+- Implement and test the FCI algorithm, by `Adam Li`_ (:gh:`1`)
 
 Code and Documentation Contributors
 -----------------------------------
