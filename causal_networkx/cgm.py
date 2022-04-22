@@ -4,6 +4,7 @@ from typing import List, Optional, Set
 
 import networkx as nx
 import numpy as np
+import pandas as pd
 from networkx import NetworkXError
 
 from causal_networkx.config import EdgeType
@@ -62,7 +63,7 @@ class NetworkXMixin:
 
     def has_adjacency(self, u, v):
         """Check if there is any edge between u and v."""
-        if any(graph.has_edge(u, v) for graph in self._graphs):
+        if any(graph.has_edge(u, v) or graph.has_edge(v, u) for graph in self._graphs):
             return True
         return False
 
@@ -70,17 +71,9 @@ class NetworkXMixin:
         """Return number of nodes in graph."""
         return len(self.nodes)
 
-    def number_of_edges(self, u=None, v=None):
-        """Return number of directed edges in graph."""
-        return self.dag.number_of_edges(u=u, v=v)
-
     def has_node(self, n):
         """Check if graph has node 'n'."""
         return n in self
-
-    def has_edge(self, u, v):
-        """Check if graph has edge (u, v)."""
-        return self.dag.has_edge(u, v)
 
     def __contains__(self, n):
         """Return True if n is a node, False otherwise. Use: 'n in G'.
@@ -136,75 +129,7 @@ class NetworkXMixin:
 
     def copy(self):
         """Return a copy of the causal graph."""
-        print("\n\n inside copying..")
-        for graph in self._graphs:
-            print(graph.edges)
-
         return self.__class__(*self._graphs, **self.dag.graph)
-
-    def add_edge(self, u_of_edge, v_of_edge, **attr):
-        """Add an edge between u and v.
-
-        The nodes u and v will be automatically added if they are
-        not already in the graph.
-
-        Edge attributes can be specified with keywords or by directly
-        accessing the edge's attribute dictionary. See examples below.
-
-        Parameters
-        ----------
-        u_of_edge, v_of_edge : nodes
-            Nodes can be, for example, strings or numbers.
-            Nodes must be hashable (and not None) Python objects.
-        attr : keyword arguments, optional
-            Edge data (or labels or objects) can be assigned using
-            keyword arguments.
-
-        See Also
-        --------
-        add_edges_from : add a collection of edges
-
-        Notes
-        -----
-        Adding an edge that already exists updates the edge data.
-
-        Many NetworkX algorithms designed for weighted graphs use
-        an edge attribute (by default `weight`) to hold a numerical value.
-
-        Examples
-        --------
-        The following all add the edge e=(1, 2) to graph G:
-
-        >>> G = nx.Graph()  # or DiGraph, MultiGraph, MultiDiGraph, etc
-        >>> e = (1, 2)
-        >>> G.add_edge(1, 2)  # explicit two-node form
-        >>> G.add_edge(*e)  # single edge as tuple of two nodes
-        >>> G.add_edges_from([(1, 2)])  # add edges from iterable container
-
-        Associate data to edges using keywords:
-
-        >>> G.add_edge(1, 2, weight=3)
-        >>> G.add_edge(1, 3, weight=7, capacity=15, length=342.7)
-
-        For non-string attribute keys, use subscript notation.
-
-        >>> G.add_edge(1, 2)
-        >>> G[1][2].update({0: 5})
-        >>> G.edges[1, 2].update({0: 5})
-        """
-        self.dag.add_edge(u_of_edge, v_of_edge, **attr)
-
-    def remove_edges_from(self, ebunch):
-        """Remove directed edges."""
-        self.dag.remove_edges_from(ebunch)
-
-    def remove_edge(self, u, v):
-        """Remove directed edge."""
-        self.dag.remove_edge(u, v)
-
-    def add_edges_from(self, ebunch, **attr):
-        """Add directed edges."""
-        self.dag.add_edges_from(ebunch, **attr)
 
     def order(self):
         """Return the order of the DiGraph."""
@@ -220,6 +145,18 @@ class NetworkXMixin:
 
 
 class GraphSampleMixin:
+    def dummy_sample(self):
+        """Sample an empty dataframe with columns as the nodes.
+
+        Used for oracle testing.
+        """
+        df_values = dict()
+        for node in self.nodes:
+            df_values[node] = []
+
+        df = pd.DataFrame.from_dict(df_values)
+        return df
+
     def sample(self, n=1000):
         """Sample from a graph."""
         df_values = []
@@ -252,7 +189,7 @@ class GraphSampleMixin:
 
 
 # TODO: implement graph views for CausalGraph
-class CausalGraph(NetworkXMixin):
+class CausalGraph(NetworkXMixin, GraphSampleMixin):
     """Initialize a causal graphical model.
 
     This is a causal Bayesian network, where now the edges represent
@@ -370,10 +307,112 @@ class CausalGraph(NetworkXMixin):
         # number of edges allowed between nodes
         self.allowed_edges = np.inf
 
+    def to_adjacency_graph(self):
+        """Compute an adjacency undirected graph.
+
+        Two nodes are considered adjacent if there exist
+        any type of edge between the two nodes.
+        """
+        # form the undirected graph of all inner graphs
+        graph_list = []
+        for graph in self._graphs:
+            graph_list.append(graph.to_undirected())
+
+        adj_graph = graph_list[0]
+        for idx in range(1, len(graph_list)):
+            adj_graph = nx.compose(adj_graph, graph_list[idx])
+        return adj_graph
+
     @property
     def bidirected_edges(self):
         """Directed edges."""
         return self.c_component_graph.edges
+
+    @property
+    def c_components(self) -> List[Set]:
+        """Generate confounded components of the graph.
+
+        TODO: Improve runtime since this iterates over a list twice.
+
+        Returns
+        -------
+        comp : List of sets
+            The c-components.
+        """
+        c_comps = nx.connected_components(self.c_component_graph)
+        return [comp for comp in c_comps if len(comp) > 1]
+
+    def has_edge(self, u, v):
+        """Check if graph has edge (u, v)."""
+        return self.dag.has_edge(u, v)
+
+    def number_of_edges(self):
+        """Return number of edges in graph."""
+        return len(self.edges)
+
+    def add_edge(self, u_of_edge, v_of_edge, **attr):
+        """Add an edge between u and v.
+
+        The nodes u and v will be automatically added if they are
+        not already in the graph.
+
+        Edge attributes can be specified with keywords or by directly
+        accessing the edge's attribute dictionary. See examples below.
+
+        Parameters
+        ----------
+        u_of_edge, v_of_edge : nodes
+            Nodes can be, for example, strings or numbers.
+            Nodes must be hashable (and not None) Python objects.
+        attr : keyword arguments, optional
+            Edge data (or labels or objects) can be assigned using
+            keyword arguments.
+
+        See Also
+        --------
+        add_edges_from : add a collection of edges
+
+        Notes
+        -----
+        Adding an edge that already exists updates the edge data.
+
+        Many NetworkX algorithms designed for weighted graphs use
+        an edge attribute (by default `weight`) to hold a numerical value.
+
+        Examples
+        --------
+        The following all add the edge e=(1, 2) to graph G:
+
+        >>> G = nx.Graph()  # or DiGraph, MultiGraph, MultiDiGraph, etc
+        >>> e = (1, 2)
+        >>> G.add_edge(1, 2)  # explicit two-node form
+        >>> G.add_edge(*e)  # single edge as tuple of two nodes
+        >>> G.add_edges_from([(1, 2)])  # add edges from iterable container
+
+        Associate data to edges using keywords:
+
+        >>> G.add_edge(1, 2, weight=3)
+        >>> G.add_edge(1, 3, weight=7, capacity=15, length=342.7)
+
+        For non-string attribute keys, use subscript notation.
+
+        >>> G.add_edge(1, 2)
+        >>> G[1][2].update({0: 5})
+        >>> G.edges[1, 2].update({0: 5})
+        """
+        self.dag.add_edge(u_of_edge, v_of_edge, **attr)
+
+    def add_edges_from(self, ebunch, **attr):
+        """Add directed edges."""
+        self.dag.add_edges_from(ebunch, **attr)
+
+    def remove_edges_from(self, ebunch):
+        """Remove directed edges."""
+        self.dag.remove_edges_from(ebunch)
+
+    def remove_edge(self, u, v):
+        """Remove directed edge."""
+        self.dag.remove_edge(u, v)
 
     def _edge_error_check(self):
         if not nx.is_directed_acyclic_graph(self.dag):
@@ -385,7 +424,9 @@ class CausalGraph(NetworkXMixin):
 
     def has_bidirected_edge(self, u, v):
         """Check if graph has bidirected edge (u, v)."""
-        return self.c_component_graph.has_edge(u, v)
+        if self.c_component_graph.has_edge(u, v):
+            return True
+        return False
 
     def __str__(self):
         return "".join(
@@ -433,20 +474,6 @@ class CausalGraph(NetworkXMixin):
 
         return self._full_graph
 
-    @property
-    def c_components(self) -> List[Set]:
-        """Generate confounded components of the graph.
-
-        TODO: Improve runtime since this iterates over a list twice.
-
-        Returns
-        -------
-        comp : List of sets
-            The c-components.
-        """
-        c_comps = nx.connected_components(self.c_component_graph)
-        return [comp for comp in c_comps if len(comp) > 1]
-
     def add_bidirected_edge(self, u_of_edge, v_of_edge, **attr) -> None:
         """Add a bidirected edge between u and v.
 
@@ -480,14 +507,12 @@ class CausalGraph(NetworkXMixin):
         if v_of_edge not in self.dag:
             self.dag.add_node(v_of_edge)
 
-        # remove edges if they are in another part of the graph
-        # if self.dag.has_edge(u_of_edge, v_of_edge):
-        #     self.dag.remove_edge(u_of_edge, v_of_edge)
-        # if self.dag.has_edge(v_of_edge, u_of_edge):
-        #     self.dag.remove_edge(v_of_edge, u_of_edge)
-
         # add the bidirected arrow in
         self.c_component_graph.add_edge(u_of_edge, v_of_edge, **attr)
+
+    def add_bidirected_edges_from(self, ebunch, **attr):
+        """Add bidirected edges in a bunch."""
+        self.c_component_graph.add_edges_from(ebunch, **attr)
 
     def remove_bidirected_edge(self, u_of_edge, v_of_edge, remove_isolate: bool = True) -> None:
         """Remove a bidirected edge between u and v.
@@ -526,6 +551,12 @@ class CausalGraph(NetworkXMixin):
     def children(self, n):
         """Return an iterator over children of node n.
 
+        Children of node 'n' are nodes with a directed
+        edge from 'n' to that node. For example,
+        'n' -> 'x', 'n' -> 'y'. Nodes only connected
+        via a bidirected edge are not considered children:
+        'n' <-> 'y'.
+
         Parameters
         ----------
         n : node
@@ -540,6 +571,12 @@ class CausalGraph(NetworkXMixin):
 
     def parents(self, n):
         """Return an iterator over parents of node n.
+
+        Parents of node 'n' are nodes with a directed
+        edge from 'n' to that node. For example,
+        'n' <- 'x', 'n' <- 'y'. Nodes only connected
+        via a bidirected edge are not considered parents:
+        'n' <-> 'y'.
 
         Parameters
         ----------
@@ -750,6 +787,16 @@ class PAG(CausalGraph):
     - circular edges (-o, o-, indicating uncertainty in edge type): `networkx.DiGraph`
     - undirected edges (-, indicating selection bias): `networkx.Graph`. Currently
     not implemented or used.
+
+    Compared to causal graphs, PAGs differ in terms of how parents and children
+    are defined. In causal graphs, there are only two types of edges, either a
+    directed arrow, or bidirected arrow. In PAGs, there are directed arrows with
+    either a circle, or tail on the other end: 'x' o-> 'y'. This now introduces
+    "possible" parents/children denoted with a circle edge on the other end of the
+    arrow and definite parents/children with only an arrow edge.
+
+    Since PAGs only allow "one edge" between any two nodes, adding edges and removing
+    edges have different semantics. See more in `add_edge`, `remove_edge`.
     """
 
     def __init__(
@@ -810,7 +857,7 @@ class PAG(CausalGraph):
     def _check_arrow_edge(self, node, nghbr):
         raise_error = False
         # check that there is no bidirected arrow in either direction
-        if self.has_bidirected_edge(node, nghbr) or self.has_bidirected_edge(nghbr, node):
+        if self.has_bidirected_edge(node, nghbr):
             raise_error = True
 
         # check that there is no directed circle edge in node -o ngbhr
@@ -880,6 +927,112 @@ class PAG(CausalGraph):
             ]
         )
 
+    def possible_parents(self, n):
+        """Return the possible parents of node 'n' in a PAG.
+
+        Possible parents of 'n' are nodes with an edge like
+        'n' <-o 'x'. Nodes with 'n' o-o 'x' are not considered
+        possible parents.
+
+        Parameters
+        ----------
+        n : node
+            A node in the PAG.
+
+        Returns
+        -------
+        parents : Iterator
+            An iterator of the parents of node 'n'.
+
+        See Also
+        --------
+        possible_children
+        parents
+        children
+        """
+        return super().parents(n)
+
+    def possible_children(self, n):
+        """Return the possible children of node 'n' in a PAG.
+
+        Possible children of 'n' are nodes with an edge like
+        'n' o-> 'x'. Nodes with 'n' o-o 'x' are not considered
+        possible children.
+
+        Parameters
+        ----------
+        n : node
+            A node in the causal DAG.
+
+        Returns
+        -------
+        children : Iterator
+            An iterator of the children of node 'n'.
+
+        See Also
+        --------
+        children
+        parents
+        possible_parents
+        """
+        return super().children(n)
+
+    def parents(self, n):
+        """Return the definite parents of node 'n' in a PAG.
+
+        Definite parents are parents of node 'n' with only
+        a directed edge between them from 'n' <- 'x'. For example,
+        'n' <-o 'x' does not qualify 'x' as a parent of 'n'.
+
+        Parameters
+        ----------
+        n : node
+            A node in the causal DAG.
+
+        Returns
+        -------
+        parents : Iterator
+            An iterator of the definite parents of node 'n'.
+
+        See Also
+        --------
+        possible_children
+        children
+        possible_parents
+        """
+        possible_parents = self.possible_parents(n)
+        for node in possible_parents:
+            if not self.has_circle_edge(n, node):
+                yield node
+
+    def children(self, n):
+        """Return the definite children of node 'n' in a PAG.
+
+        Definite children are children of node 'n' with only
+        a directed edge between them from 'n' -> 'x'. For example,
+        'n' o-> 'x' does not qualify 'x' as a children of 'n'.
+
+        Parameters
+        ----------
+        n : node
+            A node in the causal DAG.
+
+        Returns
+        -------
+        children : Iterator
+            An iterator of the children of node 'n'.
+
+        See Also
+        --------
+        possible_children
+        parents
+        possibl_parents
+        """
+        possible_children = self.possible_children(n)
+        for node in possible_children:
+            if not self.has_circle_edge(node, n):
+                yield node
+
     @property
     def circle_edges(self):
         return self.circle_edge_graph.edges
@@ -887,6 +1040,69 @@ class PAG(CausalGraph):
     def number_of_circle_edges(self, u=None, v=None):
         """Return number of bidirected edges in graph."""
         return self.circle_edge_graph.number_of_edges(u=u, v=v)
+
+    def _check_adding_edges(self, ebunch, edge_type):
+        """Check adding edges as a bunch.
+
+        Parameters
+        ----------
+        ebunch : container of edges
+            Each edge given in the container will be added to the
+            graph. The edges must be given as 2-tuples (u, v) or
+            3-tuples (u, v, d) where d is a dictionary containing edge data.
+        edge_type : str of EdgeType
+            The edge type that is being added.
+        """
+        for e in ebunch:
+            if len(e) == 3:
+                raise NotImplementedError("Adding edges with data is not supported yet.")
+            u, v = e
+            self._check_adding_edge(u, v, edge_type)
+
+    def _check_adding_edge(self, u_of_edge, v_of_edge, edge_type):
+        """Check compatability among internal graphs when adding an edge of a certain type.
+
+        Parameters
+        ----------
+        u_of_edge : node
+            The start node.
+        v_of_edge : node
+            The end node.
+        edge_type : str of EdgeType
+            The edge type that is being added.
+        """
+        raise_error = False
+        if edge_type == EdgeType.circle.value:
+            # there should not be an existing arrow
+            # nor a bidirected arrow
+            if self.has_edge(u_of_edge, v_of_edge) or self.has_bidirected_edge(
+                u_of_edge, v_of_edge
+            ):
+                raise_error = True
+        elif edge_type == EdgeType.arrow.value:
+            # there should not be a circle edge, or a bidirected edge
+            if self.has_circle_edge(u_of_edge, v_of_edge) or self.has_bidirected_edge(
+                u_of_edge, v_of_edge
+            ):
+                raise_error = True
+            if self.has_edge(v_of_edge, u_of_edge):
+                raise RuntimeError(
+                    f"There is an existing {v_of_edge} -> {u_of_edge}. You are "
+                    f"trying to add a directed edge from {u_of_edge} -> {v_of_edge}. "
+                    f"If your intention is to create a bidirected edge, first remove the "
+                    f"edge and then explicitly add the bidirected edge."
+                )
+        elif edge_type == EdgeType.bidirected.value:
+            # there should not be any type of edge between the two
+            if self.has_adjacency(u_of_edge, v_of_edge):
+                raise_error = True
+
+        if raise_error:
+            raise RuntimeError(
+                f"There is already an existing edge between {u_of_edge} and {v_of_edge}. "
+                f"Adding a {edge_type} edge is not possible. Please remove the existing "
+                f"edge first."
+            )
 
     def add_circle_edge(self, u_of_edge, v_of_edge, bidirected: bool = False):
         """Add a circle edge between u and v.
@@ -909,6 +1125,8 @@ class PAG(CausalGraph):
         add_edge
 
         """
+        self._check_adding_edge(u_of_edge, v_of_edge, EdgeType.circle.value)
+
         if not self.dag.has_edge(v_of_edge, u_of_edge) and not bidirected:
             raise RuntimeError(
                 f"There is no directed edge from {v_of_edge} to {u_of_edge}. "
@@ -942,7 +1160,7 @@ class PAG(CausalGraph):
         See Also
         --------
         add_edge : add a single edge
-        add_uncertain_edge : convenient way to add uncertain edges
+        add_circle_edge : convenient way to add uncertain edges
 
         Notes
         -----
@@ -961,7 +1179,24 @@ class PAG(CausalGraph):
         >>> G.add_edges_from([(1, 2), (2, 3)], weight=3)
         >>> G.add_edges_from([(3, 4), (1, 4)], label="WN2898")
         """
+        self._check_adding_edges(ebunch_to_add, EdgeType.circle.value)
         self.circle_edge_graph.add_edges_from(ebunch_to_add)
+
+    def add_edge(self, u_of_edge, v_of_edge, **attr):
+        self._check_adding_edge(u_of_edge, v_of_edge, EdgeType.arrow.value)
+        return super().add_edge(u_of_edge, v_of_edge, **attr)
+
+    def add_edges_from(self, ebunch, **attr):
+        self._check_adding_edges(ebunch, EdgeType.arrow.value)
+        return super().add_edges_from(ebunch, **attr)
+
+    def add_bidirected_edge(self, u_of_edge, v_of_edge, **attr) -> None:
+        self._check_adding_edge(u_of_edge, v_of_edge, EdgeType.bidirected.value)
+        return super().add_bidirected_edge(u_of_edge, v_of_edge, **attr)
+
+    def add_bidirected_edges_from(self, ebunch, **attr):
+        self._check_adding_edges(ebunch, EdgeType.bidirected.value)
+        return super().add_bidirected_edges_from(ebunch, **attr)
 
     def remove_circle_edge(self, u, v, bidirected: bool = False):
         self.circle_edge_graph.remove_edge(u, v)
@@ -995,7 +1230,6 @@ class PAG(CausalGraph):
             )
 
         if not self.has_circle_edge(u, v):
-            print(self.all_edges())
             raise RuntimeError(f"There is no circle edge between {u} and {v}.")
 
         # If there is a circle edge from u -o v, then
@@ -1008,7 +1242,7 @@ class PAG(CausalGraph):
         elif self.has_edge(v, u) and edge_type == EdgeType.tail.value:
             # when we orient (u,v) now as a tail, we just need to remove the circle edge
             self.remove_circle_edge(u, v)
-        elif self.has_circle_edge(v, u):
+        elif self.has_circle_edge(v, u) or self.has_circle_edge(u, v):
             # In this case, we have a bidirected circle edge
             # we only need to remove the circle edge and orient
             # it as a normal edge
@@ -1016,39 +1250,6 @@ class PAG(CausalGraph):
             self.add_edge(u, v)
         else:  # noqa
             raise RuntimeError("The current PAG is invalid.")
-
-    def children(self, n):
-        """Return an iterator over children of node n.
-
-        Parameters
-        ----------
-        n : node
-            A node in the causal DAG.
-
-        Returns
-        -------
-        children : Iterator
-            An iterator of the children of node 'n'.
-        """
-        return self.successors(n)
-
-    def parents(self, n):
-        """Return an iterator over parents of node n.
-
-        Parents in a PAG of node 'n' are nodes that have
-        'a' -> 'n', direct edges pointing to 'n'.
-
-        Parameters
-        ----------
-        n : node
-            A node in the causal DAG.
-
-        Returns
-        -------
-        parents : Iterator
-            An iterator of the parents of node 'n'.
-        """
-        return self.dag.predecessors(n)
 
     def compute_full_graph(self, to_networkx: bool = False):
         """Computes the full graph from a PAG.
@@ -1106,14 +1307,6 @@ class PAG(CausalGraph):
         """Draw the graph."""
         pass
 
-    def possible_children(self, n):
-        """Possible children of node 'n'."""
-        pass
-
-    def possible_parents(self, n):
-        """Possible parents of node 'n'."""
-        pass
-
     def pc_components(self):
         """Possible c-components."""
         pass
@@ -1167,6 +1360,10 @@ class PAG(CausalGraph):
         condition_two = self.has_edge(node2, node1, "arrow") and not self.has_edge(node1, node2)
         return condition_one or condition_two
 
+    def is_possibly_directed(self, u, v):
+        """Check that there is a possibly directed edge from u to v."""
+        return not (self.has_edge(u, v) or self.has_bidirected_edge(u, v))
+
     def is_edge_visible(self, u, v):
         """Check if edge (u, v) is visible, or not."""
         pass
@@ -1183,3 +1380,19 @@ class PAG(CausalGraph):
             if u in graph:
                 nghbrs.extend(list(graph.neighbors(u)))
         return nghbrs
+
+    def print_edge(self, u, v):
+        return_str = ""
+        if self.has_edge(u, v):
+            if self.has_circle_edge(v, u):
+                return_str = f"{u} o-> {v}"
+            else:
+                return_str = f"{u} -> {v}"
+        elif self.has_bidirected_edge(u, v):
+            return_str = f"{u} <-> {v}"
+        elif self.has_circle_edge(u, v):
+            if self.has_edge(v, u):
+                return_str = f"{u} <-o {v}"
+            else:
+                return_str = f"{u} o-o {v}"
+        return return_str

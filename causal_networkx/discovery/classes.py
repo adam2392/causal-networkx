@@ -61,32 +61,7 @@ class ConstraintDiscovery:
         self.separating_sets_ = None
         self.graph_ = None
 
-    def _learn_skeleton(self, X: pd.DataFrame):
-        """Learns the skeleton of a causal DAG using pairwise independence testing.
-
-        Encodes the skeleton via an undirecte graph, `nx.Graph`.
-
-        Parameters
-        ----------
-        X : pd.DataFrame
-            The data with columns as variables and samples as rows.
-
-        Returns
-        -------
-        skel_graph : nx.Graph
-            The undirected graph of the causal graph's skeleton.
-        sep_set : dict of dict of set
-            The separating set per pairs of variables.
-
-        Raises
-        ------
-        ValueError
-            If the nodes in the initialization graph do not match the variable
-            names in passed in data, ``X``.
-        ValueError
-            If the nodes in the fixed-edge graph do not match the variable
-            names in passed in data, ``X``.
-        """
+    def _initialize_graph(self, X):
         nodes = X.columns.values
 
         # keep track of separating sets
@@ -123,7 +98,44 @@ class ConstraintDiscovery:
             for (i, j) in self.fixed_edges.edges:
                 fixed_edges.add((i, j))
                 fixed_edges.add((j, i))
+        return graph, sep_set, fixed_edges
 
+    def _learn_skeleton_from_neighbors(
+        self, X: pd.DataFrame, graph: nx.Graph, sep_set: Set, fixed_edges: Set = set()
+    ):
+        """Learns the skeleton of a causal DAG using pairwise independence testing.
+
+        Encodes the skeleton via an undirected graph, `nx.Graph`. Only
+        tests with adjacent nodes in the conditioning set.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            The data with columns as variables and samples as rows.
+        graph : nx.Graph
+            The undirected graph containing initialized skeleton of the causal
+            relationships.
+        sep_set : set
+            The separating set.
+        fixed_edges : set, optional
+            The set of fixed edges. By default, is the empty set.
+
+        Returns
+        -------
+        skel_graph : nx.Graph
+            The undirected graph of the causal graph's skeleton.
+        sep_set : dict of dict of set
+            The separating set per pairs of variables.
+
+        Raises
+        ------
+        ValueError
+            If the nodes in the initialization graph do not match the variable
+            names in passed in data, ``X``.
+        ValueError
+            If the nodes in the fixed-edge graph do not match the variable
+            names in passed in data, ``X``.
+        """
         # perform pairwise tests to learn skeleton
         skel_graph, sep_set = learn_skeleton_graph(
             X,
@@ -132,6 +144,8 @@ class ConstraintDiscovery:
             sep_set,
             self.ci_estimator,
             self.alpha,
+            max_cond_set_size=self.max_cond_set_size,
+            only_neighbors=True,
             **self.ci_estimator_kwargs,
         )
         return skel_graph, sep_set

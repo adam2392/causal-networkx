@@ -1,2 +1,2 @@
-from .ic import FCI
+from .fcialg import FCI
 from .pcalg import PC

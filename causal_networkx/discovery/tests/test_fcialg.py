@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from causal_networkx.algorithms import d_separated, possibly_d_sep_sets
 from causal_networkx.cgm import PAG, CausalGraph
 from causal_networkx.ci import Oracle
 from causal_networkx.discovery import FCI
@@ -42,12 +43,12 @@ class Test_FCI:
 
     def test_fci_skel_graph(self):
         sample = self.scm.sample(n=1, include_latents=False)
-        skel_graph, _ = self.alg._learn_skeleton(sample)
+        skel_graph, _ = self.alg.learn_skeleton(sample)
         assert list(skel_graph.edges) == [("x", "y"), ("z", "y")]
 
     def test_fci_basic_collider(self):
         sample = self.scm.sample(n=1, include_latents=False)
-        skel_graph, sep_set = self.alg._learn_skeleton(sample)
+        skel_graph, sep_set = self.alg.learn_skeleton(sample)
         graph = PAG(incoming_uncertain_data=skel_graph)
         self.alg._orient_colliders(graph, sep_set)
 
@@ -59,8 +60,11 @@ class Test_FCI:
         assert set(expected_graph.circle_edges) == set(graph.circle_edges)
 
     def test_fci_rule1(self):
-        # If A *-> u o-o C, A and C are not adjacent,
+        # If A *-> u o-* C, A and C are not adjacent,
         # then we can orient the triple as A *-> u -> C.
+
+        # First test:
+        # A -> u o-o C
         G = PAG()
         G.add_edge("A", "u")
         G.add_circle_edge("u", "C", bidirected=True)
@@ -68,15 +72,44 @@ class Test_FCI:
 
         self.alg._apply_rule1(G, "u", "A", "C")
         assert G.has_edge("u", "C")
+        assert not G.has_circle_edge("C", "u")
         assert not G.has_edge("C", "u")
         assert not G.has_edge("u", "A")
 
+        # orient u o-o C now as u o-> C
+        # Second test:
+        # A -> u o-> C
         G = G_copy.copy()
-        G.add_edge("u", "A")
+        G.orient_circle_edge("u", "C", "arrow")
         self.alg._apply_rule1(G, "u", "A", "C")
         assert G.has_edge("u", "C")
+        assert not G.has_circle_edge("C", "u")
         assert not G.has_edge("C", "u")
-        assert G.has_edge("u", "A")
+        assert not G.has_edge("u", "A")
+
+        # now orient A -> u as A <-> u
+        # Third test:
+        # A <-> u o-o C
+        G = G_copy.copy()
+        G.remove_edge("A", "u")
+        G.add_bidirected_edge("u", "A")
+        self.alg._apply_rule1(G, "u", "A", "C")
+        assert G.has_edge("u", "C")
+        assert not G.has_circle_edge("C", "u")
+        assert not G.has_edge("C", "u")
+        assert G.has_bidirected_edge("u", "A")
+
+        # now orient A -> u as A <-> u
+        # Fourth test:
+        # A o-> u o-o C
+        G = G_copy.copy()
+        G.add_circle_edge("u", "A")
+        G.orient_circle_edge("u", "C", "arrow")
+        self.alg._apply_rule1(G, "u", "A", "C")
+        assert G.has_edge("u", "C")
+        assert not G.has_circle_edge("C", "u")
+        assert not G.has_edge("C", "u")
+        assert G.has_circle_edge("u", "A")
 
     def test_fci_rule2(self):
         # If A -> u *-> C, or A *-> u -> C, and A *-o C, then
@@ -90,6 +123,14 @@ class Test_FCI:
 
         self.alg._apply_rule2(G, "u", "A", "C")
         assert G.has_edge("A", "C")
+        assert G.has_circle_edge("C", "A")
+
+        # if A o-> u, then it should not work
+        G = G_copy.copy()
+        G.add_circle_edge("u", "A")
+        added_arrows = self.alg._apply_rule2(G, "u", "A", "C")
+        assert not added_arrows
+        assert G.has_circle_edge("A", "C")
         assert G.has_circle_edge("C", "A")
 
         # 2. Test not-added case
@@ -134,6 +175,19 @@ class Test_FCI:
                 assert not G.has_circle_edge(*edge)
         assert G.has_edge("v", "u")
 
+        # if A -> u is A <-> u, then it should still work
+        G = G_copy.copy()
+        G.remove_edge("A", "u")
+        G.add_bidirected_edge("A", "u")
+        added_arrows = self.alg._apply_rule3(G, "u", "A", "C")
+        assert added_arrows
+
+        # adding a circle edge should make it not work
+        G = G_copy.copy()
+        G.add_circle_edge("A", "C", bidirected=True)
+        added_arrows = self.alg._apply_rule3(G, "u", "A", "C")
+        assert not added_arrows
+
     def test_fci_rule4_without_sepset(self):
         """Test orienting a discriminating path without separating set.
 
@@ -147,6 +201,7 @@ class Test_FCI:
         """
         G = PAG()
 
+        # setup graph with a <-> u o-o c
         G.add_circle_edge("u", "c", bidirected=True)
         G.add_bidirected_edge("a", "u")
         sep_set = set()
@@ -158,6 +213,7 @@ class Test_FCI:
 
         # now add another variable, but since a is not a parent of c
         # this is still not a discriminating path
+        # setup graph with b <-> a <-> u o-o c
         G.add_bidirected_edge("b", "a")
         added_arrows, explored_nodes = self.alg._apply_rule4(G, "u", "a", "c", sep_set)
         assert not added_arrows
@@ -184,11 +240,24 @@ class Test_FCI:
         assert not G.has_circle_edge("c", "u")
         assert G.has_bidirected_edge("c", "u")
 
+    def test_fci_rule4_early_exit(self):
+        G = PAG()
+
+        G.add_circle_edge("u", "c", bidirected=True)
+        G.add_bidirected_edge("a", "u")
+        sep_set = set()
+
+        # now add another variable, but since a is not a parent of c
+        # this is still not a discriminating path
+        G.add_bidirected_edge("b", "a")
+        G.add_edge("a", "c")
+        G.add_edge("b", "c")
+        G.add_edge("d", "b")
+
         # test error case
-        fci = FCI(ci_estimator=self.ci_estimator, max_path_length=1)
-        print(fci.max_path_length)
-        with pytest.warns(RuntimeWarning, match='Did not finish checking'):
-            fci._apply_rule4(G, "u", "a", "c", sep_set)
+        new_fci = FCI(ci_estimator=self.ci_estimator, max_path_length=1)
+        with pytest.warns(UserWarning, match="Did not finish checking"):
+            new_fci._apply_rule4(G, "u", "a", "c", sep_set)
 
     def test_fci_rule4_wit_sepset(self):
         """Test orienting a discriminating path with a separating set.
@@ -205,7 +274,7 @@ class Test_FCI:
 
         G.add_circle_edge("u", "c", bidirected=True)
         G.add_bidirected_edge("a", "u")
-        sep_set = set()
+        sep_set = {"b": {"c": set("u")}}
 
         # initial test should not add any arrows, since there are only 2 edges
         added_arrows, explored_nodes = self.alg._apply_rule4(G, "u", "a", "c", sep_set)
@@ -225,10 +294,9 @@ class Test_FCI:
         added_arrows, explored_nodes = self.alg._apply_rule4(G, "u", "a", "c", sep_set)
         assert added_arrows
         assert list(explored_nodes.keys()) == ["c", "u", "a", "b"]
-
-        # since separating set is empty
         assert not G.has_circle_edge("c", "u")
-        assert G.has_bidirected_edge("c", "u")
+        assert not G.has_edge("c", "u")
+        assert G.has_edge("u", "c")
 
         # change 'u' o-o 'c' to 'u' o-> 'c', which should now orient
         # the same way
@@ -238,9 +306,13 @@ class Test_FCI:
         assert added_arrows
         assert list(explored_nodes.keys()) == ["c", "u", "a", "b"]
         assert not G.has_circle_edge("c", "u")
-        assert G.has_bidirected_edge("c", "u")
+        assert not G.has_edge("c", "u")
+        assert G.has_edge("u", "c")
 
     def test_fci_unobserved_confounder(self):
+        # x4 -> x2 <- x1 <- x3
+        # x1 <--> x2
+        # x4 | x1,
         edge_list = [
             ("x4", "x2"),
             ("x3", "x1"),
@@ -258,21 +330,66 @@ class Test_FCI:
         fci.fit(sample)
         pag = fci.graph_
 
+        print(fci.skel_graph.edges)
+
         expected_pag = PAG()
-        expected_pag.add_bidirected_edge("x1", "x2")
-        expected_pag.add_edges_from([("x4", "x2"), ("x3", "x1")])
+        expected_pag.add_edges_from(
+            [
+                ("x4", "x2"),
+                ("x1", "x2"),
+                ("x3", "x2"),
+            ]
+        )
+        expected_pag.add_circle_edges_from(
+            [("x2", "x4"), ("x2", "x3"), ("x2", "x1"), ("x1", "x3"), ("x3", "x1")]
+        )
+
+        assert set(pag.edges) == set(expected_pag.edges)
+        assert set(pag.bidirected_edges) == set(expected_pag.bidirected_edges)
+        assert set(pag.circle_edges) == set(expected_pag.circle_edges)
 
         expected_pag_digraph = expected_pag.compute_full_graph(to_networkx=True)
         pag_digraph = pag.compute_full_graph(to_networkx=True)
-        print(pag.edges)
-        print(pag.circle_edges)
-        print(pag.bidirected_edges)
-
-        print(expected_pag.edges)
-        print(expected_pag.circle_edges)
-        print(expected_pag.bidirected_edges)
-
         assert nx.is_isomorphic(pag_digraph, expected_pag_digraph)
+
+    def test_fci_spirtes_example(self):
+        """Test example in book.
+
+        See book Figure 16
+
+        See: https://www.cs.cmu.edu/afs/cs.cmu.edu/project/learn-43/lib/photoz/.g/web/.g/scottd/fullbook.pdf
+        """
+        # reconstruct the PAG the way FCI would
+        edge_list = [("D", "A"), ("B", "E"), ("F", "B"), ("C", "F"), ("C", "H"), ("H", "D")]
+        latent_edge_list = [("A", "B"), ("D", "E")]
+        graph = CausalGraph(edge_list, latent_edge_list)
+        alg = FCI(ci_estimator=Oracle(graph).ci_test)
+
+        sample = graph.dummy_sample()
+        alg.fit(sample)
+        pag = alg.graph_
+
+        # generate the expected PAG
+        edge_list = [
+            ("D", "A"),
+            ("B", "E"),
+            ("H", "D"),
+            ("F", "B"),
+        ]
+        latent_edge_list = [("A", "B"), ("D", "E")]
+        uncertain_edge_list = [
+            ("B", "F"),
+            ("F", "C"),
+            ("C", "F"),
+            ("C", "H"),
+            ("H", "C"),
+            ("D", "H"),
+        ]
+        expected_pag = PAG(edge_list, latent_edge_list, uncertain_edge_list)
+
+        assert set(expected_pag.bidirected_edges) == set(pag.bidirected_edges)
+        assert set(expected_pag.edges) == set(pag.edges)
+        assert set(expected_pag.circle_edges) == set(pag.circle_edges)
 
     def test_fci_complex(self):
         """
@@ -306,6 +423,10 @@ class Test_FCI:
         fci.fit(sample)
         pag = fci.graph_
 
+        assert d_separated(G, "x1", "x3", "x4")
+        pdsep = possibly_d_sep_sets(G, "x1", "x3")
+        assert "x2" in pdsep
+
         expected_pag = PAG()
         expected_pag.add_circle_edges_from([("x6", "x5"), ("x2", "x3"), ("x4", "x3"), ("x6", "x4")])
         expected_pag.add_edges_from(
@@ -323,13 +444,10 @@ class Test_FCI:
         expected_pag.add_bidirected_edge("x1", "x2")
         expected_pag.add_bidirected_edge("x4", "x5")
 
-        for dat in pag.edges.data():
-            print(dat)
-        print("\n\n now expected...")
-        for dat in expected_pag.edges.data():
-            print(dat)
-        # assert nx.is_isomorphic(pag, expected_pag)
-
-        assert set(pag.circle_edges) == set(expected_pag.circle_edges)
-        assert set(pag.edges) == set(expected_pag.edges)
+        print(pag.to_adjacency_graph().edges)
+        print(pag.edges)
+        print(pag.bidirected_edges)
+        print(pag.circle_edges)
         assert set(pag.bidirected_edges) == set(expected_pag.bidirected_edges)
+        assert set(pag.edges) == set(expected_pag.edges)
+        assert set(pag.circle_edges) == set(expected_pag.circle_edges)
