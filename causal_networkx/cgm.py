@@ -188,8 +188,16 @@ class GraphSampleMixin:
         # return result_df
 
 
+class AddingEdgeMixin:
+    def add_chain(self, node_chain):
+        ebunch = []
+        for idx, node in enumerate(node_chain[:-1]):
+            ebunch.append((node, node_chain[idx + 1]))
+        self.add_edges_from(ebunch)
+
+
 # TODO: implement graph views for CausalGraph
-class CausalGraph(NetworkXMixin, GraphSampleMixin):
+class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
     """Initialize a causal graphical model.
 
     This is a causal Bayesian network, where now the edges represent
@@ -1359,10 +1367,6 @@ class PAG(CausalGraph):
         condition_one = self.has_edge(node2, node3, "arrow") and not self.has_edge(node3, node2)
         condition_two = self.has_edge(node2, node1, "arrow") and not self.has_edge(node1, node2)
         return condition_one or condition_two
-
-    def is_possibly_directed(self, u, v):
-        """Check that there is a possibly directed edge from u to v."""
-        return not (self.has_edge(u, v) or self.has_bidirected_edge(u, v))
 
     def is_edge_visible(self, u, v):
         """Check if edge (u, v) is visible, or not."""

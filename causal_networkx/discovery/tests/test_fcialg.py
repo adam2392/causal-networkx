@@ -309,6 +309,88 @@ class Test_FCI:
         assert not G.has_edge("c", "u")
         assert G.has_edge("u", "c")
 
+    def test_fci_rule8_without_selection_bias(self):
+        # If A -> u -> C and A o-> C
+        # orient A o-> C as A -> C
+        G = PAG()
+
+        # create a chain for A, u, C
+        G.add_chain(["A", "u", "C"])
+        G.add_edge("A", "C")
+        G.add_circle_edge("C", "A")
+        self.alg._apply_rule8(G, "u", "A", "C")
+
+        assert G.has_edge("A", "C")
+        assert not G.has_circle_edge("C", "A")
+
+    def test_fci_rule9(self):
+        # If A o-> C and there is an undirected pd path
+        # from A to C through u, where u and C are not adjacent
+        # then orient A o-> C as A -> C
+        G = PAG()
+
+        # create an uncovered pd path from A to C through u
+        G.add_edge("A", "C")
+        G.add_circle_edge("C", "A")
+        G.add_chain(["A", "u", "x", "y", "z", "C"])
+        G.add_circle_edge("y", "x")
+
+        # create a pd path from A to C through v
+        G.add_chain(["A", "v", "x", "y", "z", "C"])
+        # with the bidirected edge, v,x,y is a shielded triple
+        G.add_bidirected_edge("v", "y")
+        G_copy = G.copy()
+
+        # get the uncovered pd paths
+        added_arrows, uncov_pd_path = self.alg._apply_rule9(G, "u", "A", "C")
+        assert added_arrows
+        assert uncov_pd_path == ["A", "u", "x", "y", "z", "C"]
+        assert not G.has_circle_edge("C", "A")
+
+        # the shielded triple should not result in an uncovered pd path
+        G = G_copy.copy()
+        added_arrows, uncov_pd_path = self.alg._apply_rule9(G, "v", "A", "C")
+        assert not added_arrows
+        assert uncov_pd_path == []
+        assert G.has_circle_edge("C", "A")
+
+        # when there is a circle edge it should still work
+        G = G_copy.copy()
+        G.add_circle_edge("C", "z")
+        added_arrows, uncov_pd_path = self.alg._apply_rule9(G, "u", "A", "C")
+        assert added_arrows
+        assert uncov_pd_path == ["A", "u", "x", "y", "z", "C"]
+        assert not G.has_circle_edge("C", "A")
+
+    @pytest.mark.skip()
+    def test_fci_rule10(self):
+        # If A o-> C and u -> C <- v and:
+        # - there is an uncovered pd path from A to u, p1
+        # - there is an uncovered pd from from A to v, p2
+        # if mu adjacent to A on p1 is distinct from w adjacent to A on p2
+        # and mu is not adjacent to w, then orient orient A o-> C as A -> C
+        G = PAG()
+
+        # create an uncovered pd path from A to u
+        G.add_edge("A", "C")
+        G.add_circle_edge("C", "A")
+        G.add_chain(["A", "x", "y", "z", "u", "C"])
+        G.add_circle_edge("y", "x")
+        # G_copy = G.copy()
+
+        # create a pd path from A to v so now C is a collider
+        G.add_chain(["A", "x", "y", "z", "v", "C"])
+
+        # 'x' and 'x' are not distinct, so won't orient
+        # added_arrows, uncov_path = self.alg._apply_rule10(G, 'u', 'A', 'C')
+        # assert not added_arrows
+        # assert uncov_path == []
+        # assert G.has_circle_edge('C', 'A')
+
+        # # if we create an edge from A -> y, there is now a distinction
+        # G = G_copy.copy()
+        # added_arrows, uncov_path = self.alg._apply_rule10(G, 'u', 'A', 'C')
+
     def test_fci_unobserved_confounder(self):
         # x4 -> x2 <- x1 <- x3
         # x1 <--> x2
@@ -424,7 +506,7 @@ class Test_FCI:
         pag = fci.graph_
 
         assert d_separated(G, "x1", "x3", "x4")
-        pdsep = possibly_d_sep_sets(G, "x1", "x3")
+        pdsep = possibly_d_sep_sets(pag, "x1", "x3")
         assert "x2" in pdsep
 
         expected_pag = PAG()

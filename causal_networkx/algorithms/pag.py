@@ -156,19 +156,6 @@ def possibly_d_sep_sets(graph: PAG, node_x, node_y=None, max_path_length: int = 
     return dsep
 
 
-def _distance_to_root(next_node, root, descendants):
-    descendants = descendants.copy()
-    distance = 0
-
-    while descendants.get(next_node) is not None:
-        this_node = descendants.get(next_node)
-        distance += 1
-        if this_node == root:
-            break
-
-    return distance
-
-
 def discriminating_path(graph: PAG, u, a, c, max_path_length: int):
     """Find the discriminating path for <..., a, u, c>.
 
@@ -310,8 +297,15 @@ def discriminating_path(graph: PAG, u, a, c, max_path_length: int):
     return explored_nodes, found_discriminating_path, disc_path
 
 
-def uncovered_pd_path(graph: PAG, u, c, max_path_length: int, prev_node=None) -> Tuple[List, bool]:
-    """Compute uncovered potentially directed path from a to u to c.
+def uncovered_pd_path(
+    graph: PAG, u, c, max_path_length: int, first_node=None, second_node=None
+) -> Tuple[List, bool]:
+    """Compute uncovered potentially directed path from u to c.
+
+    An uncovered pd path is one where: u o-> ... -> c. There are no
+    bidirected arrows, bidirected circle arrows, or opposite arrows.
+    In addition, every node beside the endpoints are unshielded,
+    meaning V(i-1) and V(i+1) are not adjacent.
 
     Parameters
     ----------
@@ -323,13 +317,23 @@ def uncovered_pd_path(graph: PAG, u, c, max_path_length: int, prev_node=None) ->
         A node in the graph.
     max_path_length : int
         The maximum distance to check in the graph.
+    first_node : node, optional
+        The node previous to u. If it is before 'u', then we will check
+        that 'u' is unshielded. If it is not passed, then 'u' is considered
+        the first node in the path and hence does not need to be unshielded.
+
+    Notes
+    -----
+    Typically uncovered potentially directed paths are defined by two nodes. However,
+    in its common use case within the FCI algorithm, it is usually defined relative
+    to an adjacent third node that comes before 'u'.
     """
     if max_path_length == np.inf:
         max_path_length = 1000
 
     explored_nodes: Dict[Any, None] = dict()
     found_uncovered_pd_path = False
-    uncovered_pd_path: List[Any] = []
+    uncov_pd_path: List[Any] = []
 
     # keep track of the distance searched
     distance = 0
@@ -337,8 +341,10 @@ def uncovered_pd_path(graph: PAG, u, c, max_path_length: int, prev_node=None) ->
     # keep track of the previous nodes, i.e. to build a path
     # from node (key) to its child along the path (value)
     descendant_nodes = dict()
-    if prev_node is not None:
-        descendant_nodes[u] = prev_node
+    if first_node is not None:
+        descendant_nodes[u] = first_node
+    if second_node is not None:
+        descendant_nodes[first_node] = second_node
 
     # keep track of paths of certain nodes that were already explored
     # start off with the valid triple <a, u, c>
@@ -347,6 +353,8 @@ def uncovered_pd_path(graph: PAG, u, c, max_path_length: int, prev_node=None) ->
     # - TBD a is a definite collider
     # - TBD endpoint is not adjacent to c
     explored_nodes[u] = None
+    if first_node is not None:
+        explored_nodes[first_node] = None
 
     # now add 'a' to the queue and begin exploring
     # adjacent nodes that are connected with bidirected edges
@@ -362,7 +370,7 @@ def uncovered_pd_path(graph: PAG, u, c, max_path_length: int, prev_node=None) ->
                 f"Did not finish checking discriminating path in {graph} because the path "
                 f"length exceeded {max_path_length}."
             )
-            return uncovered_pd_path, found_uncovered_pd_path
+            return uncov_pd_path, found_uncovered_pd_path
 
         # get all adjacent nodes to 'this_node'
         for next_node in graph.neighbors(this_node):
@@ -378,7 +386,7 @@ def uncovered_pd_path(graph: PAG, u, c, max_path_length: int, prev_node=None) ->
 
             # now check that the triple is potentially directed, else
             # we skip this node
-            if not graph.is_possibly_directed(this_node, next_node):
+            if not graph.has_edge(this_node, next_node):
                 continue
 
             # now this next node is potentially directed, does not
@@ -396,9 +404,12 @@ def uncovered_pd_path(graph: PAG, u, c, max_path_length: int, prev_node=None) ->
             path.append(next_node)
 
     # return the actual uncovered pd path
+    if first_node is None:
+        first_node = u
     if found_uncovered_pd_path:
-        uncovered_pd_path = deque([])  # type: ignore
-        uncovered_pd_path.append(c)
-        while uncovered_pd_path[-1] != u:
-            uncovered_pd_path.append(descendant_nodes[uncovered_pd_path[-1]])
-    return uncovered_pd_path, found_uncovered_pd_path
+        uncov_pd_path = deque([])  # type: ignore
+        uncov_pd_path.appendleft(c)  # type: ignore
+        while uncov_pd_path[0] != first_node:
+            uncov_pd_path.appendleft(descendant_nodes[uncov_pd_path[0]])  # type: ignore
+        uncov_pd_path = list(uncov_pd_path)
+    return uncov_pd_path, found_uncovered_pd_path

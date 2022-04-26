@@ -1,6 +1,10 @@
 from itertools import permutations
 
-from causal_networkx.algorithms import discriminating_path, possibly_d_sep_sets
+from causal_networkx.algorithms import (
+    discriminating_path,
+    possibly_d_sep_sets,
+    uncovered_pd_path,
+)
 from causal_networkx.cgm import PAG, CausalGraph
 from causal_networkx.ci import Oracle
 from causal_networkx.discovery import FCI
@@ -125,3 +129,37 @@ def test_discriminating_path():
         pag, "x3", "x2", "x6", max_path_length=100
     )
     assert found_discriminating_path
+
+
+def test_uncovered_pd_path():
+    # If A o-> C and there is an undirected pd path
+    # from A to C through u, where u and C are not adjacent
+    # then orient A o-> C as A -> C
+    G = PAG()
+
+    # create an uncovered pd path from A to C through u
+    G.add_edge("A", "C")
+    G.add_circle_edge("C", "A")
+    G.add_chain(["A", "u", "x", "y", "z", "C"])
+    G.add_circle_edge("y", "x")
+
+    # create a pd path from A to C through v
+    G.add_chain(["A", "v", "x", "y", "z", "C"])
+    # with the bidirected edge, v,x,y is a shielded triple
+    G.add_bidirected_edge("v", "y")
+
+    # get the uncovered pd paths
+    uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "u", "C", 100, "A")
+    assert found_uncovered_pd_path
+    assert uncov_pd_path == ["A", "u", "x", "y", "z", "C"]
+
+    # the shielded triple should not result in an uncovered pd path
+    uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "v", "C", 100, "A")
+    assert not found_uncovered_pd_path
+    assert uncov_pd_path == []
+
+    # when there is a circle edge it should still work
+    G.add_circle_edge("C", "z")
+    uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "u", "C", 100, "A")
+    assert found_uncovered_pd_path
+    assert uncov_pd_path == ["A", "u", "x", "y", "z", "C"]

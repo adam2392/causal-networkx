@@ -52,6 +52,6 @@ run-checks:
 	mypy .
 	pydocstyle
 	check-manifest
-	codespell-error
+	@$(MAKE) codespell-error
 	
 # CUDA_VISIBLE_DEVICES='' pytest -v --color=yes --doctest-modules tests/ causal_networkx/

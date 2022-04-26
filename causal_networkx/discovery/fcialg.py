@@ -1,6 +1,6 @@
 import logging
 from itertools import combinations, permutations
-from typing import Any, Callable, Dict, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Set, Tuple, Union
 
 import networkx as nx
 import numpy as np
@@ -376,7 +376,7 @@ class FCI(ConstraintDiscovery):
                 added_arrows = True
         return added_arrows
 
-    def _apply_rule9(self, graph: PAG, u, a, c) -> bool:
+    def _apply_rule9(self, graph: PAG, u, a, c) -> Tuple[bool, List]:
         """Apply rule 9 of FCI algorithm.
 
         If A o-> C and p = <A, u, v, ..., C> is an uncovered
@@ -398,33 +398,30 @@ class FCI(ConstraintDiscovery):
         -------
         added_arrows : bool
             Whether or not arrows were modified in the graph.
+        uncov_path : list
+            The uncovered potentially directed path from 'a' to 'c' through 'u'.
         """
         added_arrows = False
+        uncov_path: List[Any] = []
 
-        # a should be adjacent to u
-        if not graph.has_adjacency(a, u):
-            raise RuntimeError(f"{a} and {u} should be adjacent...?")
+        # Check A o-> C and # check that u is not adjacent to c
+        if (graph.has_circle_edge(c, a) and graph.has_edge(a, c)) and not graph.has_adjacency(u, c):
+            # check that <a, u> is potentially directed
+            if graph.has_edge(a, u):
+                # check that A - u - v, ..., c is an uncovered pd path
+                uncov_path, path_exists = uncovered_pd_path(
+                    graph, u, c, max_path_length=self.max_path_length, first_node=a
+                )
 
-        # Check A o-> C
-        if graph.has_circle_edge(c, a) and graph.has_edge(a, c):
-            # check that u is not adjacent to c
-            if not graph.has_adjacency(u, c):
-                # check that <a, u> is potentially directed
-                if graph.is_possibly_directed(a, u):
-                    # check that A - u - v, ..., c is an uncovered pd path
-                    _, path_exists = uncovered_pd_path(
-                        graph, u, c, max_path_length=self.max_path_length, prev_node=a
-                    )
+                # orient A o-> C to A -> C
+                if path_exists:
+                    logger.debug(f"Rule 9: Orienting edge {a} o-> {c} to {a} -> {c}.")
+                    graph.orient_circle_edge(c, a, "tail")
+                    added_arrows = True
 
-                    # orient A o-> C to A -> C
-                    if path_exists:
-                        logger.debug(f"Rule 9: Orienting edge {a} o-> {c} to {a} -> {c}.")
-                        graph.orient_circle_edge(c, a, "tail")
-                        added_arrows = True
+        return added_arrows, uncov_path
 
-        return added_arrows
-
-    def _apply_rule10(self, graph: PAG, u, a, c) -> bool:
+    def _apply_rule10(self, graph: PAG, u, a, c) -> Tuple[bool, List]:
         """Apply rule 10 of FCI algorithm.
 
         If A o-> C and u -> C <- v and
@@ -455,7 +452,7 @@ class FCI(ConstraintDiscovery):
             Whether or not arrows were modified in the graph.
         """
         added_arrows = False
-        # a_to_u_path = []
+        uncov_pd_path = []
 
         # Check A o-> C
         if graph.has_circle_edge(c, a) and graph.has_edge(a, c):
@@ -467,27 +464,59 @@ class FCI(ConstraintDiscovery):
                     if v in (a, u):
                         continue
 
-                    # make sure C <- v
+                    # make sure v -> C and not v o-> C
                     if not graph.has_edge(v, c) or graph.has_circle_edge(c, v):
                         continue
 
-                    # get the uncovered pd path from A to u just once
-                    # if idx == 0:
-                    #     a_to_u_path, found_uncovered_pd_path = uncovered_pd_path(graph, a, u)
+                    # At this point, we want the paths from A to u and A to v
+                    # to begin with a distinct m and w node, else we will not
+                    # apply R10. Thus, we will get all 2-pairs of neighbors of A
+                    # that:
+                    # i) begin the uncovered pd path and
+                    # ii) are distinct (done by construction) here
+                    for (m, w) in combinations(graph.neighbors(a)):  # type: ignore
+                        if m == c or w == c:
+                            continue
 
-                    # # get the uncovered pd path from A to v
-                    # a_to_v_path, found_uncovered_pd_path = uncovered_pd_path(
-                    # graph, a, v, max_path_length=self.max_path_length, )
+                        # m and w must be on a potentially directed path
+                        if not graph.has_edge(a, m) or not graph.has_edge(a, w):
+                            continue
 
-                    # check that m and w are distinct
-                    # paths_distinct = a_to_u_path[-2] == a_to_v_path[-2]
+                        # we do not know which path a-u or a-v, m and w are on
+                        # so we must traverse the graph in both directions
+                        # get the uncovered pd path from A to u just once
+                        found_uncovered_a_to_v = False
+                        a_to_u_path, found_uncovered_a_to_u = uncovered_pd_path(
+                            graph, a, u, max_path_length=self.max_path_length, second_node=m
+                        )
+                        if not found_uncovered_a_to_u:
+                            a_to_u_path, found_uncovered_a_to_u = uncovered_pd_path(
+                                graph, a, u, max_path_length=self.max_path_length, second_node=w
+                            )
+                            # if we don't have an uncovered pd path here, then no point in looking
+                            # for other paths
+                            if found_uncovered_a_to_u:
+                                a_to_v_path, found_uncovered_a_to_v = uncovered_pd_path(
+                                    graph, a, v, max_path_length=self.max_path_length, second_node=m
+                                )
+                        else:
+                            a_to_v_path, found_uncovered_a_to_v = uncovered_pd_path(
+                                graph, a, v, max_path_length=self.max_path_length, second_node=w
+                            )
 
-                    # orient A o-> C to A -> C
-                    # if paths_distinct:
-                    #     logger.debug(f"Rule 10: Orienting edge {a} o-> {c} to {a} -> {c}.")
-                    #     graph.orient_circle_edge(c, a, "tail")
-                    #     added_arrows = True
-        return added_arrows
+                        # if we have not found another path, then just continue
+                        if not found_uncovered_a_to_v:
+                            continue
+
+                        # at this point, we have an uncovered path from a to u and a to v
+                        # with a distinct second node on both paths
+                        # orient A o-> C to A -> C
+                        logger.debug(f"Rule 10: Orienting edge {a} o-> {c} to {a} -> {c}.")
+                        graph.orient_circle_edge(c, a, "tail")
+                        added_arrows = True
+                        uncov_pd_path = a_to_u_path
+
+        return added_arrows, uncov_pd_path
 
     def _apply_rules_1to10(self, graph: PAG, sep_set: Dict[str, Dict[str, Set[Any]]]):
         idx = 0
@@ -508,12 +537,15 @@ class FCI(ConstraintDiscovery):
                     # apply R4, orienting discriminating paths
                     r4_add, _ = self._apply_rule4(graph, u, a, c, sep_set)
 
+                    # apply R8 to orient more tails
                     r8_add = self._apply_rule8(graph, u, a, c)
-                    r9_add = self._apply_rule9(graph, u, a, c)
+
+                    # apply R9-10 to orient uncovered potentially directed paths
+                    r9_add, _ = self._apply_rule9(graph, u, a, c)
 
                     # a and c are neighbors of u, so u is the endpoint
                     # desired
-                    # r10_add = self._apply_rule10(graph, a, c, u)
+                    r10_add, _ = self._apply_rule10(graph, a, c, u)
 
                     # see if there was a change flag
                     if (

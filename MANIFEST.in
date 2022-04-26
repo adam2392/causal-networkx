@@ -9,6 +9,7 @@ exclude .circleci/config.yml
 exclude .vscode/settings.json
 exclude CONTRIBUTING.md
 
+recursive-exclude examples/.ipynb_checkpoints *
 recursive-exclude scripts *
 recursive-exclude tools *
 exclude mypy.ini
