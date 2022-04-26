@@ -50,7 +50,7 @@ run-checks:
 	black --check causal_networkx examples
 	flake8 .
 	mypy .
-	pydocstyle
+	@$(MAKE) pydocstyle
 	check-manifest
 	@$(MAKE) codespell-error
 	

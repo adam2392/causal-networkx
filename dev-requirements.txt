@@ -48,3 +48,11 @@ codespell
 
 # for independence testing
 scikit-learn
+
+# for time-series
+tigramite
+numba
+six
+
+# for causal ID
+dowhy

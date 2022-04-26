@@ -190,10 +190,17 @@ class GraphSampleMixin:
 
 class AddingEdgeMixin:
     def add_chain(self, node_chain):
+        """Add a causal chain."""
         ebunch = []
         for idx, node in enumerate(node_chain[:-1]):
             ebunch.append((node, node_chain[idx + 1]))
         self.add_edges_from(ebunch)
+
+
+class ExportMixin:
+    def to_dot_graph(self):
+        """Convert to 'dot' graph representation."""
+        pass
 
 
 # TODO: implement graph views for CausalGraph
@@ -824,6 +831,7 @@ class PAG(CausalGraph):
         self._check_pag()
 
     def all_edges(self):
+        """Get dictionary of all the edges by edge type."""
         return {
             "edges": self.edges,
             "bidirected": self.bidirected_edges,
@@ -1043,6 +1051,7 @@ class PAG(CausalGraph):
 
     @property
     def circle_edges(self):
+        """Return all circle edges."""
         return self.circle_edge_graph.edges
 
     def number_of_circle_edges(self, u=None, v=None):
@@ -1191,27 +1200,49 @@ class PAG(CausalGraph):
         self.circle_edge_graph.add_edges_from(ebunch_to_add)
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):
+        """Override adding edge.
+
+        Additionally performs check on the PAG that adding edge is
+        well defined and keeps the PAG a PAG.
+        """
         self._check_adding_edge(u_of_edge, v_of_edge, EdgeType.arrow.value)
         return super().add_edge(u_of_edge, v_of_edge, **attr)
 
     def add_edges_from(self, ebunch, **attr):
+        """Override adding multiple edges.
+
+        Additionally performs check on the PAG that adding edge is
+        well defined and keeps the PAG a PAG.
+        """
         self._check_adding_edges(ebunch, EdgeType.arrow.value)
         return super().add_edges_from(ebunch, **attr)
 
     def add_bidirected_edge(self, u_of_edge, v_of_edge, **attr) -> None:
+        """Override adding bidirected edge.
+
+        Additionally performs check on the PAG that adding edge is
+        well defined and keeps the PAG a PAG.
+        """
         self._check_adding_edge(u_of_edge, v_of_edge, EdgeType.bidirected.value)
         return super().add_bidirected_edge(u_of_edge, v_of_edge, **attr)
 
     def add_bidirected_edges_from(self, ebunch, **attr):
+        """Override adding bidirected edges.
+
+        Additionally performs check on the PAG that adding edge is
+        well defined and keeps the PAG a PAG.
+        """
         self._check_adding_edges(ebunch, EdgeType.bidirected.value)
         return super().add_bidirected_edges_from(ebunch, **attr)
 
     def remove_circle_edge(self, u, v, bidirected: bool = False):
+        """Remove circle edge from graph."""
         self.circle_edge_graph.remove_edge(u, v)
         if bidirected:
             self.circle_edge_graph.remove_edge(v, u)
 
     def has_circle_edge(self, u, v):
+        """Check if graph has circle edge from u to v."""
         return self.circle_edge_graph.has_edge(u, v)
 
     def orient_circle_edge(self, u, v, edge_type: str):
@@ -1260,7 +1291,7 @@ class PAG(CausalGraph):
             raise RuntimeError("The current PAG is invalid.")
 
     def compute_full_graph(self, to_networkx: bool = False):
-        """Computes the full graph from a PAG.
+        """Compute the full graph from a PAG.
 
         Adds bidirected edges as latent confounders. Also adds circle edges
         as latent confounders and either:
@@ -1386,6 +1417,20 @@ class PAG(CausalGraph):
         return nghbrs
 
     def print_edge(self, u, v):
+        """Representation of edge between u and v as string.
+
+        Parameters
+        ----------
+        u : node
+            Node in graph.
+        v : node
+            Node in graph.
+
+        Returns
+        -------
+        return_str : str
+            The type of edge between the two nodes.
+        """
         return_str = ""
         if self.has_edge(u, v):
             if self.has_circle_edge(v, u):
