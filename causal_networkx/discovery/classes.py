@@ -6,14 +6,48 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from causal_networkx import CausalGraph
+from causal_networkx import PAG, CausalGraph
 from causal_networkx.discovery.skeleton import learn_skeleton_graph
 
 
 # TODO: Add ways to fix directed edges
 # TODO: Add ways to initialize graph with edges rather then undirected
 class ConstraintDiscovery:
-    graph_: Optional[CausalGraph]
+    """Constraint-based algorithms for causal discovery.
+
+    Contains common methods used for all constraint-based causal discovery algorithms.
+
+    Parameters
+    ----------
+    ci_estimator : Callable
+        The conditional independence test function. The arguments of the estimator should
+        be data, node, node to compare, conditioning set of nodes, and any additional
+        keyword arguments.
+    alpha : float, optional
+        The significance level for the conditional independence test, by default 0.05.
+    init_graph : nx.Graph | CausalGraph, optional
+        An initialized graph. If ``None``, then will initialize PC using a
+        complete graph. By default None.
+    fixed_edges : nx.Graph, optional
+        An undirected graph with fixed edges. If ``None``, then will initialize PC using a
+        complete graph. By default None.
+    max_cond_set_size : int, optional
+        Maximum size of the conditioning set, by default None. Used to limit
+        the computation spent on the algorithm.
+    ci_estimator_kwargs : dict
+        Keyword arguments for the ``ci_estimator`` function.
+
+    Attributes
+    ----------
+    graph_ : PAG
+        The graph discovered.
+    separating_sets_ : dict
+        The dictionary of separating sets, where it is a nested dictionary from
+        the variable name to the variable it is being compared to the set of
+        variables in the graph that separate the two.
+    """
+
+    graph_: Optional[PAG]
     separating_sets_: Optional[Dict[str, Dict[str, Set[Any]]]]
 
     def __init__(
@@ -25,30 +59,6 @@ class ConstraintDiscovery:
         max_cond_set_size: int = None,
         **ci_estimator_kwargs,
     ):
-        """Constraint-based algorithms for causal discovery.
-
-        Contains common methods used for all constraint-based causal discovery algorithms.
-
-        Parameters
-        ----------
-        ci_estimator : Callable
-            The conditional independence test function. The arguments of the estimator should
-            be data, node, node to compare, conditioning set of nodes, and any additional
-            keyword arguments.
-        alpha : float, optional
-            The significance level for the conditional independence test, by default 0.05.
-        init_graph : nx.Graph | CausalGraph, optional
-            An initialized graph. If ``None``, then will initialize PC using a
-            complete graph. By default None.
-        fixed_edges : nx.Graph, optional
-            An undirected graph with fixed edges. If ``None``, then will initialize PC using a
-            complete graph. By default None.
-        max_cond_set_size : int, optional
-            Maximum size of the conditioning set, by default None. Used to limit
-            the computation spent on the algorithm.
-        ci_estimator_kwargs : dict
-            Keyword arguments for the ``ci_estimator`` function.
-        """
         self.alpha = alpha
         self.ci_estimator = ci_estimator
         self.ci_estimator_kwargs = ci_estimator_kwargs

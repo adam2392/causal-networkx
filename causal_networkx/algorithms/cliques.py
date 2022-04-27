@@ -6,22 +6,20 @@ from causal_networkx.cgm import CausalGraph
 def find_cliques(G: CausalGraph, nodes=None) -> Iterator:
     """Find all maximal cliques in causal DAG.
 
+    This operates over the directed edges of the causal graph, excluding
+    the bidirected edges.
+
     Parameters
     ----------
     G : CausalGraph
-        _description_
-    nodes : _type_, optional
-        _description_, by default None
+        The causal diagram.
+    nodes : list, optional
+        The list of nodes to consider, by default None
 
     Returns
     -------
-    _type_
-        _description_
-
-    Yields
-    ------
-    Iterator
-        _description_
+    iterator
+        The cliques in a causal DAG.
     """
     from networkx.algorithms import find_cliques as nx_find_cliques
 

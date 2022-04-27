@@ -77,6 +77,29 @@ numpydoc_attributes_as_param_list = True
 numpydoc_use_blockquotes = True
 numpydoc_validate = True
 
+numpydoc_xref_ignore = {
+    # words
+    'instance', 'instances', 'of', 'default', 'shape', 'or',
+    'with', 'length', 'pair', 'matplotlib', 'optional', 'kwargs', 'in',
+    'dtype', 'object', 'self.verbose', 'py', 'the', 'functions', 'lambda',
+    'container', 'iterator', 'keyword', 'arguments', 'no', 'attributes',
+    # networkx
+    'node', 'nodes', 'graph',
+    # shapes
+    'n_times', 'obj', 'arrays', 'lists', 'func', 'n_nodes',
+    'n_estimated_nodes', 'n_samples', 'n_variables',
+}
+numpydoc_xref_aliases = {
+    # Networkx
+    'nx.Graph': 'networkx.Graph', 'nx.DiGraph': 'networkx.DiGraph',
+    # Causal-Networkx
+    'CausalGraph': 'causal_networkx.CausalGraph', 'PAG': 'causal_networkx.PAG',
+    # joblib
+    'joblib.Parallel': 'joblib.Parallel',
+    # pandas
+    'pd.DataFrame': 'pandas.DataFrame', 'pandas.DataFrame': 'pandas.DataFrame',
+}
+
 # Tell myst-parser to assign header anchors for h1-h3.
 myst_heading_anchors = 3
 suppress_warnings = ["myst.header"]
@@ -133,16 +156,24 @@ html_css_files = ["css/custom.css"]
 html_favicon = "_static/favicon.ico"
 
 html_theme_options = {
-    "footer_icons": [
-        {
-            "name": "GitHub",
-            "url": "https://github.com/adam2392/causal-networkx",
-            "html": """
-                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
-                </svg>
-            """,  # noqa: E501
-            "class": "",
-        },
+    'icon_links': [
+        dict(name='GitHub',
+             url='https://github.com/adam2392/causal-networkx',
+             icon='fab fa-github-square'),
     ],
+    'use_edit_page_button': False,
+    'navigation_with_keys': False,
+    'show_toc_level': 1,
+    'navbar_end': ['version-switcher', 'navbar-icon-links'],
+}
+
+# Custom sidebar templates, maps document names to template names.
+html_sidebars = {
+    'index': ['search-field.html'],
+}
+
+html_context = {
+    'versions_dropdown': {
+        'dev': 'v0.1 (devel)',
+    },
 }

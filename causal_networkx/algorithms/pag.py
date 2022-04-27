@@ -30,12 +30,12 @@ def possibly_d_sep_sets(graph: PAG, node_x, node_y=None, max_path_length: int = 
     ----------
     graph : PAG
         _description_
-    node_x : _type_
-        _description_
-    node_y : _type_
-        _description_
+    node_x : node
+        The node 'x'.
+    node_y : node
+        The node 'y'.
     max_path_length : int
-        _description_
+        The maximum length of a path to search on.
 
     Returns
     -------

@@ -1,4 +1,4 @@
-"""Causal structural modeling."""
+"""Causal modeling with structural causal models and causal graphs."""
 
 # Authors: Adam Li <ali39@jhu.edu>
 #

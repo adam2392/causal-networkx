@@ -50,6 +50,15 @@ class PC(ConstraintDiscovery):
             the computation spent on the algorithm.
         ci_estimator_kwargs : dict
             Keyword arguments for the ``ci_estimator`` function.
+
+        Attributes
+        ----------
+        graph_ : PAG
+            The graph discovered.
+        separating_sets_ : dict
+            The dictionary of separating sets, where it is a nested dictionary from
+            the variable name to the variable it is being compared to the set of
+            variables in the graph that separate the two.
         """
         super().__init__(
             ci_estimator, alpha, init_graph, fixed_edges, max_cond_set_size, **ci_estimator_kwargs
@@ -75,6 +84,7 @@ class PC(ConstraintDiscovery):
         return skel_graph, sep_set
 
     def fit(self, X: pd.DataFrame) -> None:
+        """Fit PC algorithm on dataset 'X'."""
         # learn skeleton
         skel_graph, sep_set = self.learn_skeleton(X)
 

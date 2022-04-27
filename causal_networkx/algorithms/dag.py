@@ -63,28 +63,9 @@ def topological_sort(G: CausalGraph):
     nodes
         Yields the nodes in topological sorted order.
 
-    Raises
-    ------
-    NetworkXError
-        Topological sort is defined for directed graphs only. If the graph `G`
-        is undirected, a :exc:`NetworkXError` is raised.
-
-    NetworkXUnfeasible
-        If `G` is not a directed acyclic graph (DAG) no topological sort exists
-        and a :exc:`NetworkXUnfeasible` exception is raised.  This can also be
-        raised if `G` is changed while the returned iterator is being processed
-
-    RuntimeError
-        If `G` is changed while the returned iterator is being processed.
-
-    Notes
-    -----
-    This algorithm is based on a description and proof in
-    "Introduction to Algorithms: A Creative Approach" [1]_ .
-
     See also
     --------
-    networkx.algorithms.topological_sort
+    networkx.algorithms.dag.topological_sort
     """
     assert isinstance(G, CausalGraph)
 

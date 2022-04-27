@@ -29,6 +29,7 @@ class NetworkXMixin:
 
     @name.setter
     def name(self, s):
+        """Set the name of the graph."""
         self.dag["name"] = s
 
     def get_edge_data(self, u, v, default=None):
@@ -350,7 +351,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
 
         Returns
         -------
-        comp : List of sets
+        comp : list of set
             The c-components.
         """
         c_comps = nx.connected_components(self.c_component_graph)
@@ -507,8 +508,8 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
 
         See Also
         --------
-        nx.MultiDiGraph.add_edges_from : add a collection of edges
-        nx.MultiDiGraph.add_edge       : add an edge
+        networkx.Graph.add_edges_from : add a collection of edges
+        networkx.Graph.add_edge       : add an edge
 
         Notes
         -----
@@ -545,8 +546,8 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
 
         See Also
         --------
-        nx.MultiDiGraph.add_edges_from : add a collection of edges
-        nx.MultiDiGraph.add_edge       : add an edge
+        networkx.MultiDiGraph.add_edges_from : add a collection of edges
+        networkx.MultiDiGraph.add_edge       : add an edge
 
         Notes
         -----
@@ -800,7 +801,7 @@ class PAG(CausalGraph):
     - bidirected edges (<->, indicating latent confounder): `networkx.DiGraph`
     - circular edges (-o, o-, indicating uncertainty in edge type): `networkx.DiGraph`
     - undirected edges (-, indicating selection bias): `networkx.Graph`. Currently
-    not implemented or used.
+      not implemented or used.
 
     Compared to causal graphs, PAGs differ in terms of how parents and children
     are defined. In causal graphs, there are only two types of edges, either a
@@ -1004,8 +1005,8 @@ class PAG(CausalGraph):
         n : node
             A node in the causal DAG.
 
-        Returns
-        -------
+        Yields
+        ------
         parents : Iterator
             An iterator of the definite parents of node 'n'.
 
@@ -1032,8 +1033,8 @@ class PAG(CausalGraph):
         n : node
             A node in the causal DAG.
 
-        Returns
-        -------
+        Yields
+        ------
         children : Iterator
             An iterator of the children of node 'n'.
 
@@ -1041,7 +1042,7 @@ class PAG(CausalGraph):
         --------
         possible_children
         parents
-        possibl_parents
+        possible_parents
         """
         possible_children = self.possible_children(n)
         for node in possible_children:
@@ -1199,38 +1200,22 @@ class PAG(CausalGraph):
         self.circle_edge_graph.add_edges_from(ebunch_to_add)
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):
-        """Override adding edge.
-
-        Additionally performs check on the PAG that adding edge is
-        well defined and keeps the PAG a PAG.
-        """
+        """Override adding edge with check on the PAG."""
         self._check_adding_edge(u_of_edge, v_of_edge, EdgeType.arrow.value)
         return super().add_edge(u_of_edge, v_of_edge, **attr)
 
     def add_edges_from(self, ebunch, **attr):
-        """Override adding multiple edges.
-
-        Additionally performs check on the PAG that adding edge is
-        well defined and keeps the PAG a PAG.
-        """
+        """Override adding multiple edges with check on the PAG."""
         self._check_adding_edges(ebunch, EdgeType.arrow.value)
         return super().add_edges_from(ebunch, **attr)
 
     def add_bidirected_edge(self, u_of_edge, v_of_edge, **attr) -> None:
-        """Override adding bidirected edge.
-
-        Additionally performs check on the PAG that adding edge is
-        well defined and keeps the PAG a PAG.
-        """
+        """Override adding bidirected edge with check on the PAG."""
         self._check_adding_edge(u_of_edge, v_of_edge, EdgeType.bidirected.value)
         return super().add_bidirected_edge(u_of_edge, v_of_edge, **attr)
 
     def add_bidirected_edges_from(self, ebunch, **attr):
-        """Override adding bidirected edges.
-
-        Additionally performs check on the PAG that adding edge is
-        well defined and keeps the PAG a PAG.
-        """
+        """Override adding bidirected edges with check on the PAG."""
         self._check_adding_edges(ebunch, EdgeType.bidirected.value)
         return super().add_bidirected_edges_from(ebunch, **attr)
 

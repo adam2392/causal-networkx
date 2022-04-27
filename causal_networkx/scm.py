@@ -26,8 +26,18 @@ class StructuralCausalModel:
         The exogenous variable functions should not have
         any parameters.
     endogenous : Dict of lambda functions
-        _description_
         The endogenous variable functions may have parameters.
+
+    Attributes
+    ----------
+    causal_dependencies : dict
+        A mapping of each variable and its causal dependencies based
+        on the SCM functions.
+    var_list : list
+        The list of variable names in the SCM.
+    _symbolic_runtime : dict
+        The mapping from each variable in the SCM to the sampled
+        value of that variable. Used when sampling from the SCM.
 
     Examples
     --------
@@ -47,10 +57,10 @@ class StructuralCausalModel:
 
     """
 
-    symbolic_runtime: Dict[str, float]
+    _symbolic_runtime: Dict[str, float]
 
     def __init__(self, exogenous: Dict[str, Callable], endogenous: Dict[str, Callable]) -> None:
-        self.symbolic_runtime = dict()
+        self._symbolic_runtime = dict()
 
         # construct symbolic table of all variables
         self.exogenous = exogenous
@@ -113,21 +123,21 @@ class StructuralCausalModel:
 
         # construct truth-table based on the SCM
         for _ in range(n):
-            self.symbolic_runtime = dict()
+            self._symbolic_runtime = dict()
 
             # sample all latent variables, which are independent
             for exog, exog_func in self.exogenous.items():
-                self.symbolic_runtime[exog] = exog_func()
+                self._symbolic_runtime[exog] = exog_func()
 
             # sample now all observed variables
             for endog, endog_func in self.endogenous.items():
-                endog_value = self._sample_function(endog_func, self.symbolic_runtime)
+                endog_value = self._sample_function(endog_func, self._symbolic_runtime)
 
-                if endog not in self.symbolic_runtime:
-                    self.symbolic_runtime[endog] = endog_value
+                if endog not in self._symbolic_runtime:
+                    self._symbolic_runtime[endog] = endog_value
 
             # add each sample to
-            df_values.append(self.symbolic_runtime)
+            df_values.append(self._symbolic_runtime)
 
         # now convert the final sample to a dataframe
         result_df = pd.DataFrame(df_values)
@@ -164,7 +174,7 @@ class StructuralCausalModel:
 
         Returns
         -------
-        G : An instance of CausalGraph
+        G : instance of CausalGraph
             The causal graphical model corresponding to
             the SCM.
 

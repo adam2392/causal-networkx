@@ -75,3 +75,6 @@ Utility Algorithms for Causal Graphs
    find_cliques
    is_directed_acyclic_graph
    topological_sort
+   discriminating_path
+   possibly_d_sep_sets
+   uncovered_pd_path
