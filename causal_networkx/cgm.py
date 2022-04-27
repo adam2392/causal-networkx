@@ -244,20 +244,6 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
     networkx.DiGraph
     networkx.Graph
 
-    Subclassing
-    -----------
-    All causal graphs are a mixture of graphs that represent the different
-    types of edges possible. For example, a causal graph consists of two
-    types of edges, directed, and bidirected. Each type of edge has the
-    following operations:
-
-    - has_<edge_type>_edge: Check if graph has this specific type of edge.
-    - add_<edge_type>_edge: Add a specific edge type to the graph.
-    - remove_<edge_type>_edge: Remove a specific edge type to the graph.
-
-    All nodes are "stored" in ``self.dag``, which allows for isolated nodes
-    that only have say bidirected edges pointing to it.
-
     Notes
     -----
     The data structure underneath the hood is stored in two networkx graphs:
@@ -272,6 +258,19 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
     ``Graph``. I.e. Any node connected with either a bidirected, or normal
     directed edge. Adding edges and bidirected edges are performed separately
     in different functions, compared to ``networkx``.
+
+    Subclassing:
+    All causal graphs are a mixture of graphs that represent the different
+    types of edges possible. For example, a causal graph consists of two
+    types of edges, directed, and bidirected. Each type of edge has the
+    following operations:
+
+    - has_<edge_type>_edge: Check if graph has this specific type of edge.
+    - add_<edge_type>_edge: Add a specific edge type to the graph.
+    - remove_<edge_type>_edge: Remove a specific edge type to the graph.
+
+    All nodes are "stored" in ``self.dag``, which allows for isolated nodes
+    that only have say bidirected edges pointing to it.
     """
 
     _graphs: List[nx.Graph]

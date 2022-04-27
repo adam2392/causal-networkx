@@ -6,7 +6,8 @@
 build/
 dist/
 pip-wheel-metadata/
-
+_build/
+generated/
 
 # dev tools
 

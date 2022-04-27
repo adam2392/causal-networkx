@@ -165,10 +165,10 @@ def test_uncovered_pd_path():
     assert found_uncovered_pd_path
     assert uncov_pd_path == ["A", "u", "x", "y", "z", "C"]
 
+    # check errors for running uncovered pd path
     with pytest.raises(RuntimeError, match="Both first and second"):
         uncovered_pd_path(G, "u", "C", 100, "A", "x")
-
-    with pytest.raises(RuntimeError, match="Some nodes not in"):
+    with pytest.raises(RuntimeError, match="Some nodes are not in"):
         uncovered_pd_path(G, "u", "C", 100, "wrong")
 
 
