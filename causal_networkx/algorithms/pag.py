@@ -318,9 +318,13 @@ def uncovered_pd_path(
     max_path_length : int
         The maximum distance to check in the graph.
     first_node : node, optional
-        The node previous to u. If it is before 'u', then we will check
+        The node previous to 'u'. If it is before 'u', then we will check
         that 'u' is unshielded. If it is not passed, then 'u' is considered
         the first node in the path and hence does not need to be unshielded.
+        Both 'first_node' and 'second_node' cannot be passed.
+    second_node : node, optional
+        The node after 'u' that the path must traverse. Both 'first_node'
+        and 'second_node' cannot be passed.
 
     Notes
     -----
@@ -328,6 +332,9 @@ def uncovered_pd_path(
     in its common use case within the FCI algorithm, it is usually defined relative
     to an adjacent third node that comes before 'u'.
     """
+    if first_node is not None and second_node is not None:
+        raise RuntimeError(f'Both first and second node cannot be set.')
+
     if max_path_length == np.inf:
         max_path_length = 1000
 
@@ -337,6 +344,7 @@ def uncovered_pd_path(
 
     # keep track of the distance searched
     distance = 0
+    start_node = u
 
     # keep track of the previous nodes, i.e. to build a path
     # from node (key) to its child along the path (value)
@@ -344,7 +352,7 @@ def uncovered_pd_path(
     if first_node is not None:
         descendant_nodes[u] = first_node
     if second_node is not None:
-        descendant_nodes[first_node] = second_node
+        descendant_nodes[second_node] = u
 
     # keep track of paths of certain nodes that were already explored
     # start off with the valid triple <a, u, c>
@@ -355,10 +363,15 @@ def uncovered_pd_path(
     explored_nodes[u] = None
     if first_node is not None:
         explored_nodes[first_node] = None
+    if second_node is not None:
+        explored_nodes[second_node] = None
+        
+        # we now want to start on the second_node
+        start_node = second_node
 
     # now add 'a' to the queue and begin exploring
     # adjacent nodes that are connected with bidirected edges
-    path = deque([u])
+    path = deque([start_node])
     while not len(path) == 0:
         this_node = path.popleft()
         prev_node = descendant_nodes.get(this_node)
@@ -406,6 +419,7 @@ def uncovered_pd_path(
     # return the actual uncovered pd path
     if first_node is None:
         first_node = u
+    
     if found_uncovered_pd_path:
         uncov_pd_path = deque([])  # type: ignore
         uncov_pd_path.appendleft(c)  # type: ignore

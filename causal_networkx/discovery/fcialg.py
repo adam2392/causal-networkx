@@ -452,7 +452,8 @@ class FCI(ConstraintDiscovery):
             Whether or not arrows were modified in the graph.
         """
         added_arrows = False
-        uncov_pd_path = []
+        a_to_u_path = []
+        a_to_v_path = []
 
         # Check A o-> C
         if graph.has_circle_edge(c, a) and graph.has_edge(a, c):
@@ -514,9 +515,8 @@ class FCI(ConstraintDiscovery):
                         logger.debug(f"Rule 10: Orienting edge {a} o-> {c} to {a} -> {c}.")
                         graph.orient_circle_edge(c, a, "tail")
                         added_arrows = True
-                        uncov_pd_path = a_to_u_path
 
-        return added_arrows, uncov_pd_path
+        return added_arrows, a_to_u_path, a_to_v_path
 
     def _apply_rules_1to10(self, graph: PAG, sep_set: Dict[str, Dict[str, Set[Any]]]):
         idx = 0
@@ -527,9 +527,7 @@ class FCI(ConstraintDiscovery):
 
             for u in graph.nodes:
                 for (a, c) in permutations(graph.neighbors(u), 2):
-                    # if u == 'x4':
-                    #     print(u, a, c)
-                    # apply R1-3 of FCI recursively
+                    # apply R1-3 to orient triples and arrowheads
                     r1_add = self._apply_rule1(graph, u, a, c)
                     r2_add = self._apply_rule2(graph, u, a, c)
                     r3_add = self._apply_rule3(graph, u, a, c)
@@ -543,9 +541,8 @@ class FCI(ConstraintDiscovery):
                     # apply R9-10 to orient uncovered potentially directed paths
                     r9_add, _ = self._apply_rule9(graph, u, a, c)
 
-                    # a and c are neighbors of u, so u is the endpoint
-                    # desired
-                    r10_add, _ = self._apply_rule10(graph, a, c, u)
+                    # a and c are neighbors of u, so u is the endpoint desired
+                    r10_add, _, _ = self._apply_rule10(graph, a, c, u)
 
                     # see if there was a change flag
                     if (
@@ -557,21 +554,20 @@ class FCI(ConstraintDiscovery):
                                 r4_add,
                                 r8_add,
                                 r9_add,
-                                # r10_add
+                                r10_add
                             ]
                         )
                         and not change_flag
                     ):
                         logger.debug("Got here...")
-                        logger.debug([r1_add, r2_add, r3_add, r4_add, r8_add])
+                        logger.debug([r1_add, r2_add, r3_add, r4_add, r8_add, r9_add, r10_add])
                         logger.debug(change_flag)
                         change_flag = True
 
             # check if we should continue or not
             if not change_flag:
-                # print(r1_add, r2_add, r3_add)
                 finished = True
-                logger.debug(f"Finished applying R1-4, and R8-9 with {idx} iterations")
+                logger.debug(f"Finished applying R1-4, and R8-10 with {idx} iterations")
                 break
             idx += 1
 

@@ -1,5 +1,7 @@
 from itertools import permutations
 
+import pytest
+
 from causal_networkx.algorithms import (
     discriminating_path,
     possibly_d_sep_sets,
@@ -162,3 +164,34 @@ def test_uncovered_pd_path():
     uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "u", "C", 100, "A")
     assert found_uncovered_pd_path
     assert uncov_pd_path == ["A", "u", "x", "y", "z", "C"]
+
+    with pytest.raises(RuntimeError, match='Both first and second'):
+        uncovered_pd_path(G, "u", "C", 100, "A", 'x')
+
+
+def test_uncovered_pd_path_intersecting():
+    G = PAG()
+
+    # make A o-> C
+    G.add_edge("A", "C")
+    G.add_circle_edge("C", "A")
+    # create an uncovered pd path from A to u that ends at C
+    G.add_chain(["A", "x", "y", "z", "u", "C"])
+    G.add_circle_edge("y", "x")
+    G_copy = G.copy()
+
+    # create an uncovered pd path from A to v so now C is a collider for <u, C, v>
+    G.add_chain(["z", "v", "C"])
+
+    # get the uncovered pd paths
+    uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "A", "C", 100, second_node="x")
+    assert found_uncovered_pd_path
+    assert uncov_pd_path == ['A', 'x', 'y', 'z', 'u', 'C']
+
+    # when we make the <A, x, y> triple shielded, it is no longer an uncovered path
+    G.add_edge('A', 'y')
+    uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "A", "C", 100, second_node="x")
+    assert not found_uncovered_pd_path
+    assert uncov_pd_path == []
+
+    

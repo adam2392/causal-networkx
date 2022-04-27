@@ -362,7 +362,6 @@ class Test_FCI:
         assert uncov_pd_path == ["A", "u", "x", "y", "z", "C"]
         assert not G.has_circle_edge("C", "A")
 
-    @pytest.mark.skip()
     def test_fci_rule10(self):
         # If A o-> C and u -> C <- v and:
         # - there is an uncovered pd path from A to u, p1
@@ -371,26 +370,32 @@ class Test_FCI:
         # and mu is not adjacent to w, then orient orient A o-> C as A -> C
         G = PAG()
 
-        # create an uncovered pd path from A to u
+        # make A o-> C
         G.add_edge("A", "C")
         G.add_circle_edge("C", "A")
+        # create an uncovered pd path from A to u that ends at C
         G.add_chain(["A", "x", "y", "z", "u", "C"])
         G.add_circle_edge("y", "x")
-        # G_copy = G.copy()
+        G_copy = G.copy()
 
-        # create a pd path from A to v so now C is a collider
+        # create an uncovered pd path from A to v so now C is a collider for <u, C, v>
         G.add_chain(["A", "x", "y", "z", "v", "C"])
 
         # 'x' and 'x' are not distinct, so won't orient
-        # added_arrows, uncov_path = self.alg._apply_rule10(G, 'u', 'A', 'C')
-        # assert not added_arrows
-        # assert uncov_path == []
-        # assert G.has_circle_edge('C', 'A')
+        added_arrows, a_to_u_path, a_to_v_path = self.alg._apply_rule10(G, 'u', 'A', 'C')
+        assert not added_arrows
+        assert a_to_u_path == []
+        assert a_to_v_path == []
+        assert G.has_circle_edge('C', 'A')
 
-        # # if we create an edge from A -> y, there is now a distinction
-        # G = G_copy.copy()
-        # added_arrows, uncov_path = self.alg._apply_rule10(G, 'u', 'A', 'C')
-
+        # if we create an edge from A -> y, there is now a distinction
+        G = G_copy.copy()
+        G.add_edge('A', 'y')
+        added_arrows, a_to_u_path, a_to_v_path = self.alg._apply_rule10(G, 'u', 'A', 'C')
+        assert added_arrows
+        assert a_to_u_path == ['A', 'x', 'y', 'z', 'u']
+        assert a_to_v_path == ['A', 'y', 'z', 'v']
+        
     def test_fci_unobserved_confounder(self):
         # x4 -> x2 <- x1 <- x3
         # x1 <--> x2
