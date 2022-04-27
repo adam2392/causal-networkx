@@ -7,7 +7,7 @@ jobs:
       steps:
         - restore_cache:
             keys:
-              - source-cache-connectivity
+              - source-cache-causality
 
         - checkout
 
@@ -21,7 +21,7 @@ jobs:
               git fetch upstream
 
         - save_cache:
-            key: source-cache-connectivity
+            key: source-cache-causality
             paths:
               - ".git"
 
@@ -64,6 +64,7 @@ jobs:
             command: |
               pip install --upgrade --progress-bar off -r requirements.txt
               pip install --upgrade --progress-bar off -r dev-requirements.txt
+              pip intall --upgrade --progress-bar off requests
 
         - save_cache:
             key: pip-cache
