@@ -32,7 +32,6 @@ author = "Adam Li"
 version = VERSION_SHORT
 release = VERSION
 
-
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -52,8 +51,8 @@ extensions = [
     "sphinx.ext.viewcode",
     # "sphinx_gallery.gen_gallery",
     "sphinxcontrib.bibtex",
-    "numpydoc",
     "sphinx_copybutton",
+    "numpydoc",
     # "sphinx.ext.napoleon",
     "myst_parser",
     "gh_substitutions",
@@ -70,9 +69,16 @@ autosummary_generate = True
 autodoc_default_options = {"inherited-members": None}
 autodoc_typehints = "signature"
 
+# -- numpydoc
+# Below is needed to prevent errors
+numpydoc_xref_param_type = True
+numpydoc_class_members_toctree = False
+numpydoc_attributes_as_param_list = True
+numpydoc_use_blockquotes = True
+numpydoc_validate = True
+
 # Tell myst-parser to assign header anchors for h1-h3.
 myst_heading_anchors = 3
-
 suppress_warnings = ["myst.header"]
 
 # Add any paths that contain templates here, relative to this directory.
