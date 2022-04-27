@@ -105,7 +105,7 @@ When you're ready to contribute code to address an open issue, please follow the
 
     <details><summary>Expand details 👇</summary><br/>
 
-    Commiting directly to the main branch of your fork is not recommended. It will be easier to keep your fork clean if you work on a seperate branch for each contribution you intend to make.
+    Committing directly to the main branch of your fork is not recommended. It will be easier to keep your fork clean if you work on a separate branch for each contribution you intend to make.
 
     You can create a new branch with
 
@@ -122,7 +122,7 @@ When you're ready to contribute code to address an open issue, please follow the
     Our continuous integration (CI) testing runs [a number of checks](https://github.com/adam2392/causal-networkx/actions) for each pull request on [GitHub Actions](https://github.com/features/actions). You can run most of these tests locally, which is something you should do *before* opening a PR to help speed up the review process and make it easier for us.
 
     First, you should run [`isort`](https://github.com/PyCQA/isort) and [`black`](https://github.com/psf/black) to make sure you code is formatted consistently.
-    Many IDEs support code formatters as plugins, so you may be able to setup isort and black to run automatically everytime you save.
+    Many IDEs support code formatters as plugins, so you may be able to setup isort and black to run automatically every time you save.
     For example, [`black.vim`](https://github.com/psf/black/tree/master/plugin) will give you this functionality in Vim. But both `isort` and `black` are also easy to run directly from the command line.
     Just run this from the root of your clone:
 
