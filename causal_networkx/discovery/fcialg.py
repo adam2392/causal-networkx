@@ -421,7 +421,7 @@ class FCI(ConstraintDiscovery):
 
         return added_arrows, uncov_path
 
-    def _apply_rule10(self, graph: PAG, u, a, c) -> Tuple[bool, List]:
+    def _apply_rule10(self, graph: PAG, u, a, c) -> Tuple[bool, List, List]:
         """Apply rule 10 of FCI algorithm.
 
         If A o-> C and u -> C <- v and
@@ -452,8 +452,8 @@ class FCI(ConstraintDiscovery):
             Whether or not arrows were modified in the graph.
         """
         added_arrows = False
-        a_to_u_path = []
-        a_to_v_path = []
+        a_to_u_path: List[Any] = []
+        a_to_v_path: List[Any] = []
 
         # Check A o-> C
         if graph.has_circle_edge(c, a) and graph.has_edge(a, c):
@@ -461,7 +461,7 @@ class FCI(ConstraintDiscovery):
             if graph.has_edge(u, c) and not graph.has_circle_edge(c, u):
                 # loop through all adjacent neighbors of c now to get
                 # possible 'v' node
-                for idx, v in enumerate(graph.neighbors(c)):
+                for v in graph.neighbors(c):
                     if v in (a, u):
                         continue
 
@@ -475,7 +475,7 @@ class FCI(ConstraintDiscovery):
                     # that:
                     # i) begin the uncovered pd path and
                     # ii) are distinct (done by construction) here
-                    for (m, w) in combinations(graph.neighbors(a)):  # type: ignore
+                    for (m, w) in combinations(graph.neighbors(a), 2):  # type: ignore
                         if m == c or w == c:
                             continue
 
@@ -490,6 +490,9 @@ class FCI(ConstraintDiscovery):
                         a_to_u_path, found_uncovered_a_to_u = uncovered_pd_path(
                             graph, a, u, max_path_length=self.max_path_length, second_node=m
                         )
+
+                        # we did not find a path from 'a' to 'u' through 'm', so look for
+                        # a path through 'w' instead
                         if not found_uncovered_a_to_u:
                             a_to_u_path, found_uncovered_a_to_u = uncovered_pd_path(
                                 graph, a, u, max_path_length=self.max_path_length, second_node=w
@@ -546,17 +549,7 @@ class FCI(ConstraintDiscovery):
 
                     # see if there was a change flag
                     if (
-                        any(
-                            [
-                                r1_add,
-                                r2_add,
-                                r3_add,
-                                r4_add,
-                                r8_add,
-                                r9_add,
-                                r10_add
-                            ]
-                        )
+                        any([r1_add, r2_add, r3_add, r4_add, r8_add, r9_add, r10_add])
                         and not change_flag
                     ):
                         logger.debug("Got here...")

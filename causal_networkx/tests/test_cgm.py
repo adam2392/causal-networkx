@@ -389,6 +389,15 @@ class TestPAG(TestCausalGraph):
         # also setup a PAG with uncertain edges
         self.PAG.add_circle_edge(1, 4, bidirected=True)
 
+    def test_neighbors(self):
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
+        G = self.PAG
+
+        assert G.neighbors(2) == [0]
+        assert G.neighbors(0) == [2, 1]
+        assert G.neighbors(1) == [0, 4]
+        assert G.neighbors(4) == [1]
+
     def test_wrong_construction(self):
         # PAGs only allow one type of edge between any two nodes
         edge_list = [

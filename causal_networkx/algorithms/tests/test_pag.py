@@ -165,8 +165,11 @@ def test_uncovered_pd_path():
     assert found_uncovered_pd_path
     assert uncov_pd_path == ["A", "u", "x", "y", "z", "C"]
 
-    with pytest.raises(RuntimeError, match='Both first and second'):
-        uncovered_pd_path(G, "u", "C", 100, "A", 'x')
+    with pytest.raises(RuntimeError, match="Both first and second"):
+        uncovered_pd_path(G, "u", "C", 100, "A", "x")
+
+    with pytest.raises(RuntimeError, match="Some nodes not in"):
+        uncovered_pd_path(G, "u", "C", 100, "wrong")
 
 
 def test_uncovered_pd_path_intersecting():
@@ -178,20 +181,36 @@ def test_uncovered_pd_path_intersecting():
     # create an uncovered pd path from A to u that ends at C
     G.add_chain(["A", "x", "y", "z", "u", "C"])
     G.add_circle_edge("y", "x")
-    G_copy = G.copy()
 
     # create an uncovered pd path from A to v so now C is a collider for <u, C, v>
     G.add_chain(["z", "v", "C"])
+    G_copy = G.copy()
 
     # get the uncovered pd paths
     uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "A", "C", 100, second_node="x")
     assert found_uncovered_pd_path
-    assert uncov_pd_path == ['A', 'x', 'y', 'z', 'u', 'C']
+    assert uncov_pd_path == ["A", "x", "y", "z", "u", "C"]
 
     # when we make the <A, x, y> triple shielded, it is no longer an uncovered path
-    G.add_edge('A', 'y')
+    G.add_edge("A", "y")
     uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "A", "C", 100, second_node="x")
     assert not found_uncovered_pd_path
     assert uncov_pd_path == []
 
-    
+    # For the second test, let's add another uncovered path
+    G = G_copy.copy()
+    G.add_chain(["A", "w", "y"])
+    uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "A", "C", 100, second_node="w")
+    assert found_uncovered_pd_path
+    assert uncov_pd_path == ["A", "w", "y", "z", "u", "C"]
+
+    # For the third test, the path through x is not an uncovered pd path, but the path through 'y' is
+    G = G_copy.copy()
+    G.add_edge("A", "y")
+    uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "A", "C", 100, second_node="x")
+    assert not found_uncovered_pd_path
+    assert uncov_pd_path == []
+
+    uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "A", "C", 100, second_node="y")
+    assert found_uncovered_pd_path
+    assert uncov_pd_path == ["A", "y", "z", "u", "C"]

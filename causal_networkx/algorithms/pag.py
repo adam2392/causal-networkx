@@ -333,7 +333,17 @@ def uncovered_pd_path(
     to an adjacent third node that comes before 'u'.
     """
     if first_node is not None and second_node is not None:
-        raise RuntimeError(f'Both first and second node cannot be set.')
+        raise RuntimeError(
+            "Both first and second node cannot be set. Only set one of them. "
+            "Read the docstring for more information."
+        )
+
+    if (
+        any(node not in graph for node in (u, c))
+        or (first_node is not None and first_node not in graph)
+        or (second_node is not None and second_node not in graph)
+    ):
+        raise RuntimeError("Some nodes are not in graph... Double check function arguments.")
 
     if max_path_length == np.inf:
         max_path_length = 1000
@@ -365,7 +375,7 @@ def uncovered_pd_path(
         explored_nodes[first_node] = None
     if second_node is not None:
         explored_nodes[second_node] = None
-        
+
         # we now want to start on the second_node
         start_node = second_node
 
@@ -419,7 +429,7 @@ def uncovered_pd_path(
     # return the actual uncovered pd path
     if first_node is None:
         first_node = u
-    
+
     if found_uncovered_pd_path:
         uncov_pd_path = deque([])  # type: ignore
         uncov_pd_path.appendleft(c)  # type: ignore

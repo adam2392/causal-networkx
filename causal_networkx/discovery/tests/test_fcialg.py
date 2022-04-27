@@ -376,26 +376,40 @@ class Test_FCI:
         # create an uncovered pd path from A to u that ends at C
         G.add_chain(["A", "x", "y", "z", "u", "C"])
         G.add_circle_edge("y", "x")
-        G_copy = G.copy()
 
         # create an uncovered pd path from A to v so now C is a collider for <u, C, v>
-        G.add_chain(["A", "x", "y", "z", "v", "C"])
+        G.add_edge("z", "v")
+        G.add_edge("v", "C")
+        G_copy = G.copy()
 
         # 'x' and 'x' are not distinct, so won't orient
-        added_arrows, a_to_u_path, a_to_v_path = self.alg._apply_rule10(G, 'u', 'A', 'C')
+        added_arrows, a_to_u_path, a_to_v_path = self.alg._apply_rule10(G, "u", "A", "C")
         assert not added_arrows
         assert a_to_u_path == []
         assert a_to_v_path == []
-        assert G.has_circle_edge('C', 'A')
+        assert G.has_circle_edge("C", "A")
 
         # if we create an edge from A -> y, there is now a distinction
         G = G_copy.copy()
-        G.add_edge('A', 'y')
-        added_arrows, a_to_u_path, a_to_v_path = self.alg._apply_rule10(G, 'u', 'A', 'C')
+        G.add_chain(["A", "xy", "y"])
+        added_arrows, a_to_u_path, a_to_v_path = self.alg._apply_rule10(G, "u", "A", "C")
         assert added_arrows
-        assert a_to_u_path == ['A', 'x', 'y', 'z', 'u']
-        assert a_to_v_path == ['A', 'y', 'z', 'v']
-        
+        assert a_to_u_path == ["A", "x", "y", "z", "u"]
+        assert a_to_v_path == ["A", "xy", "y", "z", "v"]
+
+        # by making one edge not potentially directed, we break R10
+        G.remove_edge("z", "u")
+        G.add_edge("u", "z")
+        added_arrows, a_to_u_path, a_to_v_path = self.alg._apply_rule10(G, "u", "A", "C")
+        assert not added_arrows
+        assert a_to_u_path == []
+        assert a_to_v_path == []
+        G.add_circle_edge("z", "u")
+        added_arrows, a_to_u_path, a_to_v_path = self.alg._apply_rule10(G, "u", "A", "C")
+        assert not added_arrows
+        assert a_to_u_path == []
+        assert a_to_v_path == []
+
     def test_fci_unobserved_confounder(self):
         # x4 -> x2 <- x1 <- x3
         # x1 <--> x2
@@ -531,10 +545,6 @@ class Test_FCI:
         expected_pag.add_bidirected_edge("x1", "x2")
         expected_pag.add_bidirected_edge("x4", "x5")
 
-        print(pag.to_adjacency_graph().edges)
-        print(pag.edges)
-        print(pag.bidirected_edges)
-        print(pag.circle_edges)
         assert set(pag.bidirected_edges) == set(expected_pag.bidirected_edges)
         assert set(pag.edges) == set(expected_pag.edges)
         assert set(pag.circle_edges) == set(expected_pag.circle_edges)

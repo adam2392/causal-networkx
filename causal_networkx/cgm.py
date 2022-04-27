@@ -927,7 +927,7 @@ class PAG(CausalGraph):
                 elif self.edge_type(node, nghbr) == "arrow":
                     # check similar qualities
                     self._check_arrow_edge(node, nghbr)
-                else:
+                elif self.edge_type(node, nghbr) == "bidirected":
                     # then this is a bidirected edge
                     self._check_bidirected_edge(node, nghbr)
 
@@ -1410,11 +1410,13 @@ class PAG(CausalGraph):
 
     def neighbors(self, u):
         """Get all adjacent nodes of 'u' with any edge to/from it."""
-        nghbrs = []
+        # we use a dictionary compared to a set to make sure order is kept
+        nghbrs = dict()
         for graph in self._graphs:
+            graph = graph.to_undirected()
             if u in graph:
-                nghbrs.extend(list(graph.neighbors(u)))
-        return nghbrs
+                nghbrs.update({node: None for node in graph.neighbors(u)})
+        return list(nghbrs.keys())
 
     def print_edge(self, u, v):
         """Representation of edge between u and v as string.
