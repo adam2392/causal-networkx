@@ -477,11 +477,11 @@ class Test_FCI:
         """
         Test FCI algorithm with more complex graph.
 
-        Use Figure 2 from [1].
+        Use Figure 2 from :footcite:`Colombo2012`.
 
         References
         ----------
-        [1] https://arxiv.org/pdf/1104.5617.pdf
+        .. footbibliography::
         """
         edge_list = [
             ("x4", "x1"),

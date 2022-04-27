@@ -19,9 +19,14 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 from causal_networkx.version import VERSION, VERSION_SHORT  # noqa: E402
 
+curdir = os.path.dirname(__file__)
+sys.path.append(os.path.abspath(os.path.join(curdir, "..")))
+sys.path.append(os.path.abspath(os.path.join(curdir, "..", "causal_networkx")))
+sys.path.append(os.path.abspath(os.path.join(curdir, "sphinxext")))
+
 # -- Project information -----------------------------------------------------
 
-project = "causal-networkx"
+project = "Causal-Networkx"
 copyright = f"{datetime.today().year}, Adam Li"
 author = "Adam Li"
 version = VERSION_SHORT
@@ -30,20 +35,40 @@ release = VERSION
 
 # -- General configuration ---------------------------------------------------
 
+# If your documentation needs a minimal Sphinx version, state it here.
+#
+needs_sphinx = "4.0"
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
-    "myst_parser",
-    "sphinx.ext.intersphinx",
-    "sphinx.ext.viewcode",
+    "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
-    "sphinx_copybutton",
+    "sphinx.ext.intersphinx",
     "sphinx_autodoc_typehints",
-    'gh_substitutions'
+    "sphinx.ext.mathjax",
+    "sphinx.ext.viewcode",
+    # "sphinx_gallery.gen_gallery",
+    "sphinxcontrib.bibtex",
+    "numpydoc",
+    "sphinx_copybutton",
+    # "sphinx.ext.napoleon",
+    "myst_parser",
+    "gh_substitutions",
 ]
+
+# configure sphinx-copybutton
+copybutton_prompt_text = r">>> |\.\.\. |\$ "
+copybutton_prompt_is_regexp = True
+
+# generate autosummary even if no references
+# -- sphinx.ext.autosummary
+autosummary_generate = True
+
+autodoc_default_options = {"inherited-members": None}
+autodoc_typehints = "signature"
 
 # Tell myst-parser to assign header anchors for h1-h3.
 myst_heading_anchors = 3
@@ -62,11 +87,27 @@ source_suffix = [".rst", ".md"]
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/devdocs", None),
+    "scipy": ("https://scipy.github.io/devdocs", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/dev", None),
+    "sklearn": ("https://scikit-learn.org/stable", None),
+    "joblib": ("https://joblib.readthedocs.io/en/latest", None),
+    "networkx": ("https://networkx.org/documentation/latest/", None),
     # Uncomment these if you use them in your codebase:
     #  "torch": ("https://pytorch.org/docs/stable", None),
     #  "datasets": ("https://huggingface.co/docs/datasets/master/en", None),
     #  "transformers": ("https://huggingface.co/docs/transformers/master/en", None),
 }
+
+# sphinxcontrib-bibtex
+bibtex_bibfiles = ["./references.bib"]
+bibtex_style = "unsrt"
+bibtex_footbibliography_header = ""
+
+
+# The master toctree document.
+master_doc = "index"
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -74,7 +115,7 @@ intersphinx_mapping = {
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "furo"
+html_theme = "pydata_sphinx_theme"
 
 html_title = f"causal-networkx v{VERSION}"
 
@@ -82,9 +123,7 @@ html_title = f"causal-networkx v{VERSION}"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
-
 html_css_files = ["css/custom.css"]
-
 html_favicon = "_static/favicon.ico"
 
 html_theme_options = {

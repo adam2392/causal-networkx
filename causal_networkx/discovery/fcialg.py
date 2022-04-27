@@ -29,6 +29,9 @@ class FCI(ConstraintDiscovery):
     ):
         """The Fast Causal Inference (FCI) algorithm for causal discovery.
 
+        A complete constraint-based causal discovery algorithm that
+        operates on observational data :footcite:`Zhang2008`.
+
         Parameters
         ----------
         ci_estimator : Callable
@@ -51,10 +54,7 @@ class FCI(ConstraintDiscovery):
 
         References
         ----------
-        [1] Jiji Zhang. On the completeness of orientation rules
-        for causal discovery in the presence of latent confounders
-        and selection bias. Artificial Intelligence,
-        172(16):1873–1896, 2008.
+        .. footbibliography::
 
         Notes
         -----

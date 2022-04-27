@@ -206,8 +206,8 @@ def g_square_binary(
     """G square test for a binary data.
 
     When running a conditional-independence test, degrees of freecom
-    is calculated. It is defined as 2^|S|, where |S| is the
-    cardinality of the separating set, S.
+    is calculated. It is defined as ``2^|S|``, where ``|S|`` is the
+    cardinality of the separating set, ``S``.
 
     Parameters
     ----------
@@ -238,11 +238,11 @@ def g_square_binary(
         2 * \sum_{a,b} S^{a,b}_{ij} ln(\frac{s^{ab}_{ij} M}{s_i^a s_j^b})
 
     which takes the sum over occurrences of 'a' and 'b' and multiplies
-    it by the number of samples, M and normalizes it.
+    it by the number of samples, M and normalizes it :footcite:`Neapolitan2003`.
 
     References
     ----------
-    See: http://www.cs.technion.ac.il/~dang/books/Learning%20Bayesian%20Networks(Neapolitan,%20Richard).pdf
+    .. footbibliography::
     """
     if isinstance(data, np.ndarray):
         data = pd.DataFrame(data)

@@ -14,12 +14,11 @@ def test_possibly_d_separated():
     """Test possibly d-separated set construction.
 
     Uses Figure 15, 16, 17 and 18 in "Discovery Algorithms without
-    Causal Sufficiency" in [1].
+    Causal Sufficiency" in :footcite:`Spirtes1993`.
 
     References
     ----------
-    [1] Spirtes, P., Glymour, C. and Scheines, R. (2000). Causation,
-    Prediction, and Search, 2nd ed. MIT Press, Cambridge, MA. MR1815675
+    .. footbibliography::
     """
     edge_list = [
         ("D", "A"),

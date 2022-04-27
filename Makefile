@@ -5,7 +5,7 @@ CODESPELL_DIRS ?= causal_networkx/ docs/ examples/
 .PHONY : docs
 docs :
 	rm -rf docs/build/
-	sphinx-autobuild -b html --watch causal_networkx/ docs/source/ docs/build/
+	sphinx-autobuild -b html --watch causal_networkx/ docs/ docs/build/
 
 .PHONY : run-checks
 

@@ -85,11 +85,6 @@ def topological_sort(G: CausalGraph):
     See also
     --------
     networkx.algorithms.topological_sort
-
-    References
-    ----------
-    .. [1] Manber, U. (1989).
-       *Introduction to Algorithms - A Creative Approach.* Addison-Wesley.
     """
     assert isinstance(G, CausalGraph)
 
