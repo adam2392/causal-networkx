@@ -128,6 +128,7 @@ intersphinx_mapping = {
     #  "datasets": ("https://huggingface.co/docs/datasets/master/en", None),
     #  "transformers": ("https://huggingface.co/docs/transformers/master/en", None),
 }
+intersphinx_timeout = 5
 
 # sphinxcontrib-bibtex
 bibtex_bibfiles = ["./references.bib"]

@@ -64,7 +64,7 @@ jobs:
             command: |
               pip install --upgrade --progress-bar off -r requirements.txt
               pip install --upgrade --progress-bar off -r dev-requirements.txt
-              pip intall --upgrade --progress-bar off requests
+              pip install --upgrade --progress-bar off requests
 
         - save_cache:
             key: pip-cache
