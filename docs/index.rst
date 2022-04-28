@@ -6,7 +6,18 @@
 **causal-networkx**
 ===================
 
-.. automodule:: causal_networkx
+Causal-Networkx is a Python package for representing causal graphs, such as Acyclic
+Directed Mixed Graphs (ADMG), also known as causal DAGs and Partial Ancestral Graphs (PAGs).
+We loosely build on top of ``networkx`` such that we maintain all the well-tested and efficient
+algorithms and data structures of ``networkx``, and implement causal-specific graph algorithms. 
+We implement basic causal discovery algorithms, causal ID algorithms (coming soon) and causal
+estimation algorithms (coming soon). It comes with causal graph traversal algorithms,
+such as m-separation.
+
+We encourage you to use the package for your causal inference research and also build on top
+with relevant Pull Requests.
+
+See our examples for walk-throughs of how to use the package.
 
 Contents
 --------
@@ -26,7 +37,6 @@ Contents
 
    License <https://raw.githubusercontent.com/adma2392/causal-networkx/main/LICENSE>
    Contributing <https://github.com/adam2392/causal-networkx/CONTRIBUTING.md>
-   GitHub Repository <https://github.com/adam2392/causal-networkx>
 
 Team
 ----

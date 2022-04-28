@@ -22,8 +22,8 @@ class NetworkXMixin:
         """Name as a string identifier of the graph.
 
         This graph attribute appears in the attribute dict G.graph
-        keyed by the string `"name"`. as well as an attribute (technically
-        a property) `G.name`. This is entirely user controlled.
+        keyed by the string "name". as well as an attribute (technically
+        a property) ``G.name``. This is entirely user controlled.
         """
         return self.dag.name
 
@@ -224,14 +224,14 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
         packages are installed the data can also be a 2D NumPy array, a
         SciPy sparse matrix, or a PyGraphviz graph. The edges in this graph
         represent directed edges between observed variables, which are
-        represented using a `networkx.DiGraph`. This is a DAG, meaning
+        represented using a ``networkx.DiGraph``. This is a DAG, meaning
         there are no cycles.
 
     incoming_latent_data : input graph (optional, default: None)
         Data to initialize bidirected edge graph. If None (default) an empty
         graph is created. The data format can be any as ``incoming_graph_data``.
         The edges in this graph represent bidirected edges, which are
-        represented using a `networkx.Graph`.
+        represented using a ``networkx.Graph``.
 
     incoming_selection_bias : input graph (optional, default: None)
         Data to initialize selection bias graph. Currently,
@@ -248,7 +248,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
     Notes
     -----
     The data structure underneath the hood is stored in two networkx graphs:
-    `networkx.Graph` and `networkx.DiGraph` to represent the latent unobserved
+    ``networkx.Graph`` and ``networkx.DiGraph`` to represent the latent unobserved
     confounders and observed variables. These data structures should never be
     modified directly, but should use the CausalGraph class methods.
 
@@ -392,7 +392,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
         Adding an edge that already exists updates the edge data.
 
         Many NetworkX algorithms designed for weighted graphs use
-        an edge attribute (by default `weight`) to hold a numerical value.
+        an edge attribute (by default ``weight``) to hold a numerical value.
 
         Examples
         --------
@@ -766,20 +766,20 @@ class PAG(CausalGraph):
         packages are installed the data can also be a 2D NumPy array, a
         SciPy sparse matrix, or a PyGraphviz graph. The edges in this graph
         represent directed edges between observed variables, which are
-        represented using a `networkx.DiGraph`. This is a DAG, meaning
+        represented using a ``networkx.DiGraph``. This is a DAG, meaning
         there are no cycles.
 
     incoming_latent_data : input graph (optional, default: None)
         Data to initialize bidirected edge graph. If None (default) an empty
         graph is created. The data format can be any as ``incoming_graph_data``.
         The edges in this graph represent bidirected edges, which are
-        represented using a `networkx.Graph`.
+        represented using a ``networkx.Graph``.
 
     incoming_uncertain_data : input graph (optional, default: None)
         Data to initialize circle edge graph. If None (default) an empty
         graph is created. The data format can be any as ``incoming_graph_data``.
         The edges in this graph represent circle edges, which are represented
-        using a `networkx.DiGraph`. This does not necessarily need to be a DAG,
+        using a ``networkx.DiGraph``. This does not necessarily need to be a DAG,
         since there are circle edges possibly in both directions.
 
     incoming_selection_bias : input graph (optional, default: None)
@@ -794,13 +794,13 @@ class PAG(CausalGraph):
     -----
     In PAGs, there is only one edge between any two nodes, but there are
     different types of edges. The entire PAG is represented using multiple
-    `networkx` graphs. Together, these graphs are joined together to form an efficient
+    ``networkx`` graphs. Together, these graphs are joined together to form an efficient
     representation of the PAG.
 
-    - directed edges (->, <-, indicating causal relationship): `networkx.DiGraph`
-    - bidirected edges (<->, indicating latent confounder): `networkx.DiGraph`
-    - circular edges (-o, o-, indicating uncertainty in edge type): `networkx.DiGraph`
-    - undirected edges (-, indicating selection bias): `networkx.Graph`. Currently
+    - directed edges (->, <-, indicating causal relationship): ``networkx.DiGraph``
+    - bidirected edges (<->, indicating latent confounder): ``networkx.DiGraph``
+    - circular edges (-o, o-, indicating uncertainty in edge type): ``networkx.DiGraph``
+    - undirected edges (-, indicating selection bias): ``networkx.Graph``. Currently
       not implemented or used.
 
     Compared to causal graphs, PAGs differ in terms of how parents and children
@@ -1239,12 +1239,12 @@ class PAG(CausalGraph):
         v : node
             The node that 'u' points to in the graph.
         edge_type : str
-            An edge type as specified in `EdgeType`.
+            An edge type as specified in ``EdgeType``.
 
         Raises
         ------
         ValueError
-            If 'edge_type' is not in the `EdgeType` enumeration.
+            If 'edge_type' is not in the ``EdgeType`` enumeration.
         """
         if edge_type not in EdgeType:
             raise ValueError(

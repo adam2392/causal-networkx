@@ -7,7 +7,7 @@ from causal_networkx.cgm import CausalGraph
 
 
 def is_directed_acyclic_graph(G):
-    """Check if `G` is a directed acyclic graph (DAG) or not.
+    """Check if ``G`` is a directed acyclic graph (DAG) or not.
 
     Parameters
     ----------
@@ -16,7 +16,7 @@ def is_directed_acyclic_graph(G):
     Returns
     -------
     bool
-        True if `G` is a DAG, False otherwise
+        True if ``G`` is a DAG, False otherwise
 
     Examples
     --------

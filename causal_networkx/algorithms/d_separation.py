@@ -9,12 +9,12 @@ from causal_networkx.cgm import PAG, CausalGraph
 def d_separated(G: Union[CausalGraph, PAG], x, y, z):
     """Check d-separation among 'x' and 'y' given 'z' in graph G.
 
-    This algorithm wraps `networkx.algorithms.d_separated`, but
-    allows one to pass in a `CausalGraph` instance instead.
+    This algorithm wraps ``networkx.algorithms.d_separated``, but
+    allows one to pass in a ``CausalGraph`` instance instead.
 
     It first converts all bidirected edges into explicit unobserved
-    confounding nodes in an explicit `networkx.DiGraph`, which then
-    calls `networkx.algorithms.d_separated` to determine d-separation.
+    confounding nodes in an explicit ``networkx.DiGraph``, which then
+    calls ``networkx.algorithms.d_separated`` to determine d-separation.
     This inherently increases the runtime cost if there are many
     bidirected edges, because many nodes must be added.
 

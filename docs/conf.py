@@ -54,7 +54,7 @@ extensions = [
     "sphinx_copybutton",
     "numpydoc",
     # "sphinx.ext.napoleon",
-    "myst_parser",
+    # "myst_parser",
     "gh_substitutions",
 ]
 
@@ -99,6 +99,8 @@ numpydoc_xref_aliases = {
     # pandas
     'pd.DataFrame': 'pandas.DataFrame', 'pandas.DataFrame': 'pandas.DataFrame',
 }
+
+default_role = 'py:obj'
 
 # Tell myst-parser to assign header anchors for h1-h3.
 myst_heading_anchors = 3
