@@ -30,18 +30,6 @@ jobs:
               - "d6:88:6b:a0:80:bf:14:8e:80:2e:ed:11:52:26:37:68"
 
         - run:
-            name: Set BASH_ENV
-            command: |
-              set -e
-              echo "set -e" >> $BASH_ENV
-              echo "export OPENBLAS_NUM_THREADS=4" >> $BASH_ENV
-              echo "export PATH=~/.local/bin/:$PATH" >> $BASH_ENV
-              echo "BASH_ENV:"
-              cat $BASH_ENV
-              mkdir -p ~/causal_networkx_data
-              touch pattern.txt;
-
-        - run:
             name: Merge with upstream
             command: |
               echo $(git log -1 --pretty=%B) | tee gitlog.txt
@@ -50,6 +38,25 @@ jobs:
                 echo "Merging $(cat merge.txt)";
                 git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
               fi
+
+        - run:
+            name: Set BASH_ENV
+            command: |
+              set -e
+              sudo apt install -qq graphviz optipng python3.8-venv python3-venv libxft2 ffmpeg
+              python3.8 -m venv ~/python_env
+              echo "set -e" >> $BASH_ENV
+              echo "export OPENBLAS_NUM_THREADS=4" >> $BASH_ENV
+              echo "export XDG_RUNTIME_DIR=/tmp/runtime-circleci" >> $BASH_ENV
+              echo "export PATH=~/.local/bin/:$PATH" >> $BASH_ENV
+              echo "export DISPLAY=:99" >> $BASH_ENV
+              echo "source ~/python_env/bin/activate" >> $BASH_ENV
+              mkdir -p ~/.local/bin
+              ln -s ~/python_env/bin/python ~/.local/bin/python
+              echo "BASH_ENV:"
+              cat $BASH_ENV
+              mkdir -p ~/causal_networkx_data
+              touch pattern.txt
 
         # Load pip cache
         - restore_cache:
@@ -62,9 +69,9 @@ jobs:
         - run:
             name: Get Python running and install dependencies
             command: |
-              python -m pip install --upgrade --progress-bar off -r requirements.txt
-              python -m pip install --upgrade --progress-bar off -r dev-requirements.txt
-              python -m pip install --upgrade --progress-bar off requests
+              pip install --upgrade --progress-bar off -r requirements.txt
+              pip install --upgrade --progress-bar off -r dev-requirements.txt
+              pip install --upgrade --progress-bar off requests
 
         - save_cache:
             key: pip-cache
@@ -85,17 +92,16 @@ jobs:
                python -c "import causal_networkx;"
                python -c "import networkx;"
 
-        # Load our data
-        # - restore_cache:
-        #     keys:
-        #       - data-cache-sample
-
         # Look at what we have and fail early if there is some library conflict
         - run:
             name: Check installation
             command: |
                which python
                python -c "import numpy; numpy.show_config()"
+
+        - run:
+            name: List packages
+            command: python -m pip list
 
         - run:
             name: Get data
@@ -112,6 +118,7 @@ jobs:
         # Save the JUnit file
         - store_test_results:
             path: docs/_build/test-results
+
         - store_artifacts:
             path: docs/_build/test-results
             destination: test-results
@@ -124,13 +131,6 @@ jobs:
             root: docs/_build
             paths:
               - html
-
-        # Keep these separate, maybe better in terms of size limitations (?)
-        # - save_cache:
-        #     key: data-cache-sample
-        #     paths:
-        #       - ~/.mne
-        #       - ~/mne_data/MNE-sample-data
 
     docs-deploy:
         docker:
