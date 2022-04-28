@@ -567,21 +567,20 @@ class FCI(ConstraintDiscovery):
     def _learn_better_skeleton(
         self, X, pag: nx.Graph, sep_set: Dict[str, Dict[str, Set[Any]]], fixed_edges: Set = set()
     ):
-        from causal_networkx.discovery.skeleton import learn_skeleton_graph
+        from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_pdsep
 
         adj_graph = pag.to_adjacency_graph()
 
         # perform pairwise tests to learn skeleton
-        skel_graph, sep_set = learn_skeleton_graph(
+        skel_graph, sep_set = learn_skeleton_graph_with_pdsep(
             X,
             adj_graph,
-            fixed_edges,
             sep_set,
             self.ci_estimator,
+            fixed_edges,
             self.alpha,
             min_cond_set_size=1,
             max_cond_set_size=self.max_cond_set_size,
-            only_neighbors=False,
             max_path_length=self.max_path_length,
             pag=pag,
             **self.ci_estimator_kwargs,

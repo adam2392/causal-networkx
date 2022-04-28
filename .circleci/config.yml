@@ -3,7 +3,7 @@ version: 2.1
 jobs:
     build_docs:
       docker:
-        - image: cimg/python:3.8.13
+        - image: cimg/base:stable-20.04
       steps:
         - restore_cache:
             keys:
@@ -62,9 +62,9 @@ jobs:
         - run:
             name: Get Python running and install dependencies
             command: |
-              pip install --upgrade --progress-bar off -r requirements.txt
-              pip install --upgrade --progress-bar off -r dev-requirements.txt
-              pip install --upgrade --progress-bar off requests
+              python -m pip install --upgrade --progress-bar off -r requirements.txt
+              python -m pip install --upgrade --progress-bar off -r dev-requirements.txt
+              python -m pip install --upgrade --progress-bar off requests
 
         - save_cache:
             key: pip-cache

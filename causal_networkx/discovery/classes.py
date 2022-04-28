@@ -155,12 +155,11 @@ class ConstraintDiscovery:
         skel_graph, sep_set = learn_skeleton_graph(
             X,
             graph,
-            fixed_edges,
             sep_set,
             self.ci_estimator,
+            fixed_edges,
             self.alpha,
             max_cond_set_size=self.max_cond_set_size,
-            only_neighbors=True,
             **self.ci_estimator_kwargs,
         )
         return skel_graph, sep_set
