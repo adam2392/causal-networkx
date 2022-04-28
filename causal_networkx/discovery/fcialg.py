@@ -565,7 +565,11 @@ class FCI(ConstraintDiscovery):
             idx += 1
 
     def _learn_better_skeleton(
-        self, X, pag: nx.Graph, sep_set: Dict[str, Dict[str, Set[Any]]], fixed_edges: Set = set()
+        self,
+        X,
+        pag: nx.Graph,
+        sep_set: Dict[str, Dict[str, Set[Any]]],
+        fixed_edges: Set[Tuple[Any, Any]] = set(),
     ):
         from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_pdsep
 

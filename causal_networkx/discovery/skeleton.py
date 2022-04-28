@@ -1,5 +1,5 @@
 from itertools import combinations, permutations
-from typing import Callable, Dict, Set
+from typing import Callable, Dict, Optional, Set
 
 import networkx as nx
 import numpy as np
@@ -14,7 +14,7 @@ def learn_skeleton_graph_with_pdsep(
     adj_graph: nx.Graph,
     sep_set: Dict[str, Dict[str, Set]],
     ci_estimator: Callable,
-    fixed_edges: Set = None,
+    fixed_edges: Optional[Set] = None,
     alpha: float = 0.05,
     min_cond_set_size: int = 0,
     max_cond_set_size: int = None,
@@ -85,7 +85,7 @@ def learn_skeleton_graph_with_pdsep(
         # two nodes in the graph
         for (i, j) in permutations(nodes, 2):
             # ignore fixed edges
-            if (i, j) in fixed_edges:
+            if (i, j) in fixed_edges:  # type: ignore
                 continue
 
             # determine how we want to construct the candidates for separating nodes
