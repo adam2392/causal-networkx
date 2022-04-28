@@ -35,8 +35,8 @@ Contents
    :hidden:
    :caption: Development
 
-   License <https://raw.githubusercontent.com/adma2392/causal-networkx/main/LICENSE>
-   Contributing <https://github.com/adam2392/causal-networkx/CONTRIBUTING.md>
+   License <https://raw.githubusercontent.com/adam2392/causal-networkx/main/LICENSE>
+   Contributing <https://github.com/adam2392/causal-networkx/main/CONTRIBUTING.md>
 
 Team
 ----
