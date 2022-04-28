@@ -15,7 +15,7 @@ from datetime import datetime
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 
-sys.path.insert(0, os.path.abspath("../../"))
+sys.path.insert(0, os.path.abspath("../"))
 
 from causal_networkx.version import VERSION, VERSION_SHORT  # noqa: E402
 
@@ -102,8 +102,8 @@ numpydoc_xref_aliases = {
 default_role = 'py:obj'
 
 # Tell myst-parser to assign header anchors for h1-h3.
-myst_heading_anchors = 3
-suppress_warnings = ["myst.header"]
+# myst_heading_anchors = 3
+# suppress_warnings = ["myst.header"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -119,11 +119,11 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "numpy": ("https://numpy.org/devdocs", None),
     "scipy": ("https://scipy.github.io/devdocs", None),
-    "matplotlib": ("https://matplotlib.org/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/dev", None),
     "sklearn": ("https://scikit-learn.org/stable", None),
     "joblib": ("https://joblib.readthedocs.io/en/latest", None),
     "networkx": ("https://networkx.org/documentation/latest/", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
     # Uncomment these if you use them in your codebase:
     #  "torch": ("https://pytorch.org/docs/stable", None),
     #  "datasets": ("https://huggingface.co/docs/datasets/master/en", None),
@@ -136,7 +136,6 @@ bibtex_bibfiles = ["./references.bib"]
 bibtex_style = "unsrt"
 bibtex_footbibliography_header = ""
 
-
 # The master toctree document.
 master_doc = "index"
 
@@ -146,6 +145,10 @@ master_doc = "index"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
+# Clean up sidebar: Do not show "Source" link
+# html_show_sourcelink = False
+# html_copy_source = False
+
 html_theme = "pydata_sphinx_theme"
 
 html_title = f"causal-networkx v{VERSION}"
@@ -153,6 +156,7 @@ html_title = f"causal-networkx v{VERSION}"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
+templates_path = ['_templates']
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
 html_favicon = "_static/favicon.ico"
@@ -197,3 +201,9 @@ html_context = {
         'dev': 'v0.1 (devel)',
     },
 }
+
+# Enable nitpicky mode - which ensures that all references in the docs
+# resolve.
+
+nitpicky = True
+nitpick_ignore = []

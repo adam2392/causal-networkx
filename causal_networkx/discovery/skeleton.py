@@ -1,5 +1,5 @@
 from itertools import combinations, permutations
-from typing import Callable, Dict, Optional, Set
+from typing import Callable, Dict, Optional, Set, Tuple
 
 import networkx as nx
 import numpy as np
@@ -132,10 +132,18 @@ def learn_skeleton_graph(
     min_cond_set_size: int = 0,
     max_cond_set_size: int = None,
     **ci_estimator_kwargs,
-) -> nx.Graph:
-    """Learn a graph from data.
+) -> Tuple[nx.Graph, Dict[str, Dict[str, Set]]]:
+    """Learn a skeleton graph from data.
 
-    Proceed by testing neighboring nodes.
+    Proceed by testing neighboring nodes, while keeping track of test
+    statistic values (these are the ones that are
+    the "most dependent"). Remember we are testing the null hypothesis
+
+    .. math::
+        H_0:\ X \\perp Y | Z
+
+    where the alternative hypothesis is that they are dependent and hence
+    require a causal edge linking the two variables.
 
     Parameters
     ----------

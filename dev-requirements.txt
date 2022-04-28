@@ -50,6 +50,9 @@ check-manifest
 pydocstyle
 codespell
 
+nbsphinx
+pandoc
+
 # for independence testing
 scikit-learn
 

@@ -1,4 +1,7 @@
-.. currentmodule:: causal_networkx
+:orphan:
+
+.. _whats_new:
+
 .. include:: whats_new/_contributors.rst
 
 Release History

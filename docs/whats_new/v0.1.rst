@@ -1,8 +1,21 @@
+:orphan:
+
 .. include:: _contributors.rst
+
+.. _changes_0_1:
+
+What's new?
+===========
+
+Here we list a changelog of Causal-Networkx.
+
+.. contents:: Contents
+   :local:
+   :depth: 3
 
 .. currentmodule:: causal_networkx
 
-.. _changes_0_1:
+.. _current:
 
 Version 0.1
 ===========
@@ -13,7 +26,7 @@ Version 0.1
 Changelog
 ---------
 
-- |Feature| Implement and test the FCI algorithm, by `Adam Li`_ (:gh:`1`)
+- |Feature| Implement and test the :func:`causal_networkx.discovery.FCI` algorithm, by `Adam Li`_ (:gh:`1`)
 
 Code and Documentation Contributors
 -----------------------------------

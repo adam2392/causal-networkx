@@ -70,6 +70,9 @@ jobs:
               mkdir -p ~/causal_networkx_data
               touch pattern.txt
 
+        # make sure pandoc is on the system
+        - run: sudo apt update && sudo apt install -y pandoc optipng
+
         # Load pip cache
         - restore_cache:
             keys:
