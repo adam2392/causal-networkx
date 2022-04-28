@@ -53,8 +53,7 @@ extensions = [
     "sphinxcontrib.bibtex",
     "sphinx_copybutton",
     "numpydoc",
-    # "sphinx.ext.napoleon",
-    # "myst_parser",
+    'nbsphinx',
     "gh_substitutions",
 ]
 
@@ -169,6 +168,24 @@ html_theme_options = {
     'show_toc_level': 1,
     'navbar_end': ['version-switcher', 'navbar-icon-links'],
 }
+
+scrapers = ('matplotlib',)
+
+# sphinx_gallery_conf = {
+#     'doc_module': 'causal_networkx',
+#     'reference_url': {
+#         'causal_networkx': None,
+#     },
+#     'backreferences_dir': 'generated',
+#     'plot_gallery': 'True',  # Avoid annoying Unicode/bool default warning
+#     'within_subsection_order': ExampleTitleSortKey,
+#     'examples_dirs': ['../examples'],
+#     'gallery_dirs': ['auto_examples'],
+#     'filename_pattern': '^((?!sgskip).)*$',
+#     'matplotlib_animations': True,
+#     'compress_images': ('images', 'thumbnails'),
+#     'image_scrapers': scrapers,
+# }
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
