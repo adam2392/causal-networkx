@@ -30,6 +30,7 @@ pydata-sphinx-theme
 sphinx_gallery
 sphinxcontrib-bibtex
 numpydoc
+ipython
 
 matplotlib
 
