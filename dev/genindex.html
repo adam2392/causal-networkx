@@ -1,0 +1,784 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; causal-networkx v0.1.0</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="canonical" href="https://adam2392.github.io/causal-networkx/stable/index.html" />
+    <script type="text/javascript" src="_static/copybutton.js"></script>
+    <script type="text/javascript" src="_static/scrollfix.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="index.html">
+<p class="title">Causal-Networkx</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="overview.html">
+  Overview
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="installation.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="api.html">
+  API
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="tutorials.html">
+  Tutorial
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="use.html">
+  Using Causal-Networkx
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="whats_new.html">
+  Release History
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://raw.githubusercontent.com/adam2392/causal-networkx/main/LICENSE">
+  License
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://github.com/adam2392/causal-networkx/main/CONTRIBUTING.md">
+  Contributing
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <div class="dropdown">
+    <button type="button" class="btn btn-primary btn-sm navbar-btn dropdown-toggle" id="dLabelMore" data-toggle="dropdown">
+        v0.1.0
+        <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu list-group-flush py-0" aria-labelledby="dLabelMore">
+        <a class="list-group-item list-group-item-action py-1" href="https://adam2392.github.io/causal-networkx/dev/index.html">v0.1 (devel)</a>
+    </div>
+</div>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/adam2392/causal-networkx" rel="noopener" target="_blank" title="GitHub"><span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ 
+</div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.__contains__">__contains__() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.__contains__">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.__hash__">__hash__() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.__hash__">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.add_bidirected_edge">add_bidirected_edge() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.add_bidirected_edge">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.add_bidirected_edges_from">add_bidirected_edges_from() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.add_bidirected_edges_from">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.add_chain">add_chain() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.add_chain">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.add_circle_edge">add_circle_edge() (causal_networkx.PAG method)</a>
+</li>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.add_circle_edges_from">add_circle_edges_from() (causal_networkx.PAG method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.add_edge">add_edge() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.add_edge">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.add_edges_from">add_edges_from() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.add_edges_from">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.add_node">add_node() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.add_node">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.add_nodes_from">add_nodes_from() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.add_nodes_from">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.all_edges">all_edges() (causal_networkx.PAG method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.bidirected_edges">bidirected_edges (causal_networkx.CausalGraph property)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.bidirected_edges">(causal_networkx.PAG property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.c_components">c_components (causal_networkx.CausalGraph property)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.c_components">(causal_networkx.PAG property)</a>
+</li>
+      </ul></li>
+      <li>
+    causal_networkx
+
+      <ul>
+        <li><a href="api.html#module-causal_networkx">module</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph">CausalGraph (class in causal_networkx)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.children">children() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.children">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.ci.Oracle.html#causal_networkx.ci.Oracle.ci_test">ci_test() (causal_networkx.ci.Oracle method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.circle_edges">circle_edges (causal_networkx.PAG property)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.clear">clear() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.clear">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.clear_edges">clear_edges() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.clear_edges">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.compute_full_graph">compute_full_graph() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.compute_full_graph">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.copy">copy() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.copy">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.algorithms.d_separated.html#causal_networkx.algorithms.d_separated">d_separated() (in module causal_networkx.algorithms)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.degree">degree() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.degree">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.algorithms.discriminating_path.html#causal_networkx.algorithms.discriminating_path">discriminating_path() (in module causal_networkx.algorithms)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.do">do() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.do">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.draw">draw() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.draw">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.dummy_sample">dummy_sample() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.dummy_sample">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.edge_subgraph">edge_subgraph() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.edge_subgraph">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.edge_type">edge_type() (causal_networkx.PAG method)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.edges">edges (causal_networkx.CausalGraph property)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.edges">(causal_networkx.PAG property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI">FCI (class in causal_networkx.discovery)</a>
+</li>
+      <li><a href="generated/causal_networkx.algorithms.find_cliques.html#causal_networkx.algorithms.find_cliques">find_cliques() (in module causal_networkx.algorithms)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.ci.fisherz.html#causal_networkx.ci.fisherz">fisherz() (in module causal_networkx.ci)</a>
+</li>
+      <li><a href="generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI.fit">fit() (causal_networkx.discovery.FCI method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.discovery.PC.html#causal_networkx.discovery.PC.fit">(causal_networkx.discovery.PC method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.ci.g_square_binary.html#causal_networkx.ci.g_square_binary">g_square_binary() (in module causal_networkx.ci)</a>
+</li>
+      <li><a href="generated/causal_networkx.ci.g_square_discrete.html#causal_networkx.ci.g_square_discrete">g_square_discrete() (in module causal_networkx.ci)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel.get_causal_graph">get_causal_graph() (causal_networkx.StructuralCausalModel method)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.get_edge_data">get_edge_data() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.get_edge_data">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.has_adjacency">has_adjacency() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.has_adjacency">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.has_bidirected_edge">has_bidirected_edge() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.has_bidirected_edge">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.has_circle_edge">has_circle_edge() (causal_networkx.PAG method)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.has_edge">has_edge() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.has_edge">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.has_node">has_node() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.has_node">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.is_acyclic">is_acyclic() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.is_acyclic">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.is_def_collider">is_def_collider() (causal_networkx.PAG method)</a>
+</li>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.is_def_noncollider">is_def_noncollider() (causal_networkx.PAG method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.algorithms.is_directed_acyclic_graph.html#causal_networkx.algorithms.is_directed_acyclic_graph">is_directed_acyclic_graph() (in module causal_networkx.algorithms)</a>
+</li>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.is_edge_visible">is_edge_visible() (causal_networkx.PAG method)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.is_unshielded_collider">is_unshielded_collider() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.is_unshielded_collider">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI.learn_skeleton">learn_skeleton() (causal_networkx.discovery.FCI method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.discovery.PC.html#causal_networkx.discovery.PC.learn_skeleton">(causal_networkx.discovery.PC method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    module
+
+      <ul>
+        <li><a href="api.html#module-causal_networkx">causal_networkx</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.name">name (causal_networkx.CausalGraph property)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.name">(causal_networkx.PAG property)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.neighbors">neighbors() (causal_networkx.PAG method)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.nodes">nodes (causal_networkx.CausalGraph property)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.nodes">(causal_networkx.PAG property)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.number_of_bidirected_edges">number_of_bidirected_edges() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.number_of_bidirected_edges">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.number_of_circle_edges">number_of_circle_edges() (causal_networkx.PAG method)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.number_of_edges">number_of_edges() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.number_of_edges">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.number_of_nodes">number_of_nodes() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.number_of_nodes">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.ci.Oracle.html#causal_networkx.ci.Oracle">Oracle (class in causal_networkx.ci)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.order">order() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.order">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.orient_circle_edge">orient_circle_edge() (causal_networkx.PAG method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG">PAG (class in causal_networkx)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.parents">parents() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.parents">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.discovery.PC.html#causal_networkx.discovery.PC">PC (class in causal_networkx.discovery)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.pc_components">pc_components() (causal_networkx.PAG method)</a>
+</li>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.possible_children">possible_children() (causal_networkx.PAG method)</a>
+</li>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.possible_parents">possible_parents() (causal_networkx.PAG method)</a>
+</li>
+      <li><a href="generated/causal_networkx.algorithms.possibly_d_sep_sets.html#causal_networkx.algorithms.possibly_d_sep_sets">possibly_d_sep_sets() (in module causal_networkx.algorithms)</a>
+</li>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.print_edge">print_edge() (causal_networkx.PAG method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.remove_bidirected_edge">remove_bidirected_edge() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.remove_bidirected_edge">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.remove_circle_edge">remove_circle_edge() (causal_networkx.PAG method)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.remove_edge">remove_edge() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.remove_edge">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.remove_edges_from">remove_edges_from() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.remove_edges_from">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.remove_node">remove_node() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.remove_node">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.remove_nodes_from">remove_nodes_from() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.remove_nodes_from">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.sample">sample() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.sample">(causal_networkx.PAG method)</a>
+</li>
+        <li><a href="generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel.sample">(causal_networkx.StructuralCausalModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.size">size() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.size">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.soft_do">soft_do() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.soft_do">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel">StructuralCausalModel (class in causal_networkx)</a>
+</li>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.subgraph">subgraph() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.subgraph">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.to_adjacency_graph">to_adjacency_graph() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.to_adjacency_graph">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.tomag">tomag() (causal_networkx.CausalGraph method)</a>
+
+      <ul>
+        <li><a href="generated/causal_networkx.PAG.html#causal_networkx.PAG.tomag">(causal_networkx.PAG method)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/causal_networkx.algorithms.topological_sort.html#causal_networkx.algorithms.topological_sort">topological_sort() (in module causal_networkx.algorithms)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/causal_networkx.algorithms.uncovered_pd_path.html#causal_networkx.algorithms.uncovered_pd_path">uncovered_pd_path() (in module causal_networkx.algorithms)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, Adam Li.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,447 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>causal_networkx.discovery.pcalg &#8212; causal-networkx v0.1.0</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="canonical" href="https://adam2392.github.io/causal-networkx/stable/index.html" />
+    <script type="text/javascript" src="../../../_static/copybutton.js"></script>
+    <script type="text/javascript" src="../../../_static/scrollfix.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../../../index.html">
+<p class="title">Causal-Networkx</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../../overview.html">
+  Overview
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../../installation.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../../api.html">
+  API
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../../tutorials.html">
+  Tutorial
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../../use.html">
+  Using Causal-Networkx
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../../whats_new.html">
+  Release History
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://raw.githubusercontent.com/adam2392/causal-networkx/main/LICENSE">
+  License
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://github.com/adam2392/causal-networkx/main/CONTRIBUTING.md">
+  Contributing
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <div class="dropdown">
+    <button type="button" class="btn btn-primary btn-sm navbar-btn dropdown-toggle" id="dLabelMore" data-toggle="dropdown">
+        v0.1.0
+        <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu list-group-flush py-0" aria-labelledby="dLabelMore">
+        <a class="list-group-item list-group-item-action py-1" href="https://adam2392.github.io/causal-networkx/dev/index.html">v0.1 (devel)</a>
+    </div>
+</div>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/adam2392/causal-networkx" rel="noopener" target="_blank" title="GitHub"><span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for causal_networkx.discovery.pcalg</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">causal_networkx</span> <span class="kn">import</span> <span class="n">CausalGraph</span>
+<span class="kn">from</span> <span class="nn">causal_networkx.discovery.classes</span> <span class="kn">import</span> <span class="n">ConstraintDiscovery</span>
+
+
+<span class="k">def</span> <span class="nf">_has_both_edges</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_has_any_edge</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">or</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PC"><a class="viewcode-back" href="../../../generated/causal_networkx.discovery.PC.html#causal_networkx.discovery.PC">[docs]</a><span class="k">class</span> <span class="nc">PC</span><span class="p">(</span><span class="n">ConstraintDiscovery</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ci_estimator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">init_graph</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">CausalGraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fixed_edges</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_cond_set_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">ci_estimator_kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Peter and Clarke (PC) algorithm for causal discovery.</span>
+
+<span class="sd">        Assumes causal sufficiency, that is, all confounders in the</span>
+<span class="sd">        causal graph are observed variables.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ci_estimator : Callable</span>
+<span class="sd">            The conditional independence test function. The arguments of the estimator should</span>
+<span class="sd">            be data, node, node to compare, conditioning set of nodes, and any additional</span>
+<span class="sd">            keyword arguments.</span>
+<span class="sd">        alpha : float, optional</span>
+<span class="sd">            The significance level for the conditional independence test, by default 0.05.</span>
+<span class="sd">        init_graph : nx.Graph | CausalGraph, optional</span>
+<span class="sd">            An initialized graph. If ``None``, then will initialize PC using a</span>
+<span class="sd">            complete graph. By default None.</span>
+<span class="sd">        fixed_edges : nx.Graph, optional</span>
+<span class="sd">            An undirected graph with fixed edges. If ``None``, then will initialize PC using a</span>
+<span class="sd">            complete graph. By default None.</span>
+<span class="sd">        max_cond_set_size : int, optional</span>
+<span class="sd">            Maximum size of the conditioning set, by default None. Used to limit</span>
+<span class="sd">            the computation spent on the algorithm.</span>
+<span class="sd">        ci_estimator_kwargs : dict</span>
+<span class="sd">            Keyword arguments for the ``ci_estimator`` function.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        graph_ : PAG</span>
+<span class="sd">            The graph discovered.</span>
+<span class="sd">        separating_sets_ : dict</span>
+<span class="sd">            The dictionary of separating sets, where it is a nested dictionary from</span>
+<span class="sd">            the variable name to the variable it is being compared to the set of</span>
+<span class="sd">            variables in the graph that separate the two.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">ci_estimator</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">init_graph</span><span class="p">,</span> <span class="n">fixed_edges</span><span class="p">,</span> <span class="n">max_cond_set_size</span><span class="p">,</span> <span class="o">**</span><span class="n">ci_estimator_kwargs</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="PC.learn_skeleton"><a class="viewcode-back" href="../../../generated/causal_networkx.discovery.PC.html#causal_networkx.discovery.PC.learn_skeleton">[docs]</a>    <span class="k">def</span> <span class="nf">learn_skeleton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;Learn skeleton from data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pd.DataFrame</span>
+<span class="sd">            Dataset.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        skel_graph : nx.Graph</span>
+<span class="sd">            The skeleton graph.</span>
+<span class="sd">        sep_set : Dict[str, Dict[str, Set]]</span>
+<span class="sd">            The separating set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">,</span> <span class="n">fixed_edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_graph</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_learn_skeleton_from_neighbors</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">,</span> <span class="n">fixed_edges</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span></div>
+
+<div class="viewcode-block" id="PC.fit"><a class="viewcode-back" href="../../../generated/causal_networkx.discovery.PC.html#causal_networkx.discovery.PC.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Fit PC algorithm on dataset &#39;X&#39;.&quot;&quot;&quot;</span>
+        <span class="c1"># learn skeleton</span>
+        <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learn_skeleton</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="c1"># perform CI tests to orient edges into a DAG</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orient_edges</span><span class="p">(</span><span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">separating_sets_</span> <span class="o">=</span> <span class="n">sep_set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph_</span> <span class="o">=</span> <span class="n">graph</span></div>
+
+    <span class="k">def</span> <span class="nf">_orient_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Orient edges in a skeleton graph to estimate the causal DAG, or CPDAG.</span>
+
+<span class="sd">        Uses the separation sets to orient edges via conditional independence</span>
+<span class="sd">        testing.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        skel_graph : nx.Graph</span>
+<span class="sd">            A skeleton graph. If ``None``, then will initialize PC using a</span>
+<span class="sd">            complete graph. By default None.</span>
+<span class="sd">        sep_set : _type_</span>
+<span class="sd">            _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dag</span> <span class="o">=</span> <span class="n">skel_graph</span><span class="o">.</span><span class="n">to_directed</span><span class="p">()</span>
+        <span class="n">node_ids</span> <span class="o">=</span> <span class="n">skel_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">node_ids</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">adj_i</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">dag</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">adj_i</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">adj_j</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">dag</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">j</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">adj_j</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">sep_set</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">common_k</span> <span class="o">=</span> <span class="n">adj_i</span> <span class="o">&amp;</span> <span class="n">adj_j</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">common_k</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sep_set</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                        <span class="c1"># _logger.debug(&#39;S: remove edge (%s, %s)&#39; % (k, i))</span>
+                        <span class="n">dag</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+                        <span class="c1"># _logger.debug(&#39;S: remove edge (%s, %s)&#39; % (k, j))</span>
+                        <span class="n">dag</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+        <span class="c1"># For all the combination of nodes i and j, apply the following</span>
+        <span class="c1"># rules.</span>
+        <span class="n">old_dag</span> <span class="o">=</span> <span class="n">dag</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">node_ids</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="c1"># Rule 1: Orient i-j into i-&gt;j whenever there is an arrow k-&gt;i</span>
+                <span class="c1"># such that k and j are nonadjacent.</span>
+                <span class="c1">#</span>
+                <span class="c1"># Check if i-j.</span>
+                <span class="k">if</span> <span class="n">_has_both_edges</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+                    <span class="c1"># Look all the predecessors of i.</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">dag</span><span class="o">.</span><span class="n">predecessors</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                        <span class="c1"># Skip if there is an arrow i-&gt;k.</span>
+                        <span class="k">if</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+                            <span class="k">continue</span>
+                        <span class="c1"># Skip if k and j are adjacent.</span>
+                        <span class="k">if</span> <span class="n">_has_any_edge</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+                            <span class="k">continue</span>
+                        <span class="c1"># Make i-j into i-&gt;j</span>
+                        <span class="c1"># _logger.debug(&quot;R1: remove edge (%s, %s)&quot; % (j, i))</span>
+                        <span class="n">dag</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+                <span class="c1"># Rule 2: Orient i-j into i-&gt;j whenever there is a chain</span>
+                <span class="c1"># i-&gt;k-&gt;j.</span>
+                <span class="c1">#</span>
+                <span class="c1"># Check if i-j.</span>
+                <span class="k">if</span> <span class="n">_has_both_edges</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+                    <span class="c1"># Find nodes k where k is i-&gt;k.</span>
+                    <span class="n">succs_i</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">dag</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                            <span class="n">succs_i</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                    <span class="c1"># Find nodes j where j is k-&gt;j.</span>
+                    <span class="n">preds_j</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">dag</span><span class="o">.</span><span class="n">predecessors</span><span class="p">(</span><span class="n">j</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+                            <span class="n">preds_j</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                    <span class="c1"># Check if there is any node k where i-&gt;k-&gt;j.</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">succs_i</span> <span class="o">&amp;</span> <span class="n">preds_j</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="c1"># Make i-j into i-&gt;j</span>
+                        <span class="c1"># _logger.debug(&quot;R2: remove edge (%s, %s)&quot; % (j, i))</span>
+                        <span class="n">dag</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+                <span class="c1"># Rule 3: Orient i-j into i-&gt;j whenever there are two chains</span>
+                <span class="c1"># i-k-&gt;j and i-l-&gt;j such that k and l are nonadjacent.</span>
+                <span class="c1">#</span>
+                <span class="c1"># Check if i-j.</span>
+                <span class="k">if</span> <span class="n">_has_both_edges</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+                    <span class="c1"># Find nodes k where i-k.</span>
+                    <span class="n">adj_i</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">dag</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                            <span class="n">adj_i</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                    <span class="c1"># For all the pairs of nodes in adj_i,</span>
+                    <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">adj_i</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                        <span class="c1"># Skip if k and l are adjacent.</span>
+                        <span class="k">if</span> <span class="n">_has_any_edge</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
+                            <span class="k">continue</span>
+                        <span class="c1"># Skip if not k-&gt;j.</span>
+                        <span class="k">if</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">j</span><span class="p">)):</span>
+                            <span class="k">continue</span>
+                        <span class="c1"># Skip if not l-&gt;j.</span>
+                        <span class="k">if</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">j</span><span class="p">)):</span>
+                            <span class="k">continue</span>
+                        <span class="c1"># Make i-j into i-&gt;j.</span>
+                        <span class="c1"># _logger.debug(&#39;R3: remove edge (%s, %s)&#39; % (j, i))</span>
+                        <span class="n">dag</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+                <span class="c1"># Rule 4: Orient i-j into i-&gt;j whenever there are two chains</span>
+                <span class="c1"># i-k-&gt;l and k-&gt;l-&gt;j such that k and j are nonadjacent.</span>
+                <span class="c1">#</span>
+                <span class="c1"># However, this rule is not necessary when the PC-algorithm</span>
+                <span class="c1"># is used to estimate a DAG.</span>
+
+            <span class="k">if</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_isomorphic</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">old_dag</span><span class="p">):</span>
+                <span class="k">break</span>
+            <span class="n">old_dag</span> <span class="o">=</span> <span class="n">dag</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">dag</span></div>
+</pre></div>
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, Adam Li.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>
