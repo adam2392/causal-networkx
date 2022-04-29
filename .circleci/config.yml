@@ -1,13 +1,19 @@
 version: 2.1
 
+_xvfb: &xvfb
+  name: Start Xvfb virtual framebuffer
+  command: |
+    echo "export DISPLAY=:99" >> $BASH_ENV
+    /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1280x1024x24 -ac +extension GLX +render -noreset -nolisten tcp -nolisten unix
+
 jobs:
     build_docs:
       docker:
-        - image: circleci/python:3.8.5-buster
+        - image: cimg/base:stable-20.04
       steps:
         - restore_cache:
             keys:
-              - source-cache-connectivity
+              - source-cache-causality
 
         - checkout
 
@@ -21,29 +27,28 @@ jobs:
               git fetch upstream
 
         - save_cache:
-            key: source-cache-connectivity
+            key: source-cache-causality
             paths:
               - ".git"
+
+        - run:
+            name: Check-skip
+            command: |
+              set -e
+              export COMMIT_MESSAGE=$(git log --format=oneline -n 1);
+              if [[ -v CIRCLE_PULL_REQUEST ]] && ([[ "$COMMIT_MESSAGE" == *"[skip circle]"* ]] || [[ "$COMMIT_MESSAGE" == *"[circle skip]"* ]]); then
+                echo "Skip detected, exiting job ${CIRCLE_JOB} for PR ${CIRCLE_PULL_REQUEST}."
+                circleci-agent step halt;
+              fi
 
         - add_ssh_keys:
             fingerprints:
               - "d6:88:6b:a0:80:bf:14:8e:80:2e:ed:11:52:26:37:68"
 
         - run:
-            name: Set BASH_ENV
-            command: |
-              set -e
-              echo "set -e" >> $BASH_ENV
-              echo "export OPENBLAS_NUM_THREADS=4" >> $BASH_ENV
-              echo "export PATH=~/.local/bin/:$PATH" >> $BASH_ENV
-              echo "BASH_ENV:"
-              cat $BASH_ENV
-              mkdir -p ~/causal_networkx_data
-              touch pattern.txt;
-
-        - run:
             name: Merge with upstream
             command: |
+              set -e
               echo $(git log -1 --pretty=%B) | tee gitlog.txt
               echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
               if [[ $(cat merge.txt) != "" ]]; then
@@ -51,6 +56,29 @@ jobs:
                 git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
               fi
 
+        - run:
+            name: Set BASH_ENV
+            command: |
+              set -e
+              ./scripts/setup_circleci.sh
+              sudo apt install -qq graphviz optipng python3.8-venv python3-venv libxft2 ffmpeg
+              python3.8 -m venv ~/python_env
+              echo "set -e" >> $BASH_ENV
+              echo "export OPENBLAS_NUM_THREADS=4" >> $BASH_ENV
+              echo "export XDG_RUNTIME_DIR=/tmp/runtime-circleci" >> $BASH_ENV
+              echo "export PATH=~/.local/bin/:$PATH" >> $BASH_ENV
+              echo "export DISPLAY=:99" >> $BASH_ENV
+              echo "source ~/python_env/bin/activate" >> $BASH_ENV
+              mkdir -p ~/.local/bin
+              ln -s ~/python_env/bin/python ~/.local/bin/python
+              echo "BASH_ENV:"
+              cat $BASH_ENV
+              mkdir -p ~/causal_networkx_data
+              touch pattern.txt
+
+        # make sure pandoc is on the system
+        - run: sudo apt update && sudo apt install -y pandoc optipng
+            
         # Load pip cache
         - restore_cache:
             keys:
@@ -62,8 +90,12 @@ jobs:
         - run:
             name: Get Python running and install dependencies
             command: |
+              pip install --upgrade --progress-bar off -r requirements.txt
               pip install --upgrade --progress-bar off -r dev-requirements.txt
-
+              pip install --upgrade --progress-bar off requests
+              pip install --upgrade --progress-bar off ipython
+              pip install -e .
+              
         - save_cache:
             key: pip-cache
             paths:
@@ -83,17 +115,16 @@ jobs:
                python -c "import causal_networkx;"
                python -c "import networkx;"
 
-        # Load our data
-        # - restore_cache:
-        #     keys:
-        #       - data-cache-sample
-
         # Look at what we have and fail early if there is some library conflict
         - run:
             name: Check installation
             command: |
                which python
                python -c "import numpy; numpy.show_config()"
+
+        - run:
+            name: List packages
+            command: python -m pip list
 
         - run:
             name: Get data
@@ -110,6 +141,7 @@ jobs:
         # Save the JUnit file
         - store_test_results:
             path: docs/_build/test-results
+
         - store_artifacts:
             path: docs/_build/test-results
             destination: test-results
@@ -122,13 +154,6 @@ jobs:
             root: docs/_build
             paths:
               - html
-
-        # Keep these separate, maybe better in terms of size limitations (?)
-        # - save_cache:
-        #     key: data-cache-sample
-        #     paths:
-        #       - ~/.mne
-        #       - ~/mne_data/MNE-sample-data
 
     docs-deploy:
         docker:

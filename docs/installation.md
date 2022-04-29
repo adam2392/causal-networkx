@@ -3,7 +3,7 @@ Installation
 
 **causal-networkx** supports Python >= 3.8.
 
-## Installing with `pip`
+## Installing with ``pip``
 
 **causal-networkx** is available [on PyPI](https://pypi.org/project/causal-networkx/). Just run
 

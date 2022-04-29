@@ -1,14 +1,11 @@
-from typing import Callable, Union
 from itertools import combinations
-from collections import defaultdict
+from typing import Callable, Dict, Set, Tuple, Union
 
-import numpy as np
 import networkx as nx
 import pandas as pd
 
 from causal_networkx import CausalGraph
 from causal_networkx.discovery.classes import ConstraintDiscovery
-from causal_networkx.discovery.skeleton import learn_skeleton_graph
 
 
 def _has_both_edges(dag, i, j):
@@ -17,18 +14,6 @@ def _has_both_edges(dag, i, j):
 
 def _has_any_edge(dag, i, j):
     return dag.has_edge(i, j) or dag.has_edge(j, i)
-
-
-def _has_one_edge(dag, i, j):
-    return (
-        (dag.has_edge(i, j) and (not dag.has_edge(j, i)))
-        or (not dag.has_edge(i, j))
-        and dag.has_edge(j, i)
-    )
-
-
-def _has_no_edge(dag, i, j):
-    return (not dag.has_edge(i, j)) and (not dag.has_edge(j, i))
 
 
 class PC(ConstraintDiscovery):
@@ -65,14 +50,43 @@ class PC(ConstraintDiscovery):
             the computation spent on the algorithm.
         ci_estimator_kwargs : dict
             Keyword arguments for the ``ci_estimator`` function.
+
+        Attributes
+        ----------
+        graph_ : PAG
+            The graph discovered.
+        separating_sets_ : dict
+            The dictionary of separating sets, where it is a nested dictionary from
+            the variable name to the variable it is being compared to the set of
+            variables in the graph that separate the two.
         """
         super().__init__(
             ci_estimator, alpha, init_graph, fixed_edges, max_cond_set_size, **ci_estimator_kwargs
         )
 
+    def learn_skeleton(self, X: pd.DataFrame) -> Tuple[nx.Graph, Dict[str, Dict[str, Set]]]:
+        """Learn skeleton from data.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Dataset.
+
+        Returns
+        -------
+        skel_graph : nx.Graph
+            The skeleton graph.
+        sep_set : Dict[str, Dict[str, Set]]
+            The separating set.
+        """
+        graph, sep_set, fixed_edges = self._initialize_graph(X)
+        skel_graph, sep_set = self._learn_skeleton_from_neighbors(X, graph, sep_set, fixed_edges)
+        return skel_graph, sep_set
+
     def fit(self, X: pd.DataFrame) -> None:
+        """Fit PC algorithm on dataset 'X'."""
         # learn skeleton
-        skel_graph, sep_set = self._learn_skeleton(X)
+        skel_graph, sep_set = self.learn_skeleton(X)
 
         # perform CI tests to orient edges into a DAG
         graph = self._orient_edges(skel_graph, sep_set)

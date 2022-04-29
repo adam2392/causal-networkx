@@ -1,7 +1,8 @@
+import networkx as nx
 import pytest
 
-import networkx as nx
-from causal_networkx.cgm import CausalGraph
+from causal_networkx.algorithms import d_separated
+from causal_networkx.cgm import PAG, CausalGraph
 
 
 class TestGraph:
@@ -9,7 +10,7 @@ class TestGraph:
         # start every graph with the confounded graph
         # 0 -> 1, 0 -> 2 with 1 <--> 0
         self.Graph = CausalGraph
-        incoming_latent_data = [("0", "1")]
+        incoming_latent_data = [(0, 1)]
 
         # build dict-of-dict-of-dict K3
         ed1, ed2 = ({}, {})
@@ -148,7 +149,7 @@ class TestNetworkxGraph(TestGraph):
         G.dag.graph["name"] = "K3"
         G.clear()
         assert list(G.nodes) == []
-        assert G.dag.graph == {}
+        assert all(graph.graph == {} for graph in G._graphs)
 
     def test_clear_edges(self):
         G = self.G.copy()
@@ -238,6 +239,7 @@ class TestNetworkxGraph(TestGraph):
         )
 
     def add_attributes(self, G):
+        """Test adding edges with attributes to graph."""
         G.dag.graph["foo"] = []
         G.nodes[0]["foo"] = []
         G.remove_edge(1, 2)
@@ -249,100 +251,273 @@ class TestNetworkxGraph(TestGraph):
 class TestCausalGraph(TestGraph):
     """Test relevant causal graph properties."""
 
+    def test_hash(self):
+        """Test hashing a causal graph."""
+        G = self.G
+        current_hash = hash(G)
+        assert G._current_hash is None
+
+        G.add_bidirected_edge("1", "2")
+        new_hash = hash(G)
+        assert current_hash != new_hash
+
+        G.remove_bidirected_edge("1", "2")
+        assert current_hash == hash(G)
+
+    def test_full_graph(self):
+        """Test computing a full graph from causal graph."""
+        G = self.G
+        # the current hash should match after computing full graphs
+        current_hash = hash(G)
+        G.compute_full_graph()
+        assert current_hash == G._current_hash
+        G.compute_full_graph()
+        assert current_hash == G._current_hash
+
+        # after adding a new edge, the hash should change and
+        # be different
+        G.add_bidirected_edge("1", "2")
+        new_hash = hash(G)
+        assert new_hash != G._current_hash
+
+        # once the hash is computed, it should be the same again
+        G.compute_full_graph()
+        assert new_hash == G._current_hash
+
+        # removing the bidirected edge should result in the same
+        # hash again
+        G.remove_bidirected_edge("1", "2")
+        assert current_hash != G._current_hash
+        G.compute_full_graph()
+        assert current_hash == G._current_hash
+
+        # different orders of edges shouldn't matter
+        G_copy = G.copy()
+        G.add_bidirected_edge("1", "2")
+        G.add_bidirected_edge("2", "3")
+        G_hash = hash(G)
+        G_copy.add_bidirected_edge("2", "3")
+        G_copy.add_bidirected_edge("1", "2")
+        copy_hash = hash(G_copy)
+        assert G_hash == copy_hash
+
+    def test_bidirected_edge(self):
+        """Test bidirected edge functions."""
+        # add bidirected edge to an isolated node
+        G = self.G
+        G.add_bidirected_edge(1, 5)
+        assert G.has_bidirected_edge(1, 5)
+        assert G.has_bidirected_edge(5, 1)
+        G.remove_bidirected_edge(1, 5, remove_isolate=False)
+        assert 5 in G
+        assert nx.is_isolate(G, 5)
+        assert not G.has_bidirected_edge(1, 5)
+        assert not G.has_bidirected_edge(5, 1)
+
+        G.add_bidirected_edge(1, 5)
+        G.remove_bidirected_edge(1, 5)
+        print(G.nodes)
+        assert 5 not in G
+
+    def test_d_separation(self):
+        G = self.G.copy()
+        # add collider on 0
+        G.add_edge(3, 0)
+
+        # normal d-separation statements should hold
+        assert not d_separated(G, 1, 2, set())
+        assert d_separated(G, 1, 2, 0)
+
+        # when we add an edge from 0 -> 1
+        # there is no d-separation statement
+        assert not d_separated(G, 3, 1, set())
+        assert not d_separated(G, 3, 1, 0)
+
+        # test collider works on bidirected edge
+        # 1 <-> 0
+        G.remove_edge(0, 1)
+        assert d_separated(G, 3, 1, set())
+        assert not d_separated(G, 3, 1, 0)
+
+    # def test_add_multiple_edges(self):
+    #     G = self.G
+    # since there is a directed edge from
+
+    def test_children_and_parents(self):
+        """Test working with children and parents."""
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
+        G = self.G.copy()
+
+        # basic parent/children semantics
+        assert [1, 2] == list(G.children(0))
+        assert [] == list(G.parents(0))
+        assert [] == list(G.children(1))
+        assert [0] == list(G.parents(1))
+
+        # a lone bidirected edge is not a child or a parent
+        G.add_bidirected_edge(2, 3)
+        assert [] == list(G.parents(3))
+        assert [] == list(G.children(3))
+
     def test_do_intervention(self):
+        """Test do interventions with causal graph."""
         pass
 
     def test_soft_intervention(self):
+        """Test soft interventions with causal graph."""
         pass
 
     def test_c_components(self):
+        """Test working with c-components in causal graph."""
         pass
+
+
+class TestPAG(TestCausalGraph):
+    def setup_method(self):
+        # setup the causal graph in previous method
+        # start every graph with the confounded graph
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
+        super().setup_method()
+        self.Graph = PAG
+        self.PAG = PAG(self.G.dag)
+
+        # Create a PAG: 2 <- 0 <-> 1 o-o 4
+        # handle the bidirected edge from 0 to 1
+        self.PAG.remove_edge(0, 1)
+        self.PAG.add_bidirected_edge(0, 1)
+
+        # also setup a PAG with uncertain edges
+        self.PAG.add_circle_edge(1, 4, bidirected=True)
+
+    def test_neighbors(self):
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
+        G = self.PAG
+
+        assert G.neighbors(2) == [0]
+        assert G.neighbors(0) == [2, 1]
+        assert G.neighbors(1) == [0, 4]
+        assert G.neighbors(4) == [1]
+
+    def test_wrong_construction(self):
+        # PAGs only allow one type of edge between any two nodes
+        edge_list = [
+            ("x4", "x1"),
+            ("x2", "x5"),
+        ]
+        latent_edge_list = [("x1", "x2"), ("x4", "x5"), ("x4", "x1")]
+        with pytest.raises(RuntimeError, match="There are multiple edges"):
+            PAG(edge_list, incoming_latent_data=latent_edge_list)
+
+    def test_hash_with_circles(self):
+        # 2 <- 0 <-> 1 o-o 4
+        G = self.PAG
+        current_hash = hash(G)
+        assert G._current_hash is None
+
+        G.add_circle_edge(2, 3, bidirected=True)
+        new_hash = hash(G)
+        assert current_hash != new_hash
+
+        G.remove_circle_edge(2, 3, bidirected=True)
+        assert current_hash == hash(G)
+
+    def test_add_circle_edge(self):
+        G = self.PAG
+        assert not G.has_edge(1, 3)
+
+        # if we try to add a circle edge to a new node
+        # where there is no arrow already without specifying
+        # bidirected, then an error will be raised
+        with pytest.raises(RuntimeError, match="There is no directed"):
+            G.add_circle_edge(1, 3)
+        G.add_circle_edge(1, 3, bidirected=True)
+        assert not G.has_edge(1, 3)
+        assert G.has_circle_edge(1, 3)
+
+    def test_adding_edge_errors(self):
+        """Test that adding edges in PAG result in certain errors."""
+        # 2 <- 0 <-> 1 o-o 4
+        G = self.PAG
+
+        with pytest.raises(RuntimeError, match="There is already an existing edge between 0 and 2"):
+            G.add_circle_edge(0, 2)
+        with pytest.raises(RuntimeError, match="There is already an existing edge between 0 and 1"):
+            G.add_circle_edge(0, 1)
+        with pytest.raises(RuntimeError, match="There is already an existing edge between 0 and 1"):
+            G.add_circle_edges_from([(0, 1)])
+        with pytest.raises(RuntimeError, match="There is already an existing edge between 1 and 4"):
+            G.add_edge(1, 4)
+        with pytest.raises(RuntimeError, match="There is already an existing edge between 0 and 1"):
+            G.add_edges_from([(0, 1)])
+        with pytest.raises(RuntimeError, match="There is already an existing edge between 0 and 2"):
+            G.add_bidirected_edge(0, 2)
+        with pytest.raises(RuntimeError, match="There is already an existing edge between 0 and 2"):
+            G.add_bidirected_edges_from([(0, 2)])
+        with pytest.raises(RuntimeError, match="There is already an existing edge between 1 and 4"):
+            G.add_bidirected_edges_from([(1, 4)])
+        with pytest.raises(RuntimeError, match="There is an existing 0 -> 2"):
+            # adding an edge from 2 -> 0, will result in an error
+            G.add_edge(2, 0)
+
+        # adding a single circle edge is fine
+        G.add_circle_edge(2, 0)
+
+    def test_remove_circle_edge(self):
+        G = self.PAG
+        assert G.has_circle_edge(1, 4)
+        G.remove_circle_edge(1, 4)
+        assert not G.has_circle_edge(1, 4)
+
+    def test_orient_circle_edge(self):
+        G = self.PAG
+        G.orient_circle_edge(1, 4, "arrow")
+        assert G.has_edge(1, 4)
+        assert not G.has_circle_edge(1, 4)
+
+        with pytest.raises(ValueError, match="edge_type must be"):
+            G.orient_circle_edge(1, 4, "circl")
+        assert G.has_edge(1, 4)
+        assert not G.has_circle_edge(1, 4)
+
+    def test_m_separation(self):
+        G = self.PAG
+        assert not d_separated(G, 0, 4, set())
+        assert not d_separated(G, 0, 4, 1)
+
+        # check various cases
+        G.add_edge(4, 3)
+        assert not d_separated(G, 3, 1, set())
+        assert d_separated(G, 3, 1, 4)
+
+        # check what happens in the other direction
+        G.remove_edge(4, 3)
+        G.add_edge(3, 4)
+        assert not d_separated(G, 3, 1, set())
+        assert not d_separated(G, 3, 1, 4)
 
     def test_children_and_parents(self):
-        pass
+        """Test working with children and parents."""
+        # 2 <- 0 <-> 1 o-o 4
+        G = self.PAG.copy()
 
+        # basic parent/children semantics
+        assert [2] == list(G.children(0))
+        assert [] == list(G.parents(0))
+        assert [] == list(G.children(1))
+        assert [] == list(G.parents(1))
+        assert [] == list(G.parents(4))
+        assert [] == list(G.children(4))
 
-# class TestEdgeSubgraph:
-#     """Unit tests for the :meth:`Graph.edge_subgraph` method."""
+        # o-o edges do not constitute possible parent/children
+        assert [] == list(G.possible_children(1)) == list(G.possible_parents(1))
+        assert [] == list(G.possible_children(4)) == list(G.possible_parents(4))
 
-#     def setup_method(self):
-#         # Create a path graph on five nodes.
-#         G = nx.path_graph(5)
-#         # Add some node, edge, and graph attributes.
-#         for i in range(5):
-#             G.nodes[i]["name"] = f"node{i}"
-#         G.edges[0, 1]["name"] = "edge01"
-#         G.edges[3, 4]["name"] = "edge34"
-#         G.graph["name"] = "graph"
-#         # Get the subgraph induced by the first and last edges.
-#         self.G = G
-#         self.H = G.edge_subgraph([(0, 1), (3, 4)])
+        # when the parental relationship between 2 and 0
+        # is made uncertain, the parents/children sets reflect
+        G.add_circle_edge(2, 0)
+        assert [] == list(G.children(0))
+        assert [] == list(G.parents(2))
 
-#     def test_correct_nodes(self):
-#         """Tests that the subgraph has the correct nodes."""
-#         assert [0, 1, 3, 4] == sorted(self.H.nodes())
-
-#     def test_correct_edges(self):
-#         """Tests that the subgraph has the correct edges."""
-#         assert [(0, 1, "edge01"), (3, 4, "edge34")] == sorted(self.H.edges(data="name"))
-
-#     def test_add_node(self):
-#         """Tests that adding a node to the original graph does not
-#         affect the nodes of the subgraph.
-
-#         """
-#         self.G.add_node(5)
-#         assert [0, 1, 3, 4] == sorted(self.H.nodes())
-
-#     def test_remove_node(self):
-#         """Tests that removing a node in the original graph does
-#         affect the nodes of the subgraph.
-
-#         """
-#         self.G.remove_node(0)
-#         assert [1, 3, 4] == sorted(self.H.nodes())
-
-#     def test_node_attr_dict(self):
-#         """Tests that the node attribute dictionary of the two graphs is
-#         the same object.
-
-#         """
-#         for v in self.H:
-#             assert self.G.nodes[v] == self.H.nodes[v]
-#         # Making a change to G should make a change in H and vice versa.
-#         self.G.nodes[0]["name"] = "foo"
-#         assert self.G.nodes[0] == self.H.nodes[0]
-#         self.H.nodes[1]["name"] = "bar"
-#         assert self.G.nodes[1] == self.H.nodes[1]
-
-#     def test_edge_attr_dict(self):
-#         """Tests that the edge attribute dictionary of the two graphs is
-#         the same object.
-
-#         """
-#         for u, v in self.H.edges():
-#             assert self.G.edges[u, v] == self.H.edges[u, v]
-#         # Making a change to G should make a change in H and vice versa.
-#         self.G.edges[0, 1]["name"] = "foo"
-#         assert self.G.edges[0, 1]["name"] == self.H.edges[0, 1]["name"]
-#         self.H.edges[3, 4]["name"] = "bar"
-#         assert self.G.edges[3, 4]["name"] == self.H.edges[3, 4]["name"]
-
-#     def test_graph_attr_dict(self):
-#         """Tests that the graph attribute dictionary of the two graphs
-#         is the same object.
-
-#         """
-#         assert self.G.graph is self.H.graph
-
-
-def test_c_components():
-    pass
-
-
-def test_causal_graph_intervention():
-    pass
-
-
-def test_causal_graph_properties():
-    pass
+        # 2 and 0 now have possible children/parents relationship
+        assert [0] == list(G.possible_parents(2))
+        assert [2] == list(G.possible_children(0))

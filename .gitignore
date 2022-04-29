@@ -6,7 +6,9 @@
 build/
 dist/
 pip-wheel-metadata/
-
+_build/
+generated/
+auto_examples
 
 # dev tools
 

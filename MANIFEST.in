@@ -1,0 +1,32 @@
+include *.md
+include *.txt
+recursive-include causal_networkx *.py
+
+### Exclude
+
+exclude .circleci/config.yml
+exclude .vscode/settings.json
+exclude CONTRIBUTING.md
+
+recursive-exclude experiments *
+recursive-exclude examples/.ipynb_checkpoints *
+recursive-exclude scripts *
+recursive-exclude tools *
+exclude mypy.ini
+exclude pytest.ini
+exclude tools
+exclude Makefile
+exclude .coveragerc
+exclude *.yml
+exclude *.yaml
+exclude .flake8
+exclude ignore_words.txt
+exclude .mailmap
+exclude *.pyc
+
+recursive-exclude docs *
+recursive-exclude logo *
+recursive-exclude examples *
+
+exclude CODE_OF_CONDUCT.md
+recursive-exclude .github *

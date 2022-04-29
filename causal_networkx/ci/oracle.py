@@ -1,8 +1,9 @@
 from typing import Union
+
 import networkx as nx
 
-from causal_networkx.cgm import CausalGraph
 from causal_networkx.algorithms.d_separation import d_separated
+from causal_networkx.cgm import CausalGraph
 
 
 class Oracle:
@@ -39,6 +40,8 @@ class Oracle:
 
         Returns
         -------
+        statistic : None
+            A return argument for the statistic.
         pvalue : float
             The pvalue. Return '1.0' if not independent and '0.0'
             if they are.
@@ -48,7 +51,7 @@ class Oracle:
         is_sep = d_separated(self.graph, x, y, sep_set)
 
         if is_sep:
-            pvalue = 0
-        else:
             pvalue = 1
-        return pvalue
+        else:
+            pvalue = 0
+        return None, pvalue

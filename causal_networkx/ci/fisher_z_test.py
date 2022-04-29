@@ -1,9 +1,9 @@
-from typing import Union, Set
 from math import log, sqrt
+from typing import Set, Union
 
 import numpy as np
-from numpy.typing import NDArray
 import pandas as pd
+from numpy.typing import NDArray
 from scipy.stats import norm
 
 
@@ -39,7 +39,7 @@ def fisherz(
     if correlation_matrix is None:
         correlation_matrix = np.corrcoef(data.T)
     sample_size = data.shape[0]
-    var = list((x, y) + sep_set)
+    var = list({x, y}.union(sep_set))  # type: ignore
     sub_corr_matrix = correlation_matrix[np.ix_(var, var)]
     inv = np.linalg.inv(sub_corr_matrix)
     r = -inv[0, 1] / sqrt(inv[0, 0] * inv[1, 1])

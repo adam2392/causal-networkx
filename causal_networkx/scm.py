@@ -1,6 +1,6 @@
+import inspect
 from collections import defaultdict
 from typing import Callable, Dict
-import inspect
 
 import pandas as pd
 
@@ -8,45 +8,59 @@ from causal_networkx.cgm import CausalGraph
 
 
 class StructuralCausalModel:
+    """Structural Causal Model (SCM) class.
+
+    Assumes that all exogenous variables are independent of
+    each other. That is no exogenous variable is a function
+    of other exogenous variables passed in.
+
+    This assumes the causal independence mechanism, where all
+    exogenous variables are independent of each other.
+
+    Parameters
+    ----------
+    exogenous : Dict of functions
+        The exogenous variables and their functional form
+        passed in as values. This forms a symbolic mapping
+        from exogenous variable names to their distribution.
+        The exogenous variable functions should not have
+        any parameters.
+    endogenous : Dict of lambda functions
+        The endogenous variable functions may have parameters.
+
+    Attributes
+    ----------
+    causal_dependencies : dict
+        A mapping of each variable and its causal dependencies based
+        on the SCM functions.
+    var_list : list
+        The list of variable names in the SCM.
+    _symbolic_runtime : dict
+        The mapping from each variable in the SCM to the sampled
+        value of that variable. Used when sampling from the SCM.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> rng = np.random.RandomState()
+    >>> func_uxy = rng.uniform
+    >>> func_uz = rng.uniform
+    >>> func_x = lambda u_xy: 2 * u_xy
+    >>> func_y = lambda x, u_xy: x
+    >>> func_z = lambda u_z: u_z**2
+    >>> scm = StructuralCausalModel(
+            exogenous={
+                "u_xy": func_uxy,
+            },
+            endogenous={"x": func_x, "y": func_y},
+        )
+
+    """
+
+    _symbolic_runtime: Dict[str, float]
+
     def __init__(self, exogenous: Dict[str, Callable], endogenous: Dict[str, Callable]) -> None:
-        """Structural Causal Model (SCM) class.
-
-        Assumes that all exogenous variables are independent of
-        each other. That is no exogenous variable is a function
-        of other exogenous variables passed in.
-
-        This assumes the causal independence mechanism, where all
-        exogenous variables are independent of each other.
-
-        Parameters
-        ----------
-        exogenous : Dict of functions
-            The exogenous variables and their functional form
-            passed in as values. This forms a symbolic mapping
-            from exogenous variable names to their distribution.
-            The exogenous variable functions should not have
-            any parameters.
-        endogenous : Dict of lambda functions
-            _description_
-            The endogenous variable functions may have parameters.
-
-        Examples
-        --------
-        >>> import numpy as np
-        >>> rng = np.random.RandomState()
-        >>> func_uxy = rng.uniform
-        >>> func_uz = rng.uniform
-        >>> func_x = lambda u_xy: 2 * u_xy
-        >>> func_y = lambda x, u_xy: x
-        >>> func_z = lambda u_z: u_z**2
-        >>> scm = StructuralCausalModel(
-                exogenous={
-                    "u_xy": func_uxy,
-                },
-                endogenous={"x": func_x, "y": func_y},
-            )
-        """
-        self.symbolic_runtime = dict()
+        self._symbolic_runtime = dict()
 
         # construct symbolic table of all variables
         self.exogenous = exogenous
@@ -89,35 +103,53 @@ class StructuralCausalModel:
         )
 
     def sample(self, n: int = 1000, include_latents: bool = True) -> pd.DataFrame:
+        """Sample from the SCM.
+
+        Parameters
+        ----------
+        n : int, optional
+            Number of samples to generate, by default 1000.
+        include_latents : bool, optional
+            Whether to include latent variables in the returned
+            dataset, by default True.
+
+        Returns
+        -------
+        result_df : pd.DataFrame
+            The sampled dataset.
+
+        """
         df_values = []
 
         # construct truth-table based on the SCM
         for _ in range(n):
-            self.symbolic_runtime = dict()
+            self._symbolic_runtime = dict()
 
             # sample all latent variables, which are independent
             for exog, exog_func in self.exogenous.items():
-                self.symbolic_runtime[exog] = exog_func()
+                self._symbolic_runtime[exog] = exog_func()
 
             # sample now all observed variables
             for endog, endog_func in self.endogenous.items():
-                endog_value = self._sample_function(endog_func, self.symbolic_runtime)
+                endog_value = self._sample_function(endog_func, self._symbolic_runtime)
 
-                if endog not in self.symbolic_runtime:
-                    self.symbolic_runtime[endog] = endog_value
+                if endog not in self._symbolic_runtime:
+                    self._symbolic_runtime[endog] = endog_value
 
             # add each sample to
-            df_values.append(self.symbolic_runtime)
+            df_values.append(self._symbolic_runtime)
 
         # now convert the final sample to a dataframe
         result_df = pd.DataFrame(df_values)
 
         if not include_latents:
             # remove latent variable columns
-            result_df.drop(self.exogenous.keys(), inplace=True)
+            result_df.drop(self.exogenous.keys(), axis=1, inplace=True)
         else:
             # make sure to order the columns with latents first
-            key = lambda x: x not in self.exogenous.keys()
+            def key(x):
+                return x not in self.exogenous.keys()
+
             result_df = result_df[sorted(result_df, key=key)]
         return result_df
 
@@ -138,13 +170,14 @@ class StructuralCausalModel:
         return func(*[result_table[name] for name in input_vars])
 
     def get_causal_graph(self) -> CausalGraph:
-        """Computes the induced causal diagram.
+        """Compute the induced causal diagram.
 
         Returns
         -------
-        G : An instance of CausalGraph
+        G : instance of CausalGraph
             The causal graphical model corresponding to
             the SCM.
+
         """
         edge_list = []
         latent_edge_dict = defaultdict(set)

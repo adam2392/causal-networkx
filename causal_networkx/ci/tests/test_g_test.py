@@ -1,9 +1,9 @@
 from math import frexp
-import pytest
 
 import numpy as np
+import pytest
 
-from causal_networkx.ci import g_square_discrete, g_square_binary
+from causal_networkx.ci import g_square_binary, g_square_discrete
 from causal_networkx.ci.tests import testdata
 
 

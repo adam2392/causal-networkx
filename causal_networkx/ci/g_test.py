@@ -1,6 +1,8 @@
 # This code was originally adapted from https://github.com/keiichishima/gsq
 # and heavily refactored and modified.
-from typing import Set, Tuple, Union
+
+from typing import List, Set, Tuple, Union
+
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
@@ -10,7 +12,7 @@ from scipy.stats import chi2
 def _calculate_contingency_tble(
     x: Union[int, str],
     y: Union[int, str],
-    sep_set: Set,
+    sep_set: Union[List, Set],
     dof: int,
     data: NDArray,
     nlevels_x: int,
@@ -67,7 +69,7 @@ def _calculate_contingency_tble(
                 if zidx == 0:
                     kdx += data[z][row_idx]  # data[row_idx, z]
                 else:
-                    lprod = np.prod(list(map(lambda x: levels[x], sep_set[:zidx])))
+                    lprod = np.prod(list(map(lambda x: levels[x], sep_set[:zidx])))  # type: ignore
                     kdx += data[z][row_idx] * lprod
 
         # increment the co-occurrence found
@@ -205,8 +207,8 @@ def g_square_binary(
     """G square test for a binary data.
 
     When running a conditional-independence test, degrees of freecom
-    is calculated. It is defined as 2^|S|, where |S| is the
-    cardinality of the separating set, S.
+    is calculated. It is defined as ``2^|S|``, where ``|S|`` is the
+    cardinality of the separating set, ``S``.
 
     Parameters
     ----------
@@ -230,16 +232,17 @@ def g_square_binary(
 
     Notes
     -----
-    The G^2 statistic for binary outcome 'a' and 'b' is:
+    The ``G^2`` statistic for binary outcome 'a' and 'b' is:
 
-        2 * \sum_{a,b} S^{a,b}_{ij} ln(\frac{s^{ab}_{ij} M}{s_i^a s_j^b})
+    .. math::
+        2 \\times \sum_{a,b} S^{a,b}_{ij} ln(\\frac{s^{ab}_{ij} M}{s_i^a s_j^b})
 
     which takes the sum over occurrences of 'a' and 'b' and multiplies
-    it by the number of samples, M and normalizes it.
+    it by the number of samples, M and normalizes it :footcite:`Neapolitan2003`.
 
     References
     ----------
-    See: http://www.cs.technion.ac.il/~dang/books/Learning%20Bayesian%20Networks(Neapolitan,%20Richard).pdf
+    .. footbibliography::
     """
     if isinstance(data, np.ndarray):
         data = pd.DataFrame(data)
@@ -279,7 +282,7 @@ def g_square_discrete(
     y: Union[int, str],
     sep_set: Set,
     levels=None,
-) -> float:
+) -> Tuple[float, float]:
     """G square test for discrete data.
 
     Parameters
@@ -299,6 +302,8 @@ def g_square_discrete(
 
     Returns
     -------
+    G2 : float
+        The G^2 test statistic.
     p_val : float
         the p-value of conditional independence.
     """
@@ -353,44 +358,3 @@ def g_square_discrete(
     else:
         p_val = chi2.sf(G2, dof)
     return G2, p_val
-
-
-if __name__ == "__main__":
-    from math import frexp
-    from causal_networkx.ci.tests import testdata
-
-    dm = np.array([testdata.bin_data]).reshape((5000, 5))
-    x = 0
-    y = 1
-
-    sets = [[], [2], [2, 3], [3, 4], [2, 3, 4]]
-    for idx in range(len(sets)):
-        print("x =", x, ", y =", y, ", s =", sets[idx], end="")
-        _, p = g_square_binary(dm, x, y, set(sets[idx]))
-        print(", p =", p, end="")
-        fr_p = frexp(p)
-        fr_a = frexp(testdata.bin_answer[idx])
-        if round(fr_p[0] - fr_a[0], 7) == 0 and fr_p[1] == fr_a[1]:
-            print(" => GOOD")
-        else:
-            print(" => WRONG")
-            print("p =", fr_p)
-            print("a =", fr_a)
-
-    dm = np.array([testdata.dis_data]).reshape((10000, 5))
-    x = 0
-    y = 1
-
-    sets = [[], [2], [2, 3], [3, 4], [2, 3, 4]]
-    for idx in range(len(sets)):
-        print("x =", x, ", y =", y, ", s =", sets[idx], end="")
-        _, p = g_square_discrete(dm, 0, 1, set(sets[idx]), [3, 2, 3, 4, 2])
-        print(", p =", p, end="")
-        fr_p = frexp(p)
-        fr_a = frexp(testdata.dis_answer[idx])
-        if round(fr_p[0] - fr_a[0], 7) == 0 and fr_p[1] == fr_a[1]:
-            print(" => GOOD")
-        else:
-            print(" => WRONG")
-            print("p =", fr_p)
-            print("a =", fr_a)

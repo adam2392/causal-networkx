@@ -1,6 +1,5 @@
-import pytest
-
 import numpy as np
+import pytest
 from numpy.testing import assert_array_equal
 from scipy.stats import multiscale_graphcorr
 
@@ -61,6 +60,7 @@ def test_scm_induced_graph():
 
 
 def test_scm_sample():
+    """Test sampling from a SCM."""
     func_uz = lambda: rng.negative_binomial(n=1, p=0.25)
     func_uxy = lambda: rng.binomial(n=1, p=0.4)
     func_x = lambda u_xy: 2 * u_xy

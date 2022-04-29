@@ -10,9 +10,8 @@ API
 
 This is the application programming interface (API) reference
 for classes (``CamelCase`` names) and functions
-(``underscore_case`` names) of MNE-Connectivity, grouped thematically by analysis
-stage. The data structure classes contain different types of connectivity data
-and are described below.
+(``underscore_case`` names) of Causal-Networkx, grouped thematically by analysis
+stage.
 
 Most-used classes
 =================
@@ -75,3 +74,6 @@ Utility Algorithms for Causal Graphs
    find_cliques
    is_directed_acyclic_graph
    topological_sort
+   discriminating_path
+   possibly_d_sep_sets
+   uncovered_pd_path

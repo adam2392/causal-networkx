@@ -15,7 +15,6 @@ exclude = '''
     | \bdoc\b
 )
 '''
-
 [tool.isort]
 profile = "black"
 multi_line_output = 3

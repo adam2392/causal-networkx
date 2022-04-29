@@ -27,12 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ['3.7', '3.8', '3.9', '3.10']
-        task:
-          - name: Test
-            run: |
-              pytest -v --color=yes tests/
-
+        # python: ['3.8', '3.9', '3.10']
         include:
           - python: '3.10'
             task:
@@ -42,7 +37,7 @@ jobs:
           - python: '3.10'
             task:
               name: Type check
-              run: mypy .
+              run: mypy ./causal_networkx
 
           - python: '3.10'
             task:
@@ -54,12 +49,12 @@ jobs:
           - python: '3.10'
             task:
               name: Style
-              run: black --check .
+              run: make check
 
           - python: '3.10'
             task:
               name: Docs
-              run: cd docs && make html
+              run: make docs
 
     steps:
       - uses: actions/checkout@v3
