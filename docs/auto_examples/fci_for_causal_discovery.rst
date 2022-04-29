@@ -160,7 +160,7 @@ Now we are ready to run the FCI algorithm.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.661 seconds)
+   **Total running time of the script:** ( 0 minutes  0.683 seconds)
 
 
 .. _sphx_glr_download_auto_examples_fci_for_causal_discovery.py:
