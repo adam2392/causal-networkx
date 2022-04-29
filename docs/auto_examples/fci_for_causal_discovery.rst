@@ -27,7 +27,7 @@ Fast Causal Inference (FCI) for causal discovery from observational data
 We will simulate some observational data and demonstrate how we
 will use the FCI algorithm.
 
-.. GENERATED FROM PYTHON SOURCE LINES 11-23
+.. GENERATED FROM PYTHON SOURCE LINES 11-22
 
 .. code-block:: default
 
@@ -36,12 +36,11 @@ will use the FCI algorithm.
     #
     # License: BSD (3-clause)
 
-    import os.path as op
     import numpy as np
 
     from causal_networkx import StructuralCausalModel
-    from causal_networkx.discovery import FCI
     from causal_networkx.ci import Oracle, g_square_discrete
+    from causal_networkx.discovery import FCI
 
 
 
@@ -50,11 +49,11 @@ will use the FCI algorithm.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 24-25
+.. GENERATED FROM PYTHON SOURCE LINES 23-24
 
 Simulate some data
 
-.. GENERATED FROM PYTHON SOURCE LINES 25-55
+.. GENERATED FROM PYTHON SOURCE LINES 24-54
 
 .. code-block:: default
 
@@ -100,11 +99,11 @@ Simulate some data
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-57
+.. GENERATED FROM PYTHON SOURCE LINES 55-56
 
 Instantiate some conditional independence tests
 
-.. GENERATED FROM PYTHON SOURCE LINES 57-60
+.. GENERATED FROM PYTHON SOURCE LINES 56-59
 
 .. code-block:: default
 
@@ -118,18 +117,16 @@ Instantiate some conditional independence tests
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-62
+.. GENERATED FROM PYTHON SOURCE LINES 60-61
 
 Now we are ready to run the FCI algorithm.
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-71
+.. GENERATED FROM PYTHON SOURCE LINES 61-68
 
 .. code-block:: default
 
 
-    fci = FCI(
-        ci_estimator=ci_estimator
-    )
+    fci = FCI(ci_estimator=ci_estimator)
     fci.fit(data)
 
     # the resulting partial ancestral graph (PAG) that is learned
@@ -163,7 +160,7 @@ Now we are ready to run the FCI algorithm.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.651 seconds)
+   **Total running time of the script:** ( 0 minutes  0.661 seconds)
 
 
 .. _sphx_glr_download_auto_examples_fci_for_causal_discovery.py:

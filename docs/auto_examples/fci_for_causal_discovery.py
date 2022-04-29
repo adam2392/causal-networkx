@@ -13,8 +13,6 @@ will use the FCI algorithm.
 #
 # License: BSD (3-clause)
 
-import os.path as op
-
 import numpy as np
 
 from causal_networkx import StructuralCausalModel
@@ -53,7 +51,7 @@ data = scm.sample(n=5000, include_latents=False)
 # the unobserved confounder
 G.draw()
 
-# %% 
+# %%
 # Instantiate some conditional independence tests
 oracle = Oracle(G)
 ci_estimator = g_square_discrete
@@ -61,9 +59,7 @@ ci_estimator = g_square_discrete
 # %%
 # Now we are ready to run the FCI algorithm.
 
-fci = FCI(
-    ci_estimator=ci_estimator
-)
+fci = FCI(ci_estimator=ci_estimator)
 fci.fit(data)
 
 # the resulting partial ancestral graph (PAG) that is learned

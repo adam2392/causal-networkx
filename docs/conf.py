@@ -56,6 +56,7 @@ extensions = [
     "sphinxcontrib.bibtex",
     "sphinx_copybutton",
     "numpydoc",
+    'IPython.sphinxext.ipython_console_highlighting',
     "nbsphinx",
     "gh_substitutions",
 ]
