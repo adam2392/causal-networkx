@@ -18,6 +18,8 @@ exclude =
     dist
     .mypy_cache
     __init__.py
+    docs/auto_examples/*
+    docs/_build/*
 
 per-file-ignores =
     # __init__.py files are allowed to have unused imports and lines-too-long

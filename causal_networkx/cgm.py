@@ -1328,7 +1328,8 @@ class PAG(CausalGraph):
 
     def draw(self):
         """Draw the graph."""
-        pass
+        nx.draw_networkx(self.circle_edge_graph)
+        super().draw()
 
     def pc_components(self):
         """Possible c-components."""

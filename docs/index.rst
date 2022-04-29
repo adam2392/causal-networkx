@@ -24,6 +24,8 @@ Contents
    overview
    installation
    api
+   tutorials
+   use
    whats_new
 
 .. toctree::

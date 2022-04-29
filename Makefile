@@ -25,7 +25,7 @@ pydocstyle:
 black:
 	@if command -v black > /dev/null; then \
 		echo "Running black"; \
-		black causal_networkx docs/examples; \
+		black causal_networkx docs/tutorials examples; \
 	else \
 		echo "black not found, please install it!"; \
 		exit 1; \
@@ -35,7 +35,7 @@ black:
 isort:
 	@if command -v isort > /dev/null; then \
 		echo "Running isort"; \
-		isort causal_networkx docs; \
+		isort causal_networkx docs examples; \
 	else \
 		echo "isort not found, please install it!"; \
 		exit 1; \
@@ -47,9 +47,9 @@ check:
 
 run-checks:
 	isort --check .
-	black --check causal_networkx docs/examples
+	black --check causal_networkx docs/tutorials examples
 	flake8 .
-	mypy .
+	mypy ./causal_networkx
 	@$(MAKE) pydocstyle
 	check-manifest
 	@$(MAKE) codespell-error

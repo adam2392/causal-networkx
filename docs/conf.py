@@ -8,6 +8,9 @@ import os
 import sys
 from datetime import datetime
 
+import sphinx_gallery  # noqa: F401
+from sphinx_gallery.sorting import ExampleTitleSortKey
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -49,11 +52,11 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
-    # "sphinx_gallery.gen_gallery",
+    "sphinx_gallery.gen_gallery",
     "sphinxcontrib.bibtex",
     "sphinx_copybutton",
     "numpydoc",
-    'nbsphinx',
+    "nbsphinx",
     "gh_substitutions",
 ]
 
@@ -78,28 +81,62 @@ numpydoc_validate = True
 
 numpydoc_xref_ignore = {
     # words
-    'instance', 'instances', 'of', 'default', 'shape', 'or',
-    'with', 'length', 'pair', 'matplotlib', 'optional', 'kwargs', 'in',
-    'dtype', 'object', 'self.verbose', 'py', 'the', 'functions', 'lambda',
-    'container', 'iterator', 'keyword', 'arguments', 'no', 'attributes',
+    "instance",
+    "instances",
+    "of",
+    "default",
+    "shape",
+    "or",
+    "with",
+    "length",
+    "pair",
+    "matplotlib",
+    "optional",
+    "kwargs",
+    "in",
+    "dtype",
+    "object",
+    "self.verbose",
+    "py",
+    "the",
+    "functions",
+    "lambda",
+    "container",
+    "iterator",
+    "keyword",
+    "arguments",
+    "no",
+    "attributes",
     # networkx
-    'node', 'nodes', 'graph',
+    "node",
+    "nodes",
+    "graph",
     # shapes
-    'n_times', 'obj', 'arrays', 'lists', 'func', 'n_nodes',
-    'n_estimated_nodes', 'n_samples', 'n_variables',
+    "n_times",
+    "obj",
+    "arrays",
+    "lists",
+    "func",
+    "n_nodes",
+    "n_estimated_nodes",
+    "n_samples",
+    "n_variables",
 }
 numpydoc_xref_aliases = {
     # Networkx
-    'nx.Graph': 'networkx.Graph', 'nx.DiGraph': 'networkx.DiGraph',
+    "nx.Graph": "networkx.Graph",
+    "nx.DiGraph": "networkx.DiGraph",
     # Causal-Networkx
-    'CausalGraph': 'causal_networkx.CausalGraph', 'PAG': 'causal_networkx.PAG',
+    "CausalGraph": "causal_networkx.CausalGraph",
+    "PAG": "causal_networkx.PAG",
     # joblib
-    'joblib.Parallel': 'joblib.Parallel',
+    "joblib.Parallel": "joblib.Parallel",
     # pandas
-    'pd.DataFrame': 'pandas.DataFrame', 'pandas.DataFrame': 'pandas.DataFrame',
+    "pd.DataFrame": "pandas.DataFrame",
+    "pandas.DataFrame": "pandas.DataFrame",
 }
 
-default_role = 'py:obj'
+default_role = "py:obj"
 
 # Tell myst-parser to assign header anchors for h1-h3.
 # myst_heading_anchors = 3
@@ -111,7 +148,8 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build"]
+exclude_patterns = ['auto_examples/index.rst', '_build', 'Thumbs.db',
+                    '.DS_Store', "**.ipynb_checkpoints", 'auto_examples/*.rst']
 
 source_suffix = [".rst", ".md"]
 
@@ -156,49 +194,51 @@ html_title = f"causal-networkx v{VERSION}"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-templates_path = ['_templates']
+templates_path = ["_templates"]
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
 html_favicon = "_static/favicon.ico"
 
 html_theme_options = {
-    'icon_links': [
-        dict(name='GitHub',
-             url='https://github.com/adam2392/causal-networkx',
-             icon='fab fa-github-square'),
+    "icon_links": [
+        dict(
+            name="GitHub",
+            url="https://github.com/adam2392/causal-networkx",
+            icon="fab fa-github-square",
+        ),
     ],
-    'use_edit_page_button': False,
-    'navigation_with_keys': False,
-    'show_toc_level': 1,
-    'navbar_end': ['version-switcher', 'navbar-icon-links'],
+    "use_edit_page_button": False,
+    "navigation_with_keys": False,
+    "show_toc_level": 1,
+    "navbar_end": ["version-switcher", "navbar-icon-links"],
 }
 
-scrapers = ('matplotlib',)
+scrapers = ("matplotlib",)
 
-# sphinx_gallery_conf = {
-#     'doc_module': 'causal_networkx',
-#     'reference_url': {
-#         'causal_networkx': None,
-#     },
-#     'backreferences_dir': 'generated',
-#     'plot_gallery': 'True',  # Avoid annoying Unicode/bool default warning
-#     'within_subsection_order': ExampleTitleSortKey,
-#     'examples_dirs': ['../examples'],
-#     'gallery_dirs': ['auto_examples'],
-#     'filename_pattern': '^((?!sgskip).)*$',
-#     'matplotlib_animations': True,
-#     'compress_images': ('images', 'thumbnails'),
-#     'image_scrapers': scrapers,
-# }
+sphinx_gallery_conf = {
+    'doc_module': 'causal_networkx',
+    'reference_url': {
+        'causal_networkx': None,
+    },
+    'backreferences_dir': 'generated',
+    'plot_gallery': 'True',  # Avoid annoying Unicode/bool default warning
+    'within_subsection_order': ExampleTitleSortKey,
+    'examples_dirs': ['../examples'],
+    'gallery_dirs': ['auto_examples'],
+    'filename_pattern': '^((?!sgskip).)*$',
+    'matplotlib_animations': True,
+    'compress_images': ('images', 'thumbnails'),
+    'image_scrapers': scrapers,
+}
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-    'index': ['search-field.html'],
+    "index": ["search-field.html"],
 }
 
 html_context = {
-    'versions_dropdown': {
-        'dev': 'v0.1 (devel)',
+    "versions_dropdown": {
+        "dev": "v0.1 (devel)",
     },
 }
 

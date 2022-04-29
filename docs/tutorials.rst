@@ -13,4 +13,4 @@ This tutorial shows how to use causal-networkx
 .. toctree::
    :maxdepth: 0
 
-   examples/cgm
+   tutorials/cgm

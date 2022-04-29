@@ -1,7 +1,6 @@
 include *.md
 include *.txt
 recursive-include causal_networkx *.py
-recursive-include examples *.ipynb
 
 ### Exclude
 
@@ -26,6 +25,7 @@ exclude *.pyc
 
 recursive-exclude docs *
 recursive-exclude logo *
+recursive-exclude examples *
 
 exclude CODE_OF_CONDUCT.md
 recursive-exclude .github *
