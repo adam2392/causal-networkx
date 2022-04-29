@@ -131,6 +131,7 @@ def learn_skeleton_graph(
     alpha: float = 0.05,
     min_cond_set_size: int = 0,
     max_cond_set_size: int = None,
+    max_combinations: int=None,
     **ci_estimator_kwargs,
 ) -> Tuple[nx.Graph, Dict[str, Dict[str, Set]]]:
     """Learn a skeleton graph from data.
@@ -168,6 +169,11 @@ def learn_skeleton_graph(
     max_cond_set_size : int, optional
         Maximum size of the conditioning set, by default None. Used to limit
         the computation spent on the algorithm.
+    max_combinations : int,optional
+        Maximum number of tries with a conditioning set chosen from the set of possible
+        parents still, by default None. If None, then will not be used. If set, then
+        the conditioning set will be chosen lexographically based on the sorted
+        test statistic values of 'ith Pa(X) -> X', for each possible parent node of 'X'.
     ci_estimator_kwargs : dict
         Keyword arguments for the ``ci_estimator`` function.
 
@@ -185,53 +191,70 @@ def learn_skeleton_graph(
         max_cond_set_size = np.inf
     if fixed_edges is None:
         fixed_edges = set()
+    if max_combinations <= 0:
+        raise RuntimeError(f'Max combinations must be at least 1, not {max_combinations}')
+
+    # store the test-statistic values for every single
+    # candidate parent-child edge (X -> Y)
+    test_stat_dict = dict()
+    pvalue_dict = dict()
 
     nodes = adj_graph.nodes
     size_cond_set = min_cond_set_size
 
-    while 1:
-        cont = False
+    parents_mapping = dict()
+    for node in nodes:
+        parents_mapping[node] = [other_node for other_node in adj_graph.neighbors(node) if other_node != node]
+
+    # loop through every node
+    for i in nodes:
         remove_edges = []
+        possible_parents = parents_mapping[i]
+        
+        for size_cond_set in range(max_cond_set_size):
+            if len(possible_parents) - 1 < size_cond_set:
+                converged = True
+                break
 
-        # loop through all possible permutation of
-        # two nodes in the graph
-        for (i, j) in permutations(nodes, 2):
-            # ignore fixed edges
-            if (i, j) in fixed_edges:
-                continue
+            for j in possible_parents:
+                # a node cannot be a parent to itself in DAGs
+                if j == i:
+                    continue
 
-            # determine how we want to construct the candidates for separating nodes
-            # check that neighbors for "i" contain "j"
-            sep_nodes = list(adj_graph.neighbors(i))
-            if j not in sep_nodes:
-                continue
-            sep_nodes.remove(j)
+                # ignore fixed edges
+                if (i, j) in fixed_edges:
+                    continue
+                
+                # now iterate through the possible parents
+                # f(possible_parents, size_cond_set, j)
+                for comb_idx, z in enumerate(possible_parents):
+                    # check the number of combinations of possible parents we have tried
+                    # to use as a separating set
+                    if max_combinations is not None and comb_idx >= max_combinations:
+                        break
 
-            # check that number of adjacencies is greater then the
-            # cardinality of the conditioning set
-            if len(sep_nodes) >= size_cond_set:
-                # loop through all possible conditioning sets of certain size
-                for cond_set in combinations(sep_nodes, size_cond_set):
                     # compute conditional independence test
-                    _, pvalue = ci_estimator(X, i, j, set(cond_set), **ci_estimator_kwargs)
+                    test_stat, pvalue = ci_estimator(X, i, j, set(z), **ci_estimator_kwargs)
+
+                    # keep track of the smallest test statistic, meaning the highest pvalue
+                    # meaning the "most" independent
+                    if np.abs(test_stat) < test_stat_dict.get((i, j), np.inf):
+                        test_stat_dict[(i, j)] = np.abs(test_stat)
+                    test_stat_dict[(i, j)] = test_stat
+
+                    # keep track of the maximum pvalue as well
+                    if pvalue > pvalue_dict.get((i, j), 0.0):
+                        pvalue_dict[(i,j)] = pvalue
 
                     # two variables found to be independent given a separating set
                     if pvalue > alpha:
-                        if adj_graph.has_edge(i, j):
-                            remove_edges.append((i, j))
+                        remove_edges.append((i, j))
                         sep_set[i][j] |= set(cond_set)
                         sep_set[j][i] |= set(cond_set)
                         break
-                cont = True
-        size_cond_set += 1
 
-        # finally remove edges after performing
-        # conditional independence tests
-        adj_graph.remove_edges_from(remove_edges)
-
-        # determine if we reached the maximum number of conditioning,
-        # or we pruned all possible permutations of nodes
-        if size_cond_set > max_cond_set_size or cont is False:
-            break
-
+            # finally remove edges after performing
+            # conditional independence tests
+            adj_graph.remove_edges_from(remove_edges)
+   
     return adj_graph, sep_set
