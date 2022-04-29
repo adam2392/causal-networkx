@@ -77,14 +77,8 @@ jobs:
               touch pattern.txt
 
         # make sure pandoc is on the system
-        - run:
-            name: Install relevant dependencies
-            command: |
-              ./tools/circleci_dependencies.sh
-
-        - run:
-            <<: *xvfb
-
+        - run: sudo apt update && sudo apt install -y pandoc optipng
+            
         # Load pip cache
         - restore_cache:
             keys:
