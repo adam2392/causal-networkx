@@ -37,7 +37,7 @@ jobs:
           - python: '3.10'
             task:
               name: Type check
-              run: mypy .
+              run: mypy ./causal_networkx
 
           - python: '3.10'
             task:
