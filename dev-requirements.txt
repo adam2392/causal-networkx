@@ -31,6 +31,8 @@ sphinx_gallery
 sphinxcontrib-bibtex
 numpydoc
 
+matplotlib
+
 # Lets Sphinx parse markdown files in addition to rst.
 myst-parser>=0.15.2,<0.18.0
 
