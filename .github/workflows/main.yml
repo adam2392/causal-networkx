@@ -51,11 +51,6 @@ jobs:
               name: Style
               run: make check
 
-          - python: '3.10'
-            task:
-              name: Docs
-              run: make docs
-
     steps:
       - uses: actions/checkout@v3
 
