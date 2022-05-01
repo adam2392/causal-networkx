@@ -92,6 +92,7 @@ jobs:
             command: |
               pip install --upgrade --progress-bar off -r requirements.txt
               pip install --upgrade --progress-bar off -r dev-requirements.txt
+              pip install --upgrade --progress-bar off -r extra-requirements.txt
               pip install --upgrade --progress-bar off requests
               pip install --upgrade --progress-bar off ipython
               pip install -e .

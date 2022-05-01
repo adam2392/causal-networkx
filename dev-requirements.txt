@@ -32,8 +32,6 @@ sphinxcontrib-bibtex
 numpydoc
 ipython
 
-matplotlib
-
 # Lets Sphinx parse markdown files in addition to rst.
 myst-parser>=0.15.2,<0.18.0
 
@@ -55,14 +53,3 @@ codespell
 
 nbsphinx
 pandoc
-
-# for independence testing
-scikit-learn
-
-# for time-series
-tigramite
-numba
-six
-
-# for causal ID
-dowhy

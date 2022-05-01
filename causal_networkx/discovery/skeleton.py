@@ -131,7 +131,7 @@ def learn_skeleton_graph(
     alpha: float = 0.05,
     min_cond_set_size: int = 0,
     max_cond_set_size: int = None,
-    max_combinations: int=None,
+    max_combinations: int = None,
     **ci_estimator_kwargs,
 ) -> Tuple[nx.Graph, Dict[str, Dict[str, Set]]]:
     """Learn a skeleton graph from data.
@@ -192,7 +192,7 @@ def learn_skeleton_graph(
     if fixed_edges is None:
         fixed_edges = set()
     if max_combinations <= 0:
-        raise RuntimeError(f'Max combinations must be at least 1, not {max_combinations}')
+        raise RuntimeError(f"Max combinations must be at least 1, not {max_combinations}")
 
     # store the test-statistic values for every single
     # candidate parent-child edge (X -> Y)
@@ -204,13 +204,15 @@ def learn_skeleton_graph(
 
     parents_mapping = dict()
     for node in nodes:
-        parents_mapping[node] = [other_node for other_node in adj_graph.neighbors(node) if other_node != node]
+        parents_mapping[node] = [
+            other_node for other_node in adj_graph.neighbors(node) if other_node != node
+        ]
 
     # loop through every node
     for i in nodes:
         remove_edges = []
         possible_parents = parents_mapping[i]
-        
+
         for size_cond_set in range(max_cond_set_size):
             if len(possible_parents) - 1 < size_cond_set:
                 converged = True
@@ -224,17 +226,17 @@ def learn_skeleton_graph(
                 # ignore fixed edges
                 if (i, j) in fixed_edges:
                     continue
-                
+
                 # now iterate through the possible parents
                 # f(possible_parents, size_cond_set, j)
-                for comb_idx, z in enumerate(possible_parents):
+                for comb_idx, cond_set in enumerate(possible_parents):
                     # check the number of combinations of possible parents we have tried
                     # to use as a separating set
                     if max_combinations is not None and comb_idx >= max_combinations:
                         break
 
                     # compute conditional independence test
-                    test_stat, pvalue = ci_estimator(X, i, j, set(z), **ci_estimator_kwargs)
+                    test_stat, pvalue = ci_estimator(X, i, j, set(cond_set), **ci_estimator_kwargs)
 
                     # keep track of the smallest test statistic, meaning the highest pvalue
                     # meaning the "most" independent
@@ -244,7 +246,7 @@ def learn_skeleton_graph(
 
                     # keep track of the maximum pvalue as well
                     if pvalue > pvalue_dict.get((i, j), 0.0):
-                        pvalue_dict[(i,j)] = pvalue
+                        pvalue_dict[(i, j)] = pvalue
 
                     # two variables found to be independent given a separating set
                     if pvalue > alpha:
@@ -256,5 +258,5 @@ def learn_skeleton_graph(
             # finally remove edges after performing
             # conditional independence tests
             adj_graph.remove_edges_from(remove_edges)
-   
+
     return adj_graph, sep_set
