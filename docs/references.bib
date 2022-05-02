@@ -29,25 +29,40 @@
   abstract = {Causal discovery becomes especially challenging when the possibility of latent confounding and/or selection bias is not assumed away. For this task, ancestral graph models are particularly useful in that they can represent the presence of latent confounding and selection effect, without explicitly invoking unobserved variables. Based on the machinery of ancestral graphs, there is a provably sound causal discovery algorithm, known as the FCI algorithm, that allows the possibility of latent confounders and selection bias. However, the orientation rules used in the algorithm are not complete. In this paper, we provide additional orientation rules, augmented by which the FCI algorithm is shown to be complete, in the sense that it can, under standard assumptions, discover all aspects of the causal structure that are uniquely determined by facts of probabilistic dependence and independence. The result is useful for developing any causal discovery and reasoning system based on ancestral graph models.}
 }
 
+@inproceedings{Zhang2011,
+  author    = {Zhang, Kun and Peters, Jonas and Janzing, Dominik and Sch\"{o}lkopf, Bernhard},
+  title     = {Kernel-Based Conditional Independence Test and Application in Causal Discovery},
+  year      = {2011},
+  isbn      = {9780974903972},
+  publisher = {AUAI Press},
+  address   = {Arlington, Virginia, USA},
+  abstract  = {Conditional independence testing is an important problem, especially in Bayesian network learning and causal discovery. Due to the curse of dimensionality, testing for conditional independence of continuous variables is particularly challenging. We propose a Kernel-based Conditional Independence test (KCI-test), by constructing an appropriate test statistic and deriving its asymptotic distribution under the null hypothesis of conditional independence. The proposed method is computationally efficient and easy to implement. Experimental results show that it outperforms other methods, especially when the conditioning set is large or the sample size is not very large, in which case other methods encounter difficulties.},
+  booktitle = {Proceedings of the Twenty-Seventh Conference on Uncertainty in Artificial Intelligence},
+  pages     = {804–813},
+  numpages  = {10},
+  location  = {Barcelona, Spain},
+  series    = {UAI'11}
+}
+
 @book{Neapolitan2003,
-  author = {Neapolitan, Richard},
-  year   = {2003},
-  month  = {01},
-  pages  = {},
-  title  = {Learning Bayesian Networks},
-  isbn   = {9780123704771},
+  author    = {Neapolitan, Richard},
+  year      = {2003},
+  month     = {01},
+  pages     = {},
+  title     = {Learning Bayesian Networks},
+  isbn      = {9780123704771},
   publisher = {Pearson},
-  doi    = {10.1145/1327942.1327961}
+  doi       = {10.1145/1327942.1327961}
 }
 
 @book{Spirtes1993,
-  author  = {Spirtes, Peter and Glymour, Clark and Scheines, Richard},
-  year    = {1993},
-  month   = {01},
-  pages   = {},
-  title   = {Causation, Prediction, and Search},
-  volume  = {81},
-  isbn    = {978-1-4612-7650-0},
-  doi     = {10.1007/978-1-4612-2748-9},
+  author    = {Spirtes, Peter and Glymour, Clark and Scheines, Richard},
+  year      = {1993},
+  month     = {01},
+  pages     = {},
+  title     = {Causation, Prediction, and Search},
+  volume    = {81},
+  isbn      = {978-1-4612-7650-0},
+  doi       = {10.1007/978-1-4612-2748-9},
   publisher = {The MIT Press}
 }

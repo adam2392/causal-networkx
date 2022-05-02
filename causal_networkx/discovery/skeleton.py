@@ -214,8 +214,9 @@ def learn_skeleton_graph(
         possible_parents = parents_mapping[i]
 
         for size_cond_set in range(max_cond_set_size):
+            # if the number of adjacencies is the size of the conditioning set
+            # exit the loop and increase the size of the conditioning set
             if len(possible_parents) - 1 < size_cond_set:
-                converged = True
                 break
 
             for j in possible_parents:
