@@ -204,7 +204,7 @@
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="kn">from</span> <span class="nn">causal_networkx.cgm</span> <span class="kn">import</span> <span class="n">CausalGraph</span>
+<span class="kn">from</span> <span class="nn">causal_networkx.cgm</span> <span class="kn">import</span> <span class="n">ADMG</span>
 
 
 <div class="viewcode-block" id="StructuralCausalModel"><a class="viewcode-back" href="../../generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel">[docs]</a><span class="k">class</span> <span class="nc">StructuralCausalModel</span><span class="p">:</span>
@@ -369,12 +369,12 @@
             <span class="n">result_table</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endogenous</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">result_table</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">result_table</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">input_vars</span><span class="p">])</span>
 
-<div class="viewcode-block" id="StructuralCausalModel.get_causal_graph"><a class="viewcode-back" href="../../generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel.get_causal_graph">[docs]</a>    <span class="k">def</span> <span class="nf">get_causal_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CausalGraph</span><span class="p">:</span>
+<div class="viewcode-block" id="StructuralCausalModel.get_causal_graph"><a class="viewcode-back" href="../../generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel.get_causal_graph">[docs]</a>    <span class="k">def</span> <span class="nf">get_causal_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ADMG</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Compute the induced causal diagram.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        G : instance of CausalGraph</span>
+<span class="sd">        G : instance of ADMG</span>
 <span class="sd">            The causal graphical model corresponding to</span>
 <span class="sd">            the SCM.</span>
 
@@ -397,7 +397,7 @@
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pc_comps</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">latent_edge_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pc_comps</span><span class="p">)</span>
 
-        <span class="n">G</span> <span class="o">=</span> <span class="n">CausalGraph</span><span class="p">(</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">ADMG</span><span class="p">(</span>
             <span class="n">incoming_graph_data</span><span class="o">=</span><span class="n">edge_list</span><span class="p">,</span>
             <span class="n">incoming_latent_data</span><span class="o">=</span><span class="n">latent_edge_list</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Induced Causal Graph from SCM&quot;</span><span class="p">,</span>

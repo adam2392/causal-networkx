@@ -203,7 +203,7 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">networkx.algorithms</span> <span class="kn">import</span> <span class="n">topological_sort</span> <span class="k">as</span> <span class="n">nx_topological_sort</span>
 
-<span class="kn">from</span> <span class="nn">causal_networkx.cgm</span> <span class="kn">import</span> <span class="n">CausalGraph</span>
+<span class="kn">from</span> <span class="nn">causal_networkx.cgm</span> <span class="kn">import</span> <span class="n">ADMG</span>
 
 
 <div class="viewcode-block" id="is_directed_acyclic_graph"><a class="viewcode-back" href="../../../generated/causal_networkx.algorithms.is_directed_acyclic_graph.html#causal_networkx.algorithms.is_directed_acyclic_graph">[docs]</a><span class="k">def</span> <span class="nf">is_directed_acyclic_graph</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
@@ -211,7 +211,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    G : CausalGraph</span>
+<span class="sd">    G : ADMG</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -222,19 +222,19 @@
 <span class="sd">    --------</span>
 <span class="sd">    Undirected graph::</span>
 
-<span class="sd">        &gt;&gt;&gt; G = CausalGraph(nx.Graph([(1, 2), (2, 3)]))</span>
+<span class="sd">        &gt;&gt;&gt; G = ADMG(nx.Graph([(1, 2), (2, 3)]))</span>
 <span class="sd">        &gt;&gt;&gt; causal_networkx.is_directed_acyclic_graph(G)</span>
 <span class="sd">        False</span>
 
 <span class="sd">    Directed graph with cycle::</span>
 
-<span class="sd">        &gt;&gt;&gt; G = CausalGraph(nx.DiGraph([(1, 2), (2, 3), (3, 1)]))</span>
+<span class="sd">        &gt;&gt;&gt; G = ADMG(nx.DiGraph([(1, 2), (2, 3), (3, 1)]))</span>
 <span class="sd">        &gt;&gt;&gt; causal_networkx.is_directed_acyclic_graph(G)</span>
 <span class="sd">        False</span>
 
 <span class="sd">    Directed acyclic graph::</span>
 
-<span class="sd">        &gt;&gt;&gt; G = CausalGraph(nx.DiGraph([(1, 2), (2, 3)]))</span>
+<span class="sd">        &gt;&gt;&gt; G = ADMG(nx.DiGraph([(1, 2), (2, 3)]))</span>
 <span class="sd">        &gt;&gt;&gt; causal_networkx.is_directed_acyclic_graph(G)</span>
 <span class="sd">        True</span>
 
@@ -245,7 +245,7 @@
     <span class="k">return</span> <span class="n">nx_is_directed_acyclic_graph</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">dag</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="topological_sort"><a class="viewcode-back" href="../../../generated/causal_networkx.algorithms.topological_sort.html#causal_networkx.algorithms.topological_sort">[docs]</a><span class="k">def</span> <span class="nf">topological_sort</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">CausalGraph</span><span class="p">):</span>
+<div class="viewcode-block" id="topological_sort"><a class="viewcode-back" href="../../../generated/causal_networkx.algorithms.topological_sort.html#causal_networkx.algorithms.topological_sort">[docs]</a><span class="k">def</span> <span class="nf">topological_sort</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">ADMG</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns a generator of nodes in topologically sorted order.</span>
 
 <span class="sd">    A topological sort is a nonunique permutation of the nodes of a</span>
@@ -255,7 +255,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    G : CausalGraph</span>
+<span class="sd">    G : ADMG</span>
 <span class="sd">        A causal directed acyclic graph (DAG)</span>
 
 <span class="sd">    Yields</span>
@@ -267,7 +267,7 @@
 <span class="sd">    --------</span>
 <span class="sd">    networkx.algorithms.dag.topological_sort</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">CausalGraph</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">ADMG</span><span class="p">)</span>
 
     <span class="c1"># topological sorting only occurs from the directed edges,</span>
     <span class="c1"># not bi-directed edges</span>

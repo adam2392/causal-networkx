@@ -206,7 +206,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="kn">from</span> <span class="nn">causal_networkx</span> <span class="kn">import</span> <span class="n">PAG</span><span class="p">,</span> <span class="n">CausalGraph</span>
+<span class="kn">from</span> <span class="nn">causal_networkx</span> <span class="kn">import</span> <span class="n">ADMG</span><span class="p">,</span> <span class="n">PAG</span>
 <span class="kn">from</span> <span class="nn">causal_networkx.algorithms.pag</span> <span class="kn">import</span> <span class="n">discriminating_path</span><span class="p">,</span> <span class="n">uncovered_pd_path</span>
 <span class="kn">from</span> <span class="nn">causal_networkx.discovery.classes</span> <span class="kn">import</span> <span class="n">ConstraintDiscovery</span>
 
@@ -218,7 +218,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">ci_estimator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
-        <span class="n">init_graph</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">CausalGraph</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">init_graph</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">ADMG</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">fixed_edges</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">max_cond_set_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">max_path_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -238,7 +238,7 @@
 <span class="sd">            _description_</span>
 <span class="sd">        alpha : float, optional</span>
 <span class="sd">            _description_, by default 0.05</span>
-<span class="sd">        init_graph : Union[nx.Graph, CausalGraph], optional</span>
+<span class="sd">        init_graph : Union[nx.Graph, ADMG], optional</span>
 <span class="sd">            _description_, by default None</span>
 <span class="sd">        fixed_edges : nx.Graph, optional</span>
 <span class="sd">            _description_, by default None</span>

@@ -200,10 +200,10 @@
   <h1>Source code for causal_networkx.algorithms.cliques</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span>
 
-<span class="kn">from</span> <span class="nn">causal_networkx.cgm</span> <span class="kn">import</span> <span class="n">CausalGraph</span>
+<span class="kn">from</span> <span class="nn">causal_networkx.cgm</span> <span class="kn">import</span> <span class="n">ADMG</span>
 
 
-<div class="viewcode-block" id="find_cliques"><a class="viewcode-back" href="../../../generated/causal_networkx.algorithms.find_cliques.html#causal_networkx.algorithms.find_cliques">[docs]</a><span class="k">def</span> <span class="nf">find_cliques</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">CausalGraph</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">:</span>
+<div class="viewcode-block" id="find_cliques"><a class="viewcode-back" href="../../../generated/causal_networkx.algorithms.find_cliques.html#causal_networkx.algorithms.find_cliques">[docs]</a><span class="k">def</span> <span class="nf">find_cliques</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">ADMG</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Find all maximal cliques in causal DAG.</span>
 
 <span class="sd">    This operates over the directed edges of the causal graph, excluding</span>
@@ -211,7 +211,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    G : CausalGraph</span>
+<span class="sd">    G : ADMG</span>
 <span class="sd">        The causal diagram.</span>
 <span class="sd">    nodes : list, optional</span>
 <span class="sd">        The list of nodes to consider, by default None</span>

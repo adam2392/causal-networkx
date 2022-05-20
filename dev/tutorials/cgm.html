@@ -490,7 +490,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
-<span class="kn">from</span> <span class="nn">causal_networkx</span> <span class="kn">import</span> <span class="n">CausalGraph</span>
+<span class="kn">from</span> <span class="nn">causal_networkx</span> <span class="kn">import</span> <span class="n">ADMG</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 </pre></div>
@@ -667,7 +667,7 @@ File <span class="ansi-green-fg">~/miniforge3/envs/causal3.8m1/lib/python3.8/sit
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span>
 <span class="p">]</span>
-<span class="n">cgm</span> <span class="o">=</span> <span class="n">CausalGraph</span><span class="p">(</span><span class="n">ebunch</span><span class="o">=</span><span class="n">nodes</span><span class="p">)</span>
+<span class="n">cgm</span> <span class="o">=</span> <span class="n">ADMG</span><span class="p">(</span><span class="n">ebunch</span><span class="o">=</span><span class="n">nodes</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -682,9 +682,9 @@ File <span class="ansi-green-fg">~/miniforge3/envs/causal3.8m1/lib/python3.8/sit
 <span class="ansi-green-intense-fg ansi-bold">      &lt;a href=&#39;vscode-notebook-cell:/Users/adam2392/Documents/causalscm/examples/cgm.ipynb#ch0000001?line=0&#39;&gt;1&lt;/a&gt;</span> nodes = [
 <span class="ansi-green-intense-fg ansi-bold">      &lt;a href=&#39;vscode-notebook-cell:/Users/adam2392/Documents/causalscm/examples/cgm.ipynb#ch0000001?line=1&#39;&gt;2&lt;/a&gt;</span>     &#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;
 <span class="ansi-green-intense-fg ansi-bold">      &lt;a href=&#39;vscode-notebook-cell:/Users/adam2392/Documents/causalscm/examples/cgm.ipynb#ch0000001?line=2&#39;&gt;3&lt;/a&gt;</span> ]
-<span class="ansi-green-fg">----&gt; &lt;a href=&#39;vscode-notebook-cell:/Users/adam2392/Documents/causalscm/examples/cgm.ipynb#ch0000001?line=3&#39;&gt;4&lt;/a&gt;</span> cgm = CausalGraphicalModel(ebunch=nodes)
+<span class="ansi-green-fg">----&gt; &lt;a href=&#39;vscode-notebook-cell:/Users/adam2392/Documents/causalscm/examples/cgm.ipynb#ch0000001?line=3&#39;&gt;4&lt;/a&gt;</span> cgm = ADMGicalModel(ebunch=nodes)
 
-<span class="ansi-red-fg">NameError</span>: name &#39;CausalGraphicalModel&#39; is not defined
+<span class="ansi-red-fg">NameError</span>: name &#39;ADMGicalModel&#39; is not defined
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">

@@ -404,8 +404,8 @@
         <span class="k">pass</span>
 
 
-<span class="c1"># TODO: implement graph views for CausalGraph</span>
-<div class="viewcode-block" id="CausalGraph"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph">[docs]</a><span class="k">class</span> <span class="nc">CausalGraph</span><span class="p">(</span><span class="n">NetworkXMixin</span><span class="p">,</span> <span class="n">GraphSampleMixin</span><span class="p">,</span> <span class="n">AddingEdgeMixin</span><span class="p">):</span>
+<span class="c1"># TODO: implement graph views for ADMG</span>
+<div class="viewcode-block" id="ADMG"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG">[docs]</a><span class="k">class</span> <span class="nc">ADMG</span><span class="p">(</span><span class="n">NetworkXMixin</span><span class="p">,</span> <span class="n">GraphSampleMixin</span><span class="p">,</span> <span class="n">AddingEdgeMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Initialize a causal graphical model.</span>
 
 <span class="sd">    This is a causal Bayesian network, where now the edges represent</span>
@@ -450,7 +450,7 @@
 <span class="sd">    The data structure underneath the hood is stored in two networkx graphs:</span>
 <span class="sd">    ``networkx.Graph`` and ``networkx.DiGraph`` to represent the latent unobserved</span>
 <span class="sd">    confounders and observed variables. These data structures should never be</span>
-<span class="sd">    modified directly, but should use the CausalGraph class methods.</span>
+<span class="sd">    modified directly, but should use the ADMG class methods.</span>
 
 <span class="sd">    - Bidirected edges (&lt;-&gt;, indicating latent confounder) = networkx.Graph</span>
 <span class="sd">    - Normal directed edges (&lt;-, -&gt;, indicating causal relationship) = networkx.DiGraph</span>
@@ -522,7 +522,7 @@
         <span class="c1"># number of edges allowed between nodes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">allowed_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
-<div class="viewcode-block" id="CausalGraph.to_adjacency_graph"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.to_adjacency_graph">[docs]</a>    <span class="k">def</span> <span class="nf">to_adjacency_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.to_adjacency_graph"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.to_adjacency_graph">[docs]</a>    <span class="k">def</span> <span class="nf">to_adjacency_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute an adjacency undirected graph.</span>
 
 <span class="sd">        Two nodes are considered adjacent if there exist</span>
@@ -557,15 +557,15 @@
         <span class="n">c_comps</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_component_graph</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">comp</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">c_comps</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
 
-<div class="viewcode-block" id="CausalGraph.has_edge"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.has_edge">[docs]</a>    <span class="k">def</span> <span class="nf">has_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.has_edge"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.has_edge">[docs]</a>    <span class="k">def</span> <span class="nf">has_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if graph has edge (u, v).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.number_of_edges"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.number_of_edges">[docs]</a>    <span class="k">def</span> <span class="nf">number_of_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.number_of_edges"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.number_of_edges">[docs]</a>    <span class="k">def</span> <span class="nf">number_of_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return number of edges in graph.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.add_edge"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.add_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.add_edge"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.add_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add an edge between u and v.</span>
 
 <span class="sd">        The nodes u and v will be automatically added if they are</span>
@@ -617,15 +617,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.add_edges_from"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.add_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.add_edges_from"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.add_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add directed edges.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.remove_edges_from"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.remove_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">remove_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.remove_edges_from"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.remove_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">remove_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Remove directed edges.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">(</span><span class="n">ebunch</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.remove_edge"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.remove_edge">[docs]</a>    <span class="k">def</span> <span class="nf">remove_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.remove_edge"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.remove_edge">[docs]</a>    <span class="k">def</span> <span class="nf">remove_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Remove directed edge.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
 
@@ -633,11 +633,11 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_directed_acyclic_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="si">}</span><span class="s2"> is not a DAG, which it should be.&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CausalGraph.number_of_bidirected_edges"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.number_of_bidirected_edges">[docs]</a>    <span class="k">def</span> <span class="nf">number_of_bidirected_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.number_of_bidirected_edges"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.number_of_bidirected_edges">[docs]</a>    <span class="k">def</span> <span class="nf">number_of_bidirected_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return number of bidirected edges in graph.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_component_graph</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">(</span><span class="n">u</span><span class="o">=</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.has_bidirected_edge"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.has_bidirected_edge">[docs]</a>    <span class="k">def</span> <span class="nf">has_bidirected_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.has_bidirected_edge"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.has_bidirected_edge">[docs]</a>    <span class="k">def</span> <span class="nf">has_bidirected_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if graph has bidirected edge (u, v).&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_component_graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">True</span>
@@ -654,7 +654,7 @@
             <span class="p">]</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="CausalGraph.compute_full_graph"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.compute_full_graph">[docs]</a>    <span class="k">def</span> <span class="nf">compute_full_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">to_networkx</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.compute_full_graph"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.compute_full_graph">[docs]</a>    <span class="k">def</span> <span class="nf">compute_full_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">to_networkx</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute the full graph.</span>
 
 <span class="sd">        Converts all bidirected edges to latent unobserved common causes.</span>
@@ -689,7 +689,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_full_graph</span></div>
 
-<div class="viewcode-block" id="CausalGraph.add_bidirected_edge"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.add_bidirected_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_bidirected_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="ADMG.add_bidirected_edge"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.add_bidirected_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_bidirected_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Add a bidirected edge between u and v.</span>
 
 <span class="sd">        The nodes u and v will be automatically added if they are</span>
@@ -725,11 +725,11 @@
         <span class="c1"># add the bidirected arrow in</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">c_component_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.add_bidirected_edges_from"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.add_bidirected_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_bidirected_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.add_bidirected_edges_from"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.add_bidirected_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_bidirected_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add bidirected edges in a bunch.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">c_component_graph</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.remove_bidirected_edge"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.remove_bidirected_edge">[docs]</a>    <span class="k">def</span> <span class="nf">remove_bidirected_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="n">remove_isolate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="ADMG.remove_bidirected_edge"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.remove_bidirected_edge">[docs]</a>    <span class="k">def</span> <span class="nf">remove_bidirected_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="n">remove_isolate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Remove a bidirected edge between u and v.</span>
 
 <span class="sd">        The nodes u and v will be automatically added if they are</span>
@@ -763,7 +763,7 @@
             <span class="k">if</span> <span class="n">v_of_edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span> <span class="ow">and</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_isolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">v_of_edge</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.children"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.children">[docs]</a>    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.children"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.children">[docs]</a>    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return an iterator over children of node n.</span>
 
 <span class="sd">        Children of node &#39;n&#39; are nodes with a directed</span>
@@ -784,7 +784,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.parents"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.parents">[docs]</a>    <span class="k">def</span> <span class="nf">parents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.parents"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.parents">[docs]</a>    <span class="k">def</span> <span class="nf">parents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return an iterator over parents of node n.</span>
 
 <span class="sd">        Parents of node &#39;n&#39; are nodes with a directed</span>
@@ -805,7 +805,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">predecessors</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.do"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.do">[docs]</a>    <span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.do"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.do">[docs]</a>    <span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Apply a do-intervention on nodes to causal graph.</span>
 
 <span class="sd">        Parameters</span>
@@ -815,7 +815,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        causal_graph : CausalGraph</span>
+<span class="sd">        causal_graph : ADMG</span>
 <span class="sd">            The mutilated causal graph.</span>
 
 <span class="sd">        Raises</span>
@@ -845,9 +845,9 @@
             <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">:</span>
                 <span class="n">dag</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">CausalGraph</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">bd_graph</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">ADMG</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">bd_graph</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.soft_do"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.soft_do">[docs]</a>    <span class="k">def</span> <span class="nf">soft_do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">dependencies</span><span class="o">=</span><span class="s2">&quot;original&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.soft_do"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.soft_do">[docs]</a>    <span class="k">def</span> <span class="nf">soft_do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">dependencies</span><span class="o">=</span><span class="s2">&quot;original&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Apply a soft-intervention on node to causal graph.</span>
 
 <span class="sd">        Parameters</span>
@@ -863,7 +863,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        causal_graph : CausalGraph</span>
+<span class="sd">        causal_graph : ADMG</span>
 <span class="sd">            The mutilated graph.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># check that nodes and dependencies are same length</span>
@@ -896,23 +896,23 @@
                 <span class="k">if</span> <span class="n">parent</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dependencies</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span>
                     <span class="n">dag</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">CausalGraph</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">bd_graph</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">ADMG</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">bd_graph</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.is_acyclic"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.is_acyclic">[docs]</a>    <span class="k">def</span> <span class="nf">is_acyclic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.is_acyclic"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.is_acyclic">[docs]</a>    <span class="k">def</span> <span class="nf">is_acyclic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if graph is acyclic.&quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">causal_networkx.algorithms.dag</span> <span class="kn">import</span> <span class="n">is_directed_acyclic_graph</span>
 
         <span class="k">return</span> <span class="n">is_directed_acyclic_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.subgraph"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.subgraph">[docs]</a>    <span class="k">def</span> <span class="nf">subgraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.subgraph"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.subgraph">[docs]</a>    <span class="k">def</span> <span class="nf">subgraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a causal subgraph of just certain nodes.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="CausalGraph.edge_subgraph"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.edge_subgraph">[docs]</a>    <span class="k">def</span> <span class="nf">edge_subgraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edges</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.edge_subgraph"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.edge_subgraph">[docs]</a>    <span class="k">def</span> <span class="nf">edge_subgraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edges</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a causal subgraph of just certain edges.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="CausalGraph.draw"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.draw"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Draws causal graph.</span>
 
 <span class="sd">        For custom parametrizations, use ``graphviz``</span>
@@ -922,7 +922,7 @@
         <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">)</span>
         <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_component_graph</span><span class="p">,</span> <span class="n">connectionstyle</span><span class="o">=</span><span class="s2">&quot;arc3,rad=-0.4&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;dotted&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CausalGraph.tomag"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.tomag">[docs]</a>    <span class="k">def</span> <span class="nf">tomag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.tomag"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.tomag">[docs]</a>    <span class="k">def</span> <span class="nf">tomag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert corresponding causal DAG to a MAG.&quot;&quot;&quot;</span>
         <span class="c1"># add http://proceedings.mlr.press/v124/hu20a/hu20a.pdf algorithm</span>
         <span class="k">pass</span></div>
@@ -943,7 +943,7 @@
 
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsure how to classify (</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
 
-<div class="viewcode-block" id="CausalGraph.is_unshielded_collider"><a class="viewcode-back" href="../../generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph.is_unshielded_collider">[docs]</a>    <span class="k">def</span> <span class="nf">is_unshielded_collider</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG.is_unshielded_collider"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.is_unshielded_collider">[docs]</a>    <span class="k">def</span> <span class="nf">is_unshielded_collider</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if unshielded collider.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_classify_three_structure</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;collider&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
@@ -951,7 +951,7 @@
 
 
 <span class="c1"># TODO: implement m-separation algorithm</span>
-<div class="viewcode-block" id="PAG"><a class="viewcode-back" href="../../generated/causal_networkx.PAG.html#causal_networkx.PAG">[docs]</a><span class="k">class</span> <span class="nc">PAG</span><span class="p">(</span><span class="n">CausalGraph</span><span class="p">):</span>
+<div class="viewcode-block" id="PAG"><a class="viewcode-back" href="../../generated/causal_networkx.PAG.html#causal_networkx.PAG">[docs]</a><span class="k">class</span> <span class="nc">PAG</span><span class="p">(</span><span class="n">ADMG</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Partial ancestral graph (PAG).</span>
 
 <span class="sd">    An equivalence class of MAGs, which represent a large</span>

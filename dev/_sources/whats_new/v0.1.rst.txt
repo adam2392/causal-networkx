@@ -26,7 +26,9 @@ Version 0.1
 Changelog
 ---------
 
+- |Feature| Implement :class:`causal_networkx.ci.KernelCITest` for kernel-based conditional independence testing, by `Adam Li`_ (:gh:`3`)
 - |Feature| Implement and test the :class:`causal_networkx.discovery.FCI` algorithm, by `Adam Li`_ (:gh:`1`)
+
 
 Code and Documentation Contributors
 -----------------------------------
