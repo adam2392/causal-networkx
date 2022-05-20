@@ -3,10 +3,10 @@ from typing import Union
 import numpy as np
 from networkx.algorithms import d_separated as nx_d_separated
 
-from causal_networkx.cgm import PAG, CausalGraph
+from causal_networkx.cgm import ADMG, PAG
 
 
-def d_separated(G: Union[CausalGraph, PAG], x, y, z):
+def d_separated(G: Union[ADMG, PAG], x, y, z):
     """Check d-separation among 'x' and 'y' given 'z' in graph G.
 
     This algorithm wraps ``networkx.algorithms.d_separated``, but

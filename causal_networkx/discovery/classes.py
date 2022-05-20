@@ -1,13 +1,13 @@
 import itertools
 from collections import defaultdict
-from typing import Any, Callable, Dict, Optional, Set, Union
+from typing import Any, Callable, Dict, Optional, Set, Tuple, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 
-from causal_networkx import PAG, CausalGraph
-from causal_networkx.discovery.skeleton import learn_skeleton_graph
+from causal_networkx import ADMG, CPDAG, PAG
+from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_neighbors
 
 
 # TODO: Add ways to fix directed edges
@@ -31,9 +31,17 @@ class ConstraintDiscovery:
     fixed_edges : nx.Graph, optional
         An undirected graph with fixed edges. If ``None``, then will initialize PC using a
         complete graph. By default None.
+    min_cond_set_size : int, optional
+        Minimum size of the conditioning set, by default None, which will be set to '0'.
+        Used to constrain the computation spent on the algorithm.
     max_cond_set_size : int, optional
         Maximum size of the conditioning set, by default None. Used to limit
         the computation spent on the algorithm.
+    max_combinations : int, optional
+        Maximum number of tries with a conditioning set chosen from the set of possible
+        parents still, by default None. If None, then will not be used. If set, then
+        the conditioning set will be chosen lexographically based on the sorted
+        test statistic values of 'ith Pa(X) -> X', for each possible parent node of 'X'.
     ci_estimator_kwargs : dict
         Keyword arguments for the ``ci_estimator`` function.
 
@@ -47,16 +55,18 @@ class ConstraintDiscovery:
         variables in the graph that separate the two.
     """
 
-    graph_: Optional[PAG]
+    graph_: Optional[Union[PAG, CPDAG]]
     separating_sets_: Optional[Dict[str, Dict[str, Set[Any]]]]
 
     def __init__(
         self,
         ci_estimator: Callable,
         alpha: float = 0.05,
-        init_graph: Union[nx.Graph, CausalGraph] = None,
+        init_graph: Union[nx.Graph, ADMG] = None,
         fixed_edges: nx.Graph = None,
+        min_cond_set_size: int = None,
         max_cond_set_size: int = None,
+        max_combinations: int = None,
         **ci_estimator_kwargs,
     ):
         self.alpha = alpha
@@ -68,6 +78,12 @@ class ConstraintDiscovery:
         if max_cond_set_size is None:
             max_cond_set_size = np.inf
         self.max_cond_set_size = max_cond_set_size
+        if min_cond_set_size is None:
+            min_cond_set_size = 0
+        self.min_cond_set_size = min_cond_set_size
+        if max_combinations is None:
+            max_combinations = np.inf
+        self.max_combinations = max_combinations
 
         self.separating_sets_ = None
         self.graph_ = None
@@ -111,26 +127,23 @@ class ConstraintDiscovery:
                 fixed_edges.add((j, i))
         return graph, sep_set, fixed_edges
 
-    def _learn_skeleton_from_neighbors(
+    def learn_skeleton(
         self,
         X: pd.DataFrame,
-        graph: nx.Graph,
-        sep_set: Dict[str, Dict[str, Set[Any]]],
+        graph: nx.Graph = None,
+        sep_set: Dict[str, Dict[str, Set[Any]]] = None,
         fixed_edges: Set = set(),
-    ):
-        """Learns the skeleton of a causal DAG using pairwise independence testing.
-
-        Encodes the skeleton via an undirected graph, `nx.Graph`. Only
-        tests with adjacent nodes in the conditioning set.
+    ) -> Tuple[nx.Graph, Dict[str, Dict[str, Set]]]:
+        """Learn skeleton from data.
 
         Parameters
         ----------
         X : pd.DataFrame
-            The data with columns as variables and samples as rows.
+            Dataset.
         graph : nx.Graph
             The undirected graph containing initialized skeleton of the causal
             relationships.
-        sep_set : set
+        sep_set : dict of dict of node
             The separating set.
         fixed_edges : set, optional
             The set of fixed edges. By default, is the empty set.
@@ -138,27 +151,24 @@ class ConstraintDiscovery:
         Returns
         -------
         skel_graph : nx.Graph
-            The undirected graph of the causal graph's skeleton.
-        sep_set : dict of dict of set
-            The separating set per pairs of variables.
+            The skeleton graph.
+        sep_set : Dict[str, Dict[str, Set]]
+            The separating set.
 
-        Raises
-        ------
-        ValueError
-            If the nodes in the initialization graph do not match the variable
-            names in passed in data, ``X``.
-        ValueError
-            If the nodes in the fixed-edge graph do not match the variable
-            names in passed in data, ``X``.
+        Notes
+        -----
+        Learning the skeleton of a causal DAG uses (conditional) independence testing
+        to determine which variables are (in)dependent. This specific algorithm
+        compares exhaustively pairs of adjacent variables.
         """
         # perform pairwise tests to learn skeleton
-        skel_graph, sep_set = learn_skeleton_graph(
+        skel_graph, sep_set = learn_skeleton_graph_with_neighbors(
             X,
-            graph,
-            sep_set,
             self.ci_estimator,
-            fixed_edges,
-            self.alpha,
+            adj_graph=graph,
+            sep_set=sep_set,
+            fixed_edges=fixed_edges,
+            alpha=self.alpha,
             max_cond_set_size=self.max_cond_set_size,
             **self.ci_estimator_kwargs,
         )

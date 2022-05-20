@@ -1,7 +1,7 @@
-from causal_networkx.cgm import CausalGraph
+from causal_networkx.cgm import ADMG
 
 
-class TimeSeriesCausalGraph(CausalGraph):
+class TimeSeriesCausalGraph(ADMG):
     # TODO: how to represent causal graph unrolled in time?
     # - an additional graph
     # - edge type indicating time point

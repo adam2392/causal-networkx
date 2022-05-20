@@ -3,7 +3,7 @@ from typing import Callable
 
 import networkx as nx
 
-from causal_networkx.cgm import PAG, CausalGraph
+from causal_networkx.cgm import ADMG, PAG
 
 
 def _check_ci_estimator(ci_estimator: Callable):
@@ -60,7 +60,7 @@ def _sample_cg(
                 if random.random() < bidir_rate:
                     be_list.append((V_list[i], V_list[j]))
 
-        cg = CausalGraph(V_list, de_list, be_list)
+        cg = ADMG(V_list, de_list, be_list)
 
         done = True
         # if enforce_direct_path and not graph_search(cg, "X", "Y", edge_type="direct"):
@@ -76,7 +76,7 @@ def _sample_cg(
     return cg
 
 
-def convert_latent_to_unobserved_confounders(G: CausalGraph) -> CausalGraph:
+def convert_latent_to_unobserved_confounders(G: ADMG) -> ADMG:
     """Convert all bidirected edges to unobserved confounders.
 
     Parameters
@@ -177,7 +177,7 @@ def _integrate_circle_edges_to_graph(G: PAG):
 
 
 # TODO: integrat into causal graph
-def convert_selection_vars_to_common_effects(G: CausalGraph) -> nx.DiGraph:
+def convert_selection_vars_to_common_effects(G: ADMG) -> nx.DiGraph:
     """Convert all undirected edges to unobserved common effects.
 
     Parameters

@@ -2,6 +2,7 @@
 [![CircleCI](https://circleci.com/gh/adam2392/causal-networkx/tree/main.svg?style=svg)](https://circleci.com/gh/adam2392/causal-networkx/tree/main)
 [![Main](https://github.com/adam2392/causal-networkx/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/adam2392/causal-networkx/actions/workflows/main.yml)
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
+[![codecov](https://codecov.io/gh/adam2392/causal-networkx/branch/main/graph/badge.svg?token=H1reh7Qwf4)](https://codecov.io/gh/adam2392/causal-networkx)
 
 # causal-networkx
 

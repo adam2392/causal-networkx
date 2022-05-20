@@ -61,10 +61,20 @@ class KernelCITest:
         ----------
         .. footbibliography::
         """
-        if any(name not in PAIRWISE_KERNEL_FUNCTIONS for name in [kernel_x, kernel_y, kernel_z]):
+        if isinstance(kernel_x, str) and kernel_x not in PAIRWISE_KERNEL_FUNCTIONS:
             raise ValueError(
                 f"The kernels that are currently supported are {PAIRWISE_KERNEL_FUNCTIONS}. "
-                f"You passed in {kernel_x}, {kernel_y} and {kernel_z}."
+                f"You passed in {kernel_x} for kernel_x."
+            )
+        if isinstance(kernel_y, str) and kernel_y not in PAIRWISE_KERNEL_FUNCTIONS:
+            raise ValueError(
+                f"The kernels that are currently supported are {PAIRWISE_KERNEL_FUNCTIONS}. "
+                f"You passed in {kernel_y} for kernel_y."
+            )
+        if isinstance(kernel_z, str) and kernel_z not in PAIRWISE_KERNEL_FUNCTIONS:
+            raise ValueError(
+                f"The kernels that are currently supported are {PAIRWISE_KERNEL_FUNCTIONS}. "
+                f"You passed in {kernel_z} for kernel_z."
             )
         self.kernel_x = kernel_x
         self.kernel_y = kernel_y

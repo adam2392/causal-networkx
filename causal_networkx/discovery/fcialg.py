@@ -6,9 +6,10 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from causal_networkx import PAG, CausalGraph
+from causal_networkx import ADMG, PAG
 from causal_networkx.algorithms.pag import discriminating_path, uncovered_pd_path
 from causal_networkx.discovery.classes import ConstraintDiscovery
+from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_neighbors
 
 logger = logging.getLogger()
 
@@ -18,7 +19,7 @@ class FCI(ConstraintDiscovery):
         self,
         ci_estimator: Callable,
         alpha: float = 0.05,
-        init_graph: Union[nx.Graph, CausalGraph] = None,
+        init_graph: Union[nx.Graph, ADMG] = None,
         fixed_edges: nx.Graph = None,
         max_cond_set_size: int = None,
         max_path_length: int = None,
@@ -35,9 +36,10 @@ class FCI(ConstraintDiscovery):
         Parameters
         ----------
         ci_estimator : Callable
-            _description_
+            A function to perform the conditional independence test.
         alpha : float, optional
-            _description_, by default 0.05
+            Significance threshold level, by default 0.05 for false positive
+            control. Where positive indicates a rejection of the null hypothesis.
         init_graph : Union[nx.Graph, CausalGraph], optional
             _description_, by default None
         fixed_edges : nx.Graph, optional
@@ -51,6 +53,9 @@ class FCI(ConstraintDiscovery):
             See [1].
         augmented : bool
             Whether or not to run the augmented version of FCI. See [1].
+        max_iter : int
+            The maximum number of iterations through the graph to apply
+            orientation rules.
 
         References
         ----------
@@ -567,7 +572,7 @@ class FCI(ConstraintDiscovery):
     def _learn_better_skeleton(
         self,
         X,
-        pag: nx.Graph,
+        pag: PAG,
         sep_set: Dict[str, Dict[str, Set[Any]]],
         fixed_edges: Set[Tuple[Any, Any]] = set(),
     ):
@@ -578,11 +583,11 @@ class FCI(ConstraintDiscovery):
         # perform pairwise tests to learn skeleton
         skel_graph, sep_set = learn_skeleton_graph_with_pdsep(
             X,
-            adj_graph,
-            sep_set,
             self.ci_estimator,
-            fixed_edges,
-            self.alpha,
+            adj_graph=adj_graph,
+            sep_set=sep_set,
+            fixed_edges=fixed_edges,
+            alpha=self.alpha,
             min_cond_set_size=1,
             max_cond_set_size=self.max_cond_set_size,
             max_path_length=self.max_path_length,
@@ -610,7 +615,9 @@ class FCI(ConstraintDiscovery):
         graph, sep_set, fixed_edges = self._initialize_graph(X)
 
         # learn the skeleton of the graph
-        skel_graph, sep_set = self._learn_skeleton_from_neighbors(X, graph, sep_set, fixed_edges)
+        skel_graph, sep_set = super().learn_skeleton(
+            X, graph=graph, sep_set=sep_set, fixed_edges=fixed_edges
+        )
 
         # convert the undirected skeleton graph to a PAG, where
         # all left-over edges have a "circle" endpoint

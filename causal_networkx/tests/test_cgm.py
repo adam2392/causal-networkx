@@ -1,15 +1,16 @@
 import networkx as nx
+import numpy as np
 import pytest
 
 from causal_networkx.algorithms import d_separated
-from causal_networkx.cgm import PAG, CausalGraph
+from causal_networkx.cgm import ADMG, PAG
 
 
 class TestGraph:
     def setup_method(self):
         # start every graph with the confounded graph
         # 0 -> 1, 0 -> 2 with 1 <--> 0
-        self.Graph = CausalGraph
+        self.Graph = ADMG
         incoming_latent_data = [(0, 1)]
 
         # build dict-of-dict-of-dict K3
@@ -22,10 +23,13 @@ class TestNetworkxGraph(TestGraph):
     """Test CausalGraph relevant networkx properties."""
 
     def test_data_input(self):
-        G = self.Graph({1: [2], 2: [1]}, name="test")
+        G = self.Graph({1: [2], 2: [3]}, name="test")
         assert G.name == "test"
         assert G.has_edge(1, 2)
-        assert G.has_edge(2, 1)
+        assert G.has_edge(2, 3)
+
+        with pytest.raises(RuntimeError, match="Causal DAG must be acyclic"):
+            self.Graph({1: [2], 2: [1]}, name="test")
 
     def test_getitem(self):
         G = self.G
@@ -359,6 +363,30 @@ class TestCausalGraph(TestGraph):
         assert [] == list(G.parents(3))
         assert [] == list(G.children(3))
 
+    def test_export_dot(self):
+        """Test exporting to DOT format."""
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
+        G = self.G.copy()
+
+        # make sure output handles a string for a node
+        G.add_edge(0, "1-0")
+
+        dot_graph = G.to_dot_graph()
+
+        # make sure the output adheres to the DOT format
+        assert dot_graph.startswith("strict digraph {")
+        assert dot_graph.endswith("}")
+        for node in G.nodes:
+            assert f"{node};\n" in dot_graph
+        for u, v in G.edges:
+            if isinstance(u, str):
+                u = f'"{u}"'
+            if isinstance(v, str):
+                v = f'"{v}"'
+            assert f"{u} -> {v};\n" in dot_graph
+        for u, v in G.bidirected_edges:
+            assert f"{u} <-> {v};\n" in dot_graph
+
     def test_do_intervention(self):
         """Test do interventions with causal graph."""
         pass
@@ -521,3 +549,13 @@ class TestPAG(TestCausalGraph):
         # 2 and 0 now have possible children/parents relationship
         assert [0] == list(G.possible_parents(2))
         assert [2] == list(G.possible_children(0))
+
+    def test_export_numpy(self):
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
+        G = self.PAG.copy()
+
+        numpy_graph = G.to_numpy_array()
+        expected_arr = np.zeros((3, 3))
+        expected_arr[0, 1] = 2
+        expected_arr[0, 2] = 2
+        expected_arr[1, 0] = 1
