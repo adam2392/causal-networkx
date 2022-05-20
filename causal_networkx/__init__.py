@@ -4,5 +4,5 @@
 #
 # License: BSD (3-clause)
 
-from .cgm import ADMG, PAG
+from .cgm import ADMG, PAG, DAG
 from .scm import StructuralCausalModel

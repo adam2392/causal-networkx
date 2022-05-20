@@ -318,7 +318,7 @@ class ExportMixin:
         The DOT language for graphviz is what is commonly
         used in R's ``dagitty`` package. This is a string
         representation of the graph. However, this converts to a
-        string format that is not 100% representative of DOT. See
+        string format that is not 100% representative of DOT [1]. See
         Notes for more information.
 
         Parameters
@@ -342,6 +342,8 @@ class ExportMixin:
         we had ``0 -> 1`` with a latent confounder, we would get the
         following output:
 
+        .. code-block:: text
+        
             strict digraph {
                 0;
                 1;
@@ -354,9 +356,10 @@ class ExportMixin:
         this is not as intuitive. ``A <-> B`` also complies with dagitty
         and other approaches to drawing graphs in Python/R.
 
-        Reference
-        ---------
-        https://github.com/pydot/pydot
+        References
+        ----------
+        [1] https://github.com/pydot/pydot
+
         """
         node_str_list = []
         for node in self.nodes:
