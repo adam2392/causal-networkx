@@ -200,21 +200,26 @@
   <h1>Source code for causal_networkx.cgm</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">Set</span>
 
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">networkx</span> <span class="kn">import</span> <span class="n">NetworkXError</span>
 
 <span class="kn">from</span> <span class="nn">causal_networkx.config</span> <span class="kn">import</span> <span class="n">EdgeType</span>
 
 
-<span class="k">class</span> <span class="nc">NetworkXMixin</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">NetworkXMixin</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Suite of overridden methods of Networkx Graphs.</span>
 
-<span class="sd">    Assumes the subclass will store a DiGraph in &#39;dag&#39; and</span>
-<span class="sd">    a Graph in &#39;c_component_graph&#39;.</span>
+<span class="sd">    Assumes the subclass will store a DiGraph in a class</span>
+<span class="sd">    attribute called &#39;dag&#39; and also has an arbitrary list</span>
+<span class="sd">    of graphs in an attribute &#39;_graphs&#39;, which can be</span>
+<span class="sd">    used to query basic information.</span>
+
+<span class="sd">    These methods and properties override what is expected behavior for</span>
+<span class="sd">    causal graphs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@property</span>
@@ -231,6 +236,24 @@
     <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the name of the graph.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="nf">predecessors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return predecessors of node u.</span>
+
+<span class="sd">        A predecessor is defined as nodes with a directed edge to &#39;u&#39;.</span>
+<span class="sd">        That is &#39;v&#39; -&gt; &#39;u&#39;. A bidirected edge would not qualify as a</span>
+<span class="sd">        predecessor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">predecessors</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">successors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return successors of node u.</span>
+
+<span class="sd">        A successor is defined as nodes with a directed edge from &#39;u&#39;.</span>
+<span class="sd">        That is &#39;u&#39; -&gt; &#39;v&#39;. A bidirected edge would not qualify as a</span>
+<span class="sd">        successor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_edge_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get edge data from underlying DiGraph.&quot;&quot;&quot;</span>
@@ -272,9 +295,25 @@
         <span class="sd">&quot;&quot;&quot;Return number of nodes in graph.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">number_of_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return number of edges in graph.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">has_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if graph has node &#39;n&#39;.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">adjacencies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all adjacent nodes to u.</span>
+
+<span class="sd">        Adjacencies are defined as any type of edge to node &#39;u&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nghbrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">graph</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graphs</span><span class="p">:</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">to_undirected</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">:</span>
+                <span class="n">nghbrs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">node</span><span class="p">:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">u</span><span class="p">)})</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">nghbrs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return True if n is a node, False otherwise. Use: &#39;n in G&#39;.</span>
@@ -328,6 +367,74 @@
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="p">(</span><span class="n">e</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">has_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if graph has edge (u, v).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add an edge between u and v.</span>
+
+<span class="sd">        The nodes u and v will be automatically added if they are</span>
+<span class="sd">        not already in the graph.</span>
+
+<span class="sd">        Edge attributes can be specified with keywords or by directly</span>
+<span class="sd">        accessing the edge&#39;s attribute dictionary. See examples below.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        u_of_edge, v_of_edge : nodes</span>
+<span class="sd">            Nodes can be, for example, strings or numbers.</span>
+<span class="sd">            Nodes must be hashable (and not None) Python objects.</span>
+<span class="sd">        attr : keyword arguments, optional</span>
+<span class="sd">            Edge data (or labels or objects) can be assigned using</span>
+<span class="sd">            keyword arguments.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        add_edges_from : add a collection of edges</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Adding an edge that already exists updates the edge data.</span>
+
+<span class="sd">        Many NetworkX algorithms designed for weighted graphs use</span>
+<span class="sd">        an edge attribute (by default ``weight``) to hold a numerical value.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        The following all add the edge e=(1, 2) to graph G:</span>
+
+<span class="sd">        &gt;&gt;&gt; G = nx.Graph()  # or DiGraph, MultiGraph, MultiDiGraph, etc</span>
+<span class="sd">        &gt;&gt;&gt; e = (1, 2)</span>
+<span class="sd">        &gt;&gt;&gt; G.add_edge(1, 2)  # explicit two-node form</span>
+<span class="sd">        &gt;&gt;&gt; G.add_edge(*e)  # single edge as tuple of two nodes</span>
+<span class="sd">        &gt;&gt;&gt; G.add_edges_from([(1, 2)])  # add edges from iterable container</span>
+
+<span class="sd">        Associate data to edges using keywords:</span>
+
+<span class="sd">        &gt;&gt;&gt; G.add_edge(1, 2, weight=3)</span>
+<span class="sd">        &gt;&gt;&gt; G.add_edge(1, 3, weight=7, capacity=15, length=342.7)</span>
+
+<span class="sd">        For non-string attribute keys, use subscript notation.</span>
+
+<span class="sd">        &gt;&gt;&gt; G.add_edge(1, 2)</span>
+<span class="sd">        &gt;&gt;&gt; G[1][2].update({0: 5})</span>
+<span class="sd">        &gt;&gt;&gt; G.edges[1, 2].update({0: 5})</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add directed edges.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">remove_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove directed edges.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">(</span><span class="n">ebunch</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">remove_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove directed edge.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a copy of the causal graph.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_graphs</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
@@ -338,7 +445,10 @@
 
     <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the total number of edges possibly with weights.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_component_graph</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+        <span class="n">size_</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">graph</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graphs</span><span class="p">:</span>
+            <span class="n">size_</span> <span class="o">+=</span> <span class="n">graph</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">size_</span>
 
     <span class="k">def</span> <span class="nf">degree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute the degree of the DiGraph.&quot;&quot;&quot;</span>
@@ -386,10 +496,10 @@
         <span class="c1">#         return x not in self.exogenous.keys()</span>
 
         <span class="c1">#     result_df = result_df[sorted(result_df, key=key)]</span>
-        <span class="c1"># return result_df</span>
+        <span class="k">return</span> <span class="n">df_values</span>
 
 
-<span class="k">class</span> <span class="nc">AddingEdgeMixin</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">AddingEdgeMixin</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">add_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_chain</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add a causal chain.&quot;&quot;&quot;</span>
         <span class="n">ebunch</span> <span class="o">=</span> <span class="p">[]</span>
@@ -399,13 +509,238 @@
 
 
 <span class="k">class</span> <span class="nc">ExportMixin</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">to_dot_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert to &#39;dot&#39; graph representation.&quot;&quot;&quot;</span>
-        <span class="k">pass</span>
+    <span class="sd">&quot;&quot;&quot;Mixin class for exporting causal graphs to other formats.&quot;&quot;&quot;</span>
+
+    <span class="nd">@typing</span><span class="o">.</span><span class="n">no_type_check</span>
+    <span class="k">def</span> <span class="nf">to_dot_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">to_dagitty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Convert to &#39;dot&#39; graph representation.</span>
+
+<span class="sd">        The DOT language for graphviz is what is commonly</span>
+<span class="sd">        used in R&#39;s ``dagitty`` package. This is a string</span>
+<span class="sd">        representation of the graph. However, this converts to a</span>
+<span class="sd">        string format that is not 100% representative of DOT [1]. See</span>
+<span class="sd">        Notes for more information.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        to_dagitty : bool</span>
+<span class="sd">            Whether to conform to the Dagitty format, where the</span>
+<span class="sd">            string begins with ``dag {`` instead of ``strict digraph {``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dot_graph : str</span>
+<span class="sd">            A string representation in DOT format for the graph.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The output of this function can be immediately plugged into</span>
+<span class="sd">        the dagitty online portal for drawing a graph.</span>
+
+<span class="sd">        For example, if we have a mixed edge graph, with directed</span>
+<span class="sd">        and bidirected arrows (i.e. a causal DAG). Specifically, if</span>
+<span class="sd">        we had ``0 -&gt; 1`` with a latent confounder, we would get the</span>
+<span class="sd">        following output:</span>
+
+<span class="sd">        .. code-block:: text</span>
+
+<span class="sd">            strict digraph {</span>
+<span class="sd">                0;</span>
+<span class="sd">                1;</span>
+<span class="sd">                0 -&gt; 1;</span>
+<span class="sd">                0 &lt;-&gt; 1;</span>
+<span class="sd">            }</span>
+
+<span class="sd">        To represent for example a bidirected edge, ``A &lt;-&gt; B``,</span>
+<span class="sd">        the DOT format would make you use ``A -&gt; B [dir=both]``, but</span>
+<span class="sd">        this is not as intuitive. ``A &lt;-&gt; B`` also complies with dagitty</span>
+<span class="sd">        and other approaches to drawing graphs in Python/R.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        [1] https://github.com/pydot/pydot</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node_str_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+            <span class="n">node_str_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2">;&quot;</span><span class="p">)</span>
+        <span class="n">node_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">node_str_list</span><span class="p">)</span>
+
+        <span class="c1"># for each graph handle edges&#39; string representation</span>
+        <span class="c1"># differently</span>
+        <span class="n">edge_str_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">graph</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graphs</span><span class="p">):</span>
+            <span class="n">dot</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">nx_pydot</span><span class="o">.</span><span class="n">to_pydot</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+            <span class="n">dot_str</span> <span class="o">=</span> <span class="n">dot</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span>
+
+            <span class="c1"># only keep rows with edge strings</span>
+            <span class="n">edge_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">dot_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_str_list</span><span class="p">:</span>
+                    <span class="c1"># replace edge marks with their appropriate string representation</span>
+                    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">bidirected</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                        <span class="n">row</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;-&gt;&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">circle</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                        <span class="n">row</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">)</span>
+                    <span class="n">edge_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="n">edge_str_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">edge_list</span><span class="p">)</span>
+        <span class="n">edge_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">edge_str_list</span><span class="p">)</span>
+
+        <span class="c1"># form the final DOT string representation</span>
+        <span class="k">if</span> <span class="n">to_dagitty</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;dag&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;strict digraph&quot;</span>
+        <span class="n">dot_graph</span> <span class="o">=</span> <span class="n">header</span> <span class="o">+</span> <span class="s2">&quot; {</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">node_str</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">edge_str</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="s2">&quot;}&quot;</span>
+        <span class="k">return</span> <span class="n">dot_graph</span>
+
+
+<div class="viewcode-block" id="DAG"><a class="viewcode-back" href="../../generated/causal_networkx.DAG.html#causal_networkx.DAG">[docs]</a><span class="k">class</span> <span class="nc">DAG</span><span class="p">(</span><span class="n">NetworkXMixin</span><span class="p">,</span> <span class="n">GraphSampleMixin</span><span class="p">,</span> <span class="n">AddingEdgeMixin</span><span class="p">,</span> <span class="n">ExportMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Causal directed acyclic graph.</span>
+
+<span class="sd">    This is a causal Bayesian network, or a Bayesian network</span>
+<span class="sd">    with directed edges that constitute causal relations, rather than</span>
+<span class="sd">    probabilistic dependences.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    incoming_graph_data : input graph (optional, default: None)</span>
+<span class="sd">        Data to initialize directed acyclic graph. If None (default) an empty</span>
+<span class="sd">        graph is created.  The data can be an edge list, or any</span>
+<span class="sd">        NetworkX graph object.  If the corresponding optional Python</span>
+<span class="sd">        packages are installed the data can also be a 2D NumPy array, a</span>
+<span class="sd">        SciPy sparse matrix, or a PyGraphviz graph. The edges in this graph</span>
+<span class="sd">        represent directed edges between observed variables, which are</span>
+<span class="sd">        represented using a ``networkx.DiGraph``. This is a DAG, meaning</span>
+<span class="sd">        there are no cycles.</span>
+
+<span class="sd">    attr : keyword arguments, optional (default= no attributes)</span>
+<span class="sd">        Attributes to add to graph as key=value pairs.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    networkx.DiGraph</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    ``_graphs`` and ``_graph_names`` private properties store graph</span>
+<span class="sd">    objects denoting different types of edges and their corresponding</span>
+<span class="sd">    names. These are useful for encoding various extensions of the causal DAG.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_graphs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">]</span>
+    <span class="n">_graph_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">_current_hash</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">_full_graph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming_graph_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># create the DAG of observed variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dag</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">(</span><span class="n">incoming_graph_data</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
+
+        <span class="c1"># initialize the backend of graphs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_graphs</span><span class="p">()</span>
+
+        <span class="c1"># keep track of the full graph</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_full_graph</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_hash</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_acyclic</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Causal DAG must be acyclic.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># make sure to add all nodes to the dag that</span>
+        <span class="c1"># are present in other internal graphs.</span>
+        <span class="c1"># Note: This enables one to leverage the underlying DiGraph DAG</span>
+        <span class="c1"># to do various graph traversals, such as d/m-separation.</span>
+        <span class="k">for</span> <span class="n">graph</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graphs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_init_graphs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Private function to initialize graphs.</span>
+
+<span class="sd">        Should always be called after setting certain graph structures.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create a list of the internal graphs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graphs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graph_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeType</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+
+        <span class="c1"># number of edges allowed between nodes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowed_edges</span> <span class="o">=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="DAG.children"><a class="viewcode-back" href="../../generated/causal_networkx.DAG.html#causal_networkx.DAG.children">[docs]</a>    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return an iterator over children of node n.</span>
+
+<span class="sd">        Children of node &#39;n&#39; are nodes with a directed</span>
+<span class="sd">        edge from &#39;n&#39; to that node. For example,</span>
+<span class="sd">        &#39;n&#39; -&gt; &#39;x&#39;, &#39;n&#39; -&gt; &#39;y&#39;. Nodes only connected</span>
+<span class="sd">        via a bidirected edge are not considered children:</span>
+<span class="sd">        &#39;n&#39; &lt;-&gt; &#39;y&#39;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : node</span>
+<span class="sd">            A node in the causal DAG.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        children : Iterator</span>
+<span class="sd">            An iterator of the children of node &#39;n&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DAG.parents"><a class="viewcode-back" href="../../generated/causal_networkx.DAG.html#causal_networkx.DAG.parents">[docs]</a>    <span class="k">def</span> <span class="nf">parents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return an iterator over parents of node n.</span>
+
+<span class="sd">        Parents of node &#39;n&#39; are nodes with a directed</span>
+<span class="sd">        edge from &#39;n&#39; to that node. For example,</span>
+<span class="sd">        &#39;n&#39; &lt;- &#39;x&#39;, &#39;n&#39; &lt;- &#39;y&#39;. Nodes only connected</span>
+<span class="sd">        via a bidirected edge are not considered parents:</span>
+<span class="sd">        &#39;n&#39; &lt;-&gt; &#39;y&#39;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : node</span>
+<span class="sd">            A node in the causal DAG.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        parents : Iterator</span>
+<span class="sd">            An iterator of the parents of node &#39;n&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">predecessors</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DAG.is_acyclic"><a class="viewcode-back" href="../../generated/causal_networkx.DAG.html#causal_networkx.DAG.is_acyclic">[docs]</a>    <span class="k">def</span> <span class="nf">is_acyclic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if graph is acyclic.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_directed_acyclic_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_check_adding_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check compatibility among internal graphs when adding an edge of a certain type.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        u_of_edge : node</span>
+<span class="sd">            The start node.</span>
+<span class="sd">        v_of_edge : node</span>
+<span class="sd">            The end node.</span>
+<span class="sd">        edge_type : str of EdgeType</span>
+<span class="sd">            The edge type that is being added.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">raise_error</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">edge_type</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="c1"># there should not be a circle edge, or a bidirected edge</span>
+            <span class="k">if</span> <span class="n">u_of_edge</span> <span class="o">==</span> <span class="n">v_of_edge</span><span class="p">:</span>
+                <span class="n">raise_error</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">raise_error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;There is already an existing edge between </span><span class="si">{</span><span class="n">u_of_edge</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">v_of_edge</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Adding a </span><span class="si">{</span><span class="n">edge_type</span><span class="si">}</span><span class="s2"> edge is not possible. Please remove the existing &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;edge first.&quot;</span>
+            <span class="p">)</span></div>
 
 
 <span class="c1"># TODO: implement graph views for ADMG</span>
-<div class="viewcode-block" id="ADMG"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG">[docs]</a><span class="k">class</span> <span class="nc">ADMG</span><span class="p">(</span><span class="n">NetworkXMixin</span><span class="p">,</span> <span class="n">GraphSampleMixin</span><span class="p">,</span> <span class="n">AddingEdgeMixin</span><span class="p">):</span>
+<div class="viewcode-block" id="ADMG"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG">[docs]</a><span class="k">class</span> <span class="nc">ADMG</span><span class="p">(</span><span class="n">DAG</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Initialize a causal graphical model.</span>
 
 <span class="sd">    This is a causal Bayesian network, where now the edges represent</span>
@@ -474,9 +809,6 @@
 <span class="sd">    that only have say bidirected edges pointing to it.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">_graphs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">]</span>
-    <span class="n">_current_hash</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">_full_graph</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">]</span>
     <span class="n">_cond_set</span><span class="p">:</span> <span class="n">Set</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -486,41 +818,29 @@
         <span class="n">incoming_selection_bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">attr</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># create the DAG of observed variables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dag</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">(</span><span class="n">incoming_graph_data</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
-
         <span class="c1"># form the bidirected edge graph</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">c_component_graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">incoming_latent_data</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
 
         <span class="c1"># form selection bias graph</span>
         <span class="c1"># self.selection_bias_graph = nx.Graph(incoming_selection_bias, **attr)</span>
 
-        <span class="c1"># keep track of the full graph</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_full_graph</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_current_hash</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># call parent constructor</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">incoming_graph_data</span><span class="o">=</span><span class="n">incoming_graph_data</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
 
         <span class="c1"># the conditioning set used in d-separation</span>
         <span class="c1"># keep track of variables that are always conditioned on</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cond_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
-        <span class="c1"># set the internal graph properties</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_internal_graph_properties</span><span class="p">()</span>
-
-        <span class="c1"># make sure to add all nodes to the dag</span>
-        <span class="k">for</span> <span class="n">graph</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graphs</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-
         <span class="c1"># check that there is no cycles within the graph</span>
         <span class="c1"># self._edge_error_check()</span>
 
-    <span class="k">def</span> <span class="nf">_set_internal_graph_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_init_graphs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># create a list of the internal graphs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_graphs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_component_graph</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graph_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeType</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">bidirected</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
 
         <span class="c1"># number of edges allowed between nodes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">allowed_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowed_edges</span> <span class="o">=</span> <span class="mi">2</span>
 
 <div class="viewcode-block" id="ADMG.to_adjacency_graph"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.to_adjacency_graph">[docs]</a>    <span class="k">def</span> <span class="nf">to_adjacency_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute an adjacency undirected graph.</span>
@@ -556,78 +876,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">c_comps</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_component_graph</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">comp</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">c_comps</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
-
-<div class="viewcode-block" id="ADMG.has_edge"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.has_edge">[docs]</a>    <span class="k">def</span> <span class="nf">has_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check if graph has edge (u, v).&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="ADMG.number_of_edges"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.number_of_edges">[docs]</a>    <span class="k">def</span> <span class="nf">number_of_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return number of edges in graph.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="ADMG.add_edge"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.add_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add an edge between u and v.</span>
-
-<span class="sd">        The nodes u and v will be automatically added if they are</span>
-<span class="sd">        not already in the graph.</span>
-
-<span class="sd">        Edge attributes can be specified with keywords or by directly</span>
-<span class="sd">        accessing the edge&#39;s attribute dictionary. See examples below.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        u_of_edge, v_of_edge : nodes</span>
-<span class="sd">            Nodes can be, for example, strings or numbers.</span>
-<span class="sd">            Nodes must be hashable (and not None) Python objects.</span>
-<span class="sd">        attr : keyword arguments, optional</span>
-<span class="sd">            Edge data (or labels or objects) can be assigned using</span>
-<span class="sd">            keyword arguments.</span>
-
-<span class="sd">        See Also</span>
-<span class="sd">        --------</span>
-<span class="sd">        add_edges_from : add a collection of edges</span>
-
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        Adding an edge that already exists updates the edge data.</span>
-
-<span class="sd">        Many NetworkX algorithms designed for weighted graphs use</span>
-<span class="sd">        an edge attribute (by default ``weight``) to hold a numerical value.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        The following all add the edge e=(1, 2) to graph G:</span>
-
-<span class="sd">        &gt;&gt;&gt; G = nx.Graph()  # or DiGraph, MultiGraph, MultiDiGraph, etc</span>
-<span class="sd">        &gt;&gt;&gt; e = (1, 2)</span>
-<span class="sd">        &gt;&gt;&gt; G.add_edge(1, 2)  # explicit two-node form</span>
-<span class="sd">        &gt;&gt;&gt; G.add_edge(*e)  # single edge as tuple of two nodes</span>
-<span class="sd">        &gt;&gt;&gt; G.add_edges_from([(1, 2)])  # add edges from iterable container</span>
-
-<span class="sd">        Associate data to edges using keywords:</span>
-
-<span class="sd">        &gt;&gt;&gt; G.add_edge(1, 2, weight=3)</span>
-<span class="sd">        &gt;&gt;&gt; G.add_edge(1, 3, weight=7, capacity=15, length=342.7)</span>
-
-<span class="sd">        For non-string attribute keys, use subscript notation.</span>
-
-<span class="sd">        &gt;&gt;&gt; G.add_edge(1, 2)</span>
-<span class="sd">        &gt;&gt;&gt; G[1][2].update({0: 5})</span>
-<span class="sd">        &gt;&gt;&gt; G.edges[1, 2].update({0: 5})</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="ADMG.add_edges_from"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.add_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add directed edges.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="ADMG.remove_edges_from"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.remove_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">remove_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Remove directed edges.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">(</span><span class="n">ebunch</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="ADMG.remove_edge"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.remove_edge">[docs]</a>    <span class="k">def</span> <span class="nf">remove_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Remove directed edge.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_edge_error_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_directed_acyclic_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">):</span>
@@ -762,48 +1010,6 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">u_of_edge</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">v_of_edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span> <span class="ow">and</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_isolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">v_of_edge</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="ADMG.children"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.children">[docs]</a>    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return an iterator over children of node n.</span>
-
-<span class="sd">        Children of node &#39;n&#39; are nodes with a directed</span>
-<span class="sd">        edge from &#39;n&#39; to that node. For example,</span>
-<span class="sd">        &#39;n&#39; -&gt; &#39;x&#39;, &#39;n&#39; -&gt; &#39;y&#39;. Nodes only connected</span>
-<span class="sd">        via a bidirected edge are not considered children:</span>
-<span class="sd">        &#39;n&#39; &lt;-&gt; &#39;y&#39;.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        n : node</span>
-<span class="sd">            A node in the causal DAG.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        children : Iterator</span>
-<span class="sd">            An iterator of the children of node &#39;n&#39;.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="ADMG.parents"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.parents">[docs]</a>    <span class="k">def</span> <span class="nf">parents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return an iterator over parents of node n.</span>
-
-<span class="sd">        Parents of node &#39;n&#39; are nodes with a directed</span>
-<span class="sd">        edge from &#39;n&#39; to that node. For example,</span>
-<span class="sd">        &#39;n&#39; &lt;- &#39;x&#39;, &#39;n&#39; &lt;- &#39;y&#39;. Nodes only connected</span>
-<span class="sd">        via a bidirected edge are not considered parents:</span>
-<span class="sd">        &#39;n&#39; &lt;-&gt; &#39;y&#39;.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        n : node</span>
-<span class="sd">            A node in the causal DAG.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        parents : Iterator</span>
-<span class="sd">            An iterator of the parents of node &#39;n&#39;.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">predecessors</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ADMG.do"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.do">[docs]</a>    <span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Apply a do-intervention on nodes to causal graph.</span>
@@ -1025,7 +1231,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">circle_edge_graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">(</span><span class="n">incoming_uncertain_data</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
 
         <span class="c1"># construct the causal graph</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">incoming_graph_data</span><span class="p">,</span> <span class="n">incoming_latent_data</span><span class="p">,</span> <span class="n">incoming_selection_data</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">incoming_graph_data</span><span class="o">=</span><span class="n">incoming_graph_data</span><span class="p">,</span>
+            <span class="n">incoming_latent_data</span><span class="o">=</span><span class="n">incoming_latent_data</span><span class="p">,</span>
+            <span class="n">incoming_selection_bias</span><span class="o">=</span><span class="n">incoming_selection_data</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">attr</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># check the PAG</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_pag</span><span class="p">()</span>
@@ -1038,12 +1249,13 @@
             <span class="s2">&quot;circle&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">circle_edges</span><span class="p">,</span>
         <span class="p">}</span></div>
 
-    <span class="k">def</span> <span class="nf">_set_internal_graph_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_init_graphs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_graphs</span> <span class="o">=</span> <span class="p">[</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">c_component_graph</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">circle_edge_graph</span><span class="p">,</span>
         <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graph_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeType</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">bidirected</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">circle</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
 
         <span class="c1"># number of allowed edges between any two nodes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">allowed_edges</span> <span class="o">=</span> <span class="mi">1</span>

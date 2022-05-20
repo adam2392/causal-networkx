@@ -22,6 +22,7 @@ Most-used classes
    :toctree: generated/
 
    StructuralCausalModel
+   DAG
    ADMG
    PAG
 
