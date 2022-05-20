@@ -11,7 +11,7 @@ def find_cliques(G: ADMG, nodes=None) -> Iterator:
 
     Parameters
     ----------
-    G : CausalGraph
+    G : ADMG
         The causal diagram.
     nodes : list, optional
         The list of nodes to consider, by default None

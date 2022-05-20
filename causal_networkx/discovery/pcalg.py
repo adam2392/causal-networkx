@@ -5,8 +5,7 @@ from typing import Any, Callable, Dict, Set, Tuple, Union
 import networkx as nx
 import pandas as pd
 
-from causal_networkx import ADMG, PAG
-from causal_networkx.cgm import CPDAG
+from causal_networkx.cgm import CPDAG, ADMG, PAG
 from causal_networkx.discovery.classes import ConstraintDiscovery
 from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_order
 
@@ -232,7 +231,7 @@ class PC(ConstraintDiscovery, MeekRules):
             keyword arguments.
         alpha : float, optional
             The significance level for the conditional independence test, by default 0.05.
-        init_graph : nx.Graph | CausalGraph, optional
+        init_graph : nx.Graph | ADMG, optional
             An initialized graph. If ``None``, then will initialize PC using a
             complete graph. By default None.
         fixed_edges : nx.Graph, optional

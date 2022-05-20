@@ -20,7 +20,7 @@ class TestGraph:
 
 
 class TestNetworkxGraph(TestGraph):
-    """Test CausalGraph relevant networkx properties."""
+    """Test ADMG relevant networkx properties."""
 
     def test_data_input(self):
         G = self.Graph({1: [2], 2: [3]}, name="test")
@@ -252,7 +252,7 @@ class TestNetworkxGraph(TestGraph):
         G.add_edge(2, 1, foo=ll)
 
 
-class TestCausalGraph(TestGraph):
+class TestADMG(TestGraph):
     """Test relevant causal graph properties."""
 
     def test_hash(self):
@@ -400,7 +400,7 @@ class TestCausalGraph(TestGraph):
         pass
 
 
-class TestPAG(TestCausalGraph):
+class TestPAG(TestADMG):
     def setup_method(self):
         # setup the causal graph in previous method
         # start every graph with the confounded graph

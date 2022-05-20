@@ -14,7 +14,7 @@ class Oracle:
 
         Parameters
         ----------
-        graph : nx.DiGraph | CausalGraph
+        graph : nx.DiGraph | ADMG
 
         """
         self.graph = graph

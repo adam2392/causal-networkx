@@ -174,7 +174,7 @@ class StructuralCausalModel:
 
         Returns
         -------
-        G : instance of CausalGraph
+        G : instance of ADMG
             The causal graphical model corresponding to
             the SCM.
 
