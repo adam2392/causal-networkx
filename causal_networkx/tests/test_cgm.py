@@ -398,6 +398,7 @@ class TestADMG(TestGraph):
         expected_arr[0, 1] = 2
         expected_arr[0, 2] = 2
         expected_arr[1, 0] = 1
+        assert numpy_graph
 
     def test_do_intervention(self):
         """Test do interventions with causal graph."""

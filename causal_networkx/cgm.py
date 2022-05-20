@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from typing import List, Optional, Set
+import typing
+from typing import List, Optional, Protocol, Set
 
 import networkx as nx
-import numpy as np
 import pandas as pd
 from networkx import NetworkXError
 
 from causal_networkx.config import EdgeType
 
 
-class NetworkXMixin:
+class NetworkXMixin(Protocol):
     """Suite of overridden methods of Networkx Graphs.
 
     Assumes the subclass will store a DiGraph in a class
@@ -299,7 +299,7 @@ class GraphSampleMixin:
         return df_values
 
 
-class AddingEdgeMixin:
+class AddingEdgeMixin(Protocol):
     def add_chain(self, node_chain):
         """Add a causal chain."""
         ebunch = []
@@ -311,6 +311,7 @@ class AddingEdgeMixin:
 class ExportMixin:
     """Mixin class for exporting causal graphs to other formats."""
 
+    @typing.no_type_check
     def to_dot_graph(self, to_dagitty: bool = False) -> str:
         """Convert to 'dot' graph representation.
 
@@ -426,6 +427,8 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
 
     _graphs: List[nx.Graph]
     _graph_names: List[str]
+    _current_hash: Optional[int]
+    _full_graph: Optional[nx.DiGraph]
 
     def __init__(self, incoming_graph_data=None, **attr) -> None:
         # create the DAG of observed variables
@@ -603,8 +606,6 @@ class ADMG(DAG):
     that only have say bidirected edges pointing to it.
     """
 
-    _current_hash: Optional[int]
-    _full_graph: Optional[nx.DiGraph]
     _cond_set: Set
 
     def __init__(
@@ -622,10 +623,6 @@ class ADMG(DAG):
 
         # call parent constructor
         super().__init__(incoming_graph_data=incoming_graph_data, **attr)
-
-        # keep track of the full graph
-        self._full_graph = None
-        self._current_hash = None
 
         # the conditioning set used in d-separation
         # keep track of variables that are always conditioned on
