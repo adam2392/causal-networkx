@@ -569,7 +569,7 @@ class CPDAG(DAG):
     See Also
     --------
     DAG
-    APMG
+    ADMG
     PAG
     causal_networkx.discovery.PC
 
