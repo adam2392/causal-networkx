@@ -578,11 +578,11 @@ class FCI(ConstraintDiscovery):
         # perform pairwise tests to learn skeleton
         skel_graph, sep_set = learn_skeleton_graph_with_pdsep(
             X,
-            adj_graph,
-            sep_set,
             self.ci_estimator,
-            fixed_edges,
-            self.alpha,
+            adj_graph=adj_graph,
+            sep_set=sep_set,
+            fixed_edges=fixed_edges,
+            alpha=self.alpha,
             min_cond_set_size=1,
             max_cond_set_size=self.max_cond_set_size,
             max_path_length=self.max_path_length,

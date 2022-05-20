@@ -39,3 +39,4 @@ class EdgeType(Enum, metaclass=MetaEnum):
     circle = "circle"
     bidirected = "bidirected"
     tail = "tail"
+    undirected = "undirected"
