@@ -739,6 +739,227 @@
             <span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="CPDAG"><a class="viewcode-back" href="../../generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG">[docs]</a><span class="k">class</span> <span class="nc">CPDAG</span><span class="p">(</span><span class="n">DAG</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Completed partially directed acyclic graphs (CPDAG).</span>
+
+<span class="sd">    CPDAGs generalize causal DAGs by allowing undirected edges.</span>
+<span class="sd">    Undirected edges imply uncertainty in the orientation of the causal</span>
+<span class="sd">    relationship. For example, ``A - B``, can be ``A -&gt; B`` or ``A &lt;- B``,</span>
+<span class="sd">    allowing for a Markov equivalence class of DAGs for each CPDAG.</span>
+<span class="sd">    This means that the number of DAGs represented by a CPDAG is $2^n$, where</span>
+<span class="sd">    ``n`` is the number of undirected edges present in the CPDAG.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    incoming_graph_data : input graph (optional, default: None)</span>
+<span class="sd">        Data to initialize directed acyclic graph. If None (default) an empty</span>
+<span class="sd">        graph is created.  The data can be an edge list, or any</span>
+<span class="sd">        NetworkX graph object.  If the corresponding optional Python</span>
+<span class="sd">        packages are installed the data can also be a 2D NumPy array, a</span>
+<span class="sd">        SciPy sparse matrix, or a PyGraphviz graph. The edges in this graph</span>
+<span class="sd">        represent directed edges between observed variables, which are</span>
+<span class="sd">        represented using a ``networkx.DiGraph``. This is a DAG, meaning</span>
+<span class="sd">        there are no cycles.</span>
+<span class="sd">    incoming_uncertain_data : input graph (optional, default: None)</span>
+<span class="sd">        Data to initialize bidirected edge graph. If None (default) an empty</span>
+<span class="sd">        graph is created. The data format can be any as ``incoming_graph_data``.</span>
+<span class="sd">        The edges in this graph represent bidirected edges, which are</span>
+<span class="sd">        represented using a ``networkx.Graph``.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    DAG</span>
+<span class="sd">    ADMG</span>
+<span class="sd">    PAG</span>
+<span class="sd">    causal_networkx.discovery.PC</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    CPDAGs are Markov equivalence class of causal DAGs. The implicit assumption in</span>
+<span class="sd">    these causal graphs are the Structural Causal Model (or SCM) is Markovian, inducing</span>
+<span class="sd">    causal sufficiency, where there is no unobserved latent confounder. This allows CPDAGs</span>
+<span class="sd">    to be learned from score-based (such as the GES algorithm) and constraint-based</span>
+<span class="sd">    (such as the PC algorithm) approaches for causal structure learning.</span>
+
+<span class="sd">    One should not use CPDAGs if they suspect their data has unobserved latent confounders.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming_graph_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">incoming_uncertain_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">undirected_edge_graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">incoming_uncertain_data</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">incoming_graph_data</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_cpdag</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_init_graphs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># create a list of the internal graphs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graphs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">undirected_edge_graph</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graph_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeType</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">undirected</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+
+        <span class="c1"># number of edges allowed between nodes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowed_edges</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot; named </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot; with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span><span class="si">}</span><span class="s2"> nodes, &quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">()</span><span class="si">}</span><span class="s2"> edges and &quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_undirected_edges</span><span class="p">()</span><span class="si">}</span><span class="s2"> undirected edges&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">undirected_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the undirected edges of the graph.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">undirected_edge_graph</span><span class="o">.</span><span class="n">edges</span>
+
+    <span class="k">def</span> <span class="nf">_check_cpdag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check for errors in the CPDAG construction.</span>
+
+<span class="sd">        Checks if there is a violation of the DAG property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_acyclic</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;DAG constructed was not acyclic.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CPDAG.add_undirected_edge"><a class="viewcode-back" href="../../generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG.add_undirected_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_undirected_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Add a undirected edge between u and v.</span>
+
+<span class="sd">        The nodes u and v will be automatically added if they are</span>
+<span class="sd">        not already in the graph. Moreover, they will be added</span>
+<span class="sd">        to the underlying DiGraph, which stores all regular</span>
+<span class="sd">        directed edges.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        u_of_edge, v_of_edge : nodes</span>
+<span class="sd">            Nodes can be, for example, strings or numbers.</span>
+<span class="sd">            Nodes must be hashable (and not None) Python objects.</span>
+<span class="sd">        attr : keyword arguments, optional</span>
+<span class="sd">            Edge data (or labels or objects) can be assigned using</span>
+<span class="sd">            keyword arguments.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        networkx.Graph.add_edges_from : add a collection of edges</span>
+<span class="sd">        networkx.Graph.add_edge       : add an edge</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        ...</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if the nodes connected are not in the dag, then</span>
+        <span class="c1"># add them into the observed variable graph</span>
+        <span class="k">if</span> <span class="n">u_of_edge</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">u_of_edge</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">v_of_edge</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">v_of_edge</span><span class="p">)</span>
+
+        <span class="c1"># add the bidirected arrow in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">undirected_edge_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CPDAG.add_undirected_edges_from"><a class="viewcode-back" href="../../generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG.add_undirected_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_undirected_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add undirected edges in a bunch.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">undirected_edge_graph</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CPDAG.remove_undirected_edge"><a class="viewcode-back" href="../../generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG.remove_undirected_edge">[docs]</a>    <span class="k">def</span> <span class="nf">remove_undirected_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove circle edge from graph.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">undirected_edge_graph</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_check_adding_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check compatibility among internal graphs when adding an edge of a certain type.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        u_of_edge : node</span>
+<span class="sd">            The start node.</span>
+<span class="sd">        v_of_edge : node</span>
+<span class="sd">            The end node.</span>
+<span class="sd">        edge_type : str of EdgeType</span>
+<span class="sd">            The edge type that is being added.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">raise_error</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">edge_type</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="c1"># there should not be a circle edge, or a bidirected edge</span>
+            <span class="k">if</span> <span class="n">u_of_edge</span> <span class="o">==</span> <span class="n">v_of_edge</span><span class="p">:</span>
+                <span class="n">raise_error</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">v_of_edge</span><span class="p">,</span> <span class="n">u_of_edge</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;There is an existing </span><span class="si">{</span><span class="n">v_of_edge</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">u_of_edge</span><span class="si">}</span><span class="s2">. You are &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;trying to add a directed edge from </span><span class="si">{</span><span class="n">u_of_edge</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">v_of_edge</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;If your intention is to create a bidirected edge, first remove the &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;edge and then explicitly add the bidirected edge.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">edge_type</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">undirected</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="c1"># there should not be any type of edge between the two</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_adjacency</span><span class="p">(</span><span class="n">u_of_edge</span><span class="p">,</span> <span class="n">v_of_edge</span><span class="p">):</span>
+                <span class="n">raise_error</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">raise_error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;There is already an existing edge between </span><span class="si">{</span><span class="n">u_of_edge</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">v_of_edge</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Adding a </span><span class="si">{</span><span class="n">edge_type</span><span class="si">}</span><span class="s2"> edge is not possible. Please remove the existing &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;edge first.&quot;</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="CPDAG.number_of_undirected_edges"><a class="viewcode-back" href="../../generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG.number_of_undirected_edges">[docs]</a>    <span class="k">def</span> <span class="nf">number_of_undirected_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return number of undirected edges in graph.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">undirected_edge_graph</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">(</span><span class="n">u</span><span class="o">=</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CPDAG.has_undirected_edge"><a class="viewcode-back" href="../../generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG.has_undirected_edge">[docs]</a>    <span class="k">def</span> <span class="nf">has_undirected_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if graph has undirected edge (u, v).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">undirected_edge_graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="CPDAG.draw"><a class="viewcode-back" href="../../generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Draws CPDAG graph.</span>
+
+<span class="sd">        For custom parametrizations, use ``graphviz``</span>
+<span class="sd">        or ``networkx`` drawers directly with the</span>
+<span class="sd">        ``self.dag`` and ``self.c_component_graph``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="p">)</span>
+        <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">undirected_edge_graph</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CPDAG.orient_undirected_edge"><a class="viewcode-back" href="../../generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG.orient_undirected_edge">[docs]</a>    <span class="k">def</span> <span class="nf">orient_undirected_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Orient undirected edge into an arrowhead.</span>
+
+<span class="sd">        If there is an undirected edge u - v, then the arrowhead</span>
+<span class="sd">        will orient u -&gt; v. If the correct order is v &lt;- u, then</span>
+<span class="sd">        simply pass the arguments in different order.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        u : node</span>
+<span class="sd">            The parent node</span>
+<span class="sd">        v : node</span>
+<span class="sd">            The node that &#39;u&#39; points to in the graph.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_undirected_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There is no undirected edge between </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_undirected_edge</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CPDAG.all_edges"><a class="viewcode-back" href="../../generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG.all_edges">[docs]</a>    <span class="k">def</span> <span class="nf">all_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get dictionary of all the edges by edge type.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;edges&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">,</span>
+            <span class="s2">&quot;undirected&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">undirected_edges</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="CPDAG.to_directed"><a class="viewcode-back" href="../../generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG.to_directed">[docs]</a>    <span class="k">def</span> <span class="nf">to_directed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert CPDAG to a networkx DiGraph.</span>
+
+<span class="sd">        Undirected edges are converted to a &#39;-&gt;&#39; and &#39;&lt;-&#39; edge in the DiGraph.</span>
+<span class="sd">        Note that the resulting DiGraph is not &quot;acyclic&quot; anymore.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dag</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">ud_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">undirected_edge_graph</span><span class="o">.</span><span class="n">to_directed</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">ud_graph</span><span class="p">)</span></div></div>
+
+
 <span class="c1"># TODO: implement graph views for ADMG</span>
 <div class="viewcode-block" id="ADMG"><a class="viewcode-back" href="../../generated/causal_networkx.ADMG.html#causal_networkx.ADMG">[docs]</a><span class="k">class</span> <span class="nc">ADMG</span><span class="p">(</span><span class="n">DAG</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Initialize a causal graphical model.</span>

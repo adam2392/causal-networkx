@@ -15,6 +15,8 @@ stage.
 
 Most-used classes
 =================
+These are the causal classes for Structural Causal Models (SCMs), or various causal
+graphs encountered in the literature.
 
 .. currentmodule:: causal_networkx
 
@@ -23,6 +25,7 @@ Most-used classes
 
    StructuralCausalModel
    DAG
+   CPDAG
    ADMG
    PAG
 

@@ -778,11 +778,11 @@
         <span class="c1"># perform pairwise tests to learn skeleton</span>
         <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span> <span class="o">=</span> <span class="n">learn_skeleton_graph_with_pdsep</span><span class="p">(</span>
             <span class="n">X</span><span class="p">,</span>
-            <span class="n">adj_graph</span><span class="p">,</span>
-            <span class="n">sep_set</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ci_estimator</span><span class="p">,</span>
-            <span class="n">fixed_edges</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">adj_graph</span><span class="o">=</span><span class="n">adj_graph</span><span class="p">,</span>
+            <span class="n">sep_set</span><span class="o">=</span><span class="n">sep_set</span><span class="p">,</span>
+            <span class="n">fixed_edges</span><span class="o">=</span><span class="n">fixed_edges</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
             <span class="n">min_cond_set_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">max_cond_set_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cond_set_size</span><span class="p">,</span>
             <span class="n">max_path_length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_path_length</span><span class="p">,</span>
