@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from causal_networkx.algorithms import d_separated
-from causal_networkx.cgm import ADMG, PAG
+from causal_networkx.cgm import ADMG, CPDAG, PAG
 
 
 class TestGraph:
@@ -250,6 +250,25 @@ class TestNetworkxGraph(TestGraph):
         ll = []
         G.add_edge(1, 2, foo=ll)
         G.add_edge(2, 1, foo=ll)
+
+
+class TestCPDAG(TestNetworkxGraph):
+    def setup_method(self):
+        # start every graph with the confounded graph
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
+        self.Graph = CPDAG
+        incoming_uncertain_data = [(0, 1)]
+
+        # build dict-of-dict-of-dict K3
+        ed1, ed2 = ({}, {})
+        incoming_graph_data = {0: {1: ed1, 2: ed2}}
+        self.G = self.Graph(incoming_graph_data, incoming_uncertain_data)
+
+    def test_add_undirected_edge(self):
+        pass
+
+    def test_orient_undirected_edge(self):
+        pass
 
 
 class TestADMG(TestGraph):

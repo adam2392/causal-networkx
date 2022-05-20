@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from causal_networkx import ADMG, PAG
-from causal_networkx.discovery.skeleton import learn_skeleton_graph
+from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_neighbors
 
 
 # TODO: Add ways to fix directed edges
@@ -152,13 +152,13 @@ class ConstraintDiscovery:
             names in passed in data, ``X``.
         """
         # perform pairwise tests to learn skeleton
-        skel_graph, sep_set = learn_skeleton_graph(
+        skel_graph, sep_set = learn_skeleton_graph_with_neighbors(
             X,
-            graph,
-            sep_set,
             self.ci_estimator,
-            fixed_edges,
-            self.alpha,
+            adj_graph=graph,
+            sep_set=sep_set,
+            fixed_edges=fixed_edges,
+            alpha=self.alpha,
             max_cond_set_size=self.max_cond_set_size,
             **self.ci_estimator_kwargs,
         )

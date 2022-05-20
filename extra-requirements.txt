@@ -1,13 +1,13 @@
 # for independence testing
- scikit-learn
+scikit-learn
 
- # for time-series
- tigramite
- numba
- six
+# for time-series
+tigramite
+numba
+six
 
- # for causal ID
- dowhy
+# for causal ID
+dowhy
 
- # for plotting
- matplotlib
+# for plotting
+matplotlib
