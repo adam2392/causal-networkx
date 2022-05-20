@@ -26,10 +26,10 @@ Version 0.1
 Changelog
 ---------
 
-- |Feature| Implement :class:`causal_networkx.ci.KernelCITest` for kernel-based conditional independence testing, by `Adam Li`_ (:gh:`3`)
 - |Feature| Implement and test the :class:`causal_networkx.discovery.FCI` algorithm, by `Adam Li`_ (:gh:`1`)
-- |Feature| Implement :class:`causal_networkx.ci.KernelCITest` for kernel-based conditional independence testing, by `Adam Li`_ (:gh:`2`)
-
+- |Feature| Implement :class:`causal_networkx.ci.KernelCITest` for kernel-based conditional independence testing, by `Adam Li`_ (:gh:`14`)
+- |Feature| Implement and test the :class:`causal_networkx.DAG` for fully observed causal DAGs, by `Adam Li`_ (:gh:`15`)
+- |Feature| Implement and test the :class:`causal_networkx.CDAG` for partially learned causal DAGs, by `Adam Li`_ (:gh:`15`)
 
 Code and Documentation Contributors
 -----------------------------------

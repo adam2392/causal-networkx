@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Optional, Set
+import typing
+from typing import List, Optional, Protocol, Set
 
 import networkx as nx
-import numpy as np
 import pandas as pd
 from networkx import NetworkXError
 from numpy.typing import NDArray
@@ -11,7 +11,7 @@ from numpy.typing import NDArray
 from causal_networkx.config import PAG_EDGE_MAPPING, EdgeType
 
 
-class NetworkXMixin:
+class NetworkXMixin(Protocol):
     """Suite of overridden methods of Networkx Graphs.
 
     Assumes the subclass will store a DiGraph in a class
@@ -112,9 +112,25 @@ class NetworkXMixin:
         """Return number of nodes in graph."""
         return len(self.nodes)
 
+    def number_of_edges(self):
+        """Return number of edges in graph."""
+        return len(self.edges)
+
     def has_node(self, n):
         """Check if graph has node 'n'."""
         return n in self
+
+    def adjacencies(self, u):
+        """Get all adjacent nodes to u.
+
+        Adjacencies are defined as any type of edge to node 'u'.
+        """
+        nghbrs = dict()
+        for graph in self._graphs:
+            graph = graph.to_undirected()
+            if u in graph:
+                nghbrs.update({node: None for node in graph.neighbors(u)})
+        return list(nghbrs.keys())
 
     def __contains__(self, n):
         """Return True if n is a node, False otherwise. Use: 'n in G'.
@@ -167,6 +183,74 @@ class NetworkXMixin:
             except NetworkXError as e:
                 if isinstance(graph, nx.DiGraph):
                     raise (e)
+
+    def has_edge(self, u, v):
+        """Check if graph has edge (u, v)."""
+        return self.dag.has_edge(u, v)
+
+    def add_edge(self, u_of_edge, v_of_edge, **attr):
+        """Add an edge between u and v.
+
+        The nodes u and v will be automatically added if they are
+        not already in the graph.
+
+        Edge attributes can be specified with keywords or by directly
+        accessing the edge's attribute dictionary. See examples below.
+
+        Parameters
+        ----------
+        u_of_edge, v_of_edge : nodes
+            Nodes can be, for example, strings or numbers.
+            Nodes must be hashable (and not None) Python objects.
+        attr : keyword arguments, optional
+            Edge data (or labels or objects) can be assigned using
+            keyword arguments.
+
+        See Also
+        --------
+        add_edges_from : add a collection of edges
+
+        Notes
+        -----
+        Adding an edge that already exists updates the edge data.
+
+        Many NetworkX algorithms designed for weighted graphs use
+        an edge attribute (by default ``weight``) to hold a numerical value.
+
+        Examples
+        --------
+        The following all add the edge e=(1, 2) to graph G:
+
+        >>> G = nx.Graph()  # or DiGraph, MultiGraph, MultiDiGraph, etc
+        >>> e = (1, 2)
+        >>> G.add_edge(1, 2)  # explicit two-node form
+        >>> G.add_edge(*e)  # single edge as tuple of two nodes
+        >>> G.add_edges_from([(1, 2)])  # add edges from iterable container
+
+        Associate data to edges using keywords:
+
+        >>> G.add_edge(1, 2, weight=3)
+        >>> G.add_edge(1, 3, weight=7, capacity=15, length=342.7)
+
+        For non-string attribute keys, use subscript notation.
+
+        >>> G.add_edge(1, 2)
+        >>> G[1][2].update({0: 5})
+        >>> G.edges[1, 2].update({0: 5})
+        """
+        self.dag.add_edge(u_of_edge, v_of_edge, **attr)
+
+    def add_edges_from(self, ebunch, **attr):
+        """Add directed edges."""
+        self.dag.add_edges_from(ebunch, **attr)
+
+    def remove_edges_from(self, ebunch):
+        """Remove directed edges."""
+        self.dag.remove_edges_from(ebunch)
+
+    def remove_edge(self, u, v):
+        """Remove directed edge."""
+        self.dag.remove_edge(u, v)
 
     def copy(self):
         """Return a copy of the causal graph."""
@@ -821,8 +905,6 @@ class ADMG(DAG):
     that only have say bidirected edges pointing to it.
     """
 
-    _current_hash: Optional[int]
-    _full_graph: Optional[nx.DiGraph]
     _cond_set: Set
 
     def __init__(
@@ -854,12 +936,6 @@ class ADMG(DAG):
 
         # number of edges allowed between nodes
         self.allowed_edges = 2
-
-        # make sure to add all nodes to the dag
-        for graph in self._graphs:
-            for node in graph.nodes:
-                if node not in self:
-                    self.dag.add_node(node)
 
     def to_adjacency_graph(self):
         """Compute an adjacency undirected graph.
@@ -1250,7 +1326,12 @@ class PAG(ADMG):
         self.circle_edge_graph = nx.DiGraph(incoming_uncertain_data, **attr)
 
         # construct the causal graph
-        super().__init__(incoming_graph_data, incoming_latent_data, incoming_selection_data, **attr)
+        super().__init__(
+            incoming_graph_data=incoming_graph_data,
+            incoming_latent_data=incoming_latent_data,
+            incoming_selection_bias=incoming_selection_data,
+            **attr,
+        )
 
         # check the PAG
         self._check_pag()
@@ -1270,6 +1351,7 @@ class PAG(ADMG):
             self.circle_edge_graph,
         ]
         self._graph_names = [EdgeType.arrow.value, EdgeType.bidirected.value, EdgeType.circle.value]
+
         # number of allowed edges between any two nodes
         self.allowed_edges = 1
 
