@@ -343,7 +343,7 @@ class ExportMixin:
         following output:
 
         .. code-block:: text
-        
+
             strict digraph {
                 0;
                 1;
