@@ -1,5 +1,6 @@
 import networkx as nx
 import pytest
+import numpy as np
 
 from causal_networkx.algorithms import d_separated
 from causal_networkx.cgm import ADMG, PAG
@@ -22,10 +23,13 @@ class TestNetworkxGraph(TestGraph):
     """Test ADMG relevant networkx properties."""
 
     def test_data_input(self):
-        G = self.Graph({1: [2], 2: [1]}, name="test")
+        G = self.Graph({1: [2], 2: [3]}, name="test")
         assert G.name == "test"
         assert G.has_edge(1, 2)
-        assert G.has_edge(2, 1)
+        assert G.has_edge(2, 3)
+
+        with pytest.raises(RuntimeError, match="Causal DAG must be acyclic"):
+            self.Graph({1: [2], 2: [1]}, name="test")
 
     def test_getitem(self):
         G = self.G
@@ -358,6 +362,42 @@ class TestADMG(TestGraph):
         G.add_bidirected_edge(2, 3)
         assert [] == list(G.parents(3))
         assert [] == list(G.children(3))
+    
+    def test_export_dot(self):
+        """Test exporting to DOT format."""
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
+        G = self.G.copy()
+
+        # make sure output handles a string for a node
+        G.add_edge(0, "1-0")
+
+        dot_graph = G.to_dot_graph()
+
+        # make sure the output adheres to the DOT format
+        assert dot_graph.startswith("strict digraph {")
+        assert dot_graph.endswith("}")
+        for node in G.nodes:
+            assert f"{node};\n" in dot_graph
+        for u, v in G.edges:
+            if isinstance(u, str):
+                u = f'"{u}"'
+            if isinstance(v, str):
+                v = f'"{v}"'
+            assert f"{u} -> {v};\n" in dot_graph
+        for u, v in G.bidirected_edges:
+            assert f"{u} <-> {v};\n" in dot_graph
+
+    # TODO: make numpy work by just creating a lower-triangular matrix with enum mapping for edge types
+    @pytest.mark.skip()
+    def test_export_numpy(self):
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
+        G = self.PAG.copy()
+
+        numpy_graph = G.to_numpy_array()
+        expected_arr = np.zeros((3, 3))
+        expected_arr[0, 1] = 2
+        expected_arr[0, 2] = 2
+        expected_arr[1, 0] = 1
 
     def test_do_intervention(self):
         """Test do interventions with causal graph."""
