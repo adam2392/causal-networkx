@@ -1,20 +1,25 @@
 from __future__ import annotations
 
-from typing import List, Optional, Set
+import typing
+from typing import List, Optional, Protocol, Set
 
 import networkx as nx
-import numpy as np
 import pandas as pd
 from networkx import NetworkXError
 
 from causal_networkx.config import EdgeType
 
 
-class NetworkXMixin:
+class NetworkXMixin(Protocol):
     """Suite of overridden methods of Networkx Graphs.
 
-    Assumes the subclass will store a DiGraph in 'dag' and
-    a Graph in 'c_component_graph'.
+    Assumes the subclass will store a DiGraph in a class
+    attribute called 'dag' and also has an arbitrary list
+    of graphs in an attribute '_graphs', which can be
+    used to query basic information.
+
+    These methods and properties override what is expected behavior for
+    causal graphs.
     """
 
     @property
@@ -31,6 +36,24 @@ class NetworkXMixin:
     def name(self, s):
         """Set the name of the graph."""
         self.dag["name"] = s
+
+    def predecessors(self, u):
+        """Return predecessors of node u.
+
+        A predecessor is defined as nodes with a directed edge to 'u'.
+        That is 'v' -> 'u'. A bidirected edge would not qualify as a
+        predecessor.
+        """
+        return self.dag.predecessors(u)
+
+    def successors(self, u):
+        """Return successors of node u.
+
+        A successor is defined as nodes with a directed edge from 'u'.
+        That is 'u' -> 'v'. A bidirected edge would not qualify as a
+        successor.
+        """
+        return self.dag.successors(u)
 
     def get_edge_data(self, u, v, default=None):
         """Get edge data from underlying DiGraph."""
@@ -72,9 +95,25 @@ class NetworkXMixin:
         """Return number of nodes in graph."""
         return len(self.nodes)
 
+    def number_of_edges(self):
+        """Return number of edges in graph."""
+        return len(self.edges)
+
     def has_node(self, n):
         """Check if graph has node 'n'."""
         return n in self
+
+    def adjacencies(self, u):
+        """Get all adjacent nodes to u.
+
+        Adjacencies are defined as any type of edge to node 'u'.
+        """
+        nghbrs = dict()
+        for graph in self._graphs:
+            graph = graph.to_undirected()
+            if u in graph:
+                nghbrs.update({node: None for node in graph.neighbors(u)})
+        return list(nghbrs.keys())
 
     def __contains__(self, n):
         """Return True if n is a node, False otherwise. Use: 'n in G'.
@@ -128,6 +167,74 @@ class NetworkXMixin:
                 if isinstance(graph, nx.DiGraph):
                     raise (e)
 
+    def has_edge(self, u, v):
+        """Check if graph has edge (u, v)."""
+        return self.dag.has_edge(u, v)
+
+    def add_edge(self, u_of_edge, v_of_edge, **attr):
+        """Add an edge between u and v.
+
+        The nodes u and v will be automatically added if they are
+        not already in the graph.
+
+        Edge attributes can be specified with keywords or by directly
+        accessing the edge's attribute dictionary. See examples below.
+
+        Parameters
+        ----------
+        u_of_edge, v_of_edge : nodes
+            Nodes can be, for example, strings or numbers.
+            Nodes must be hashable (and not None) Python objects.
+        attr : keyword arguments, optional
+            Edge data (or labels or objects) can be assigned using
+            keyword arguments.
+
+        See Also
+        --------
+        add_edges_from : add a collection of edges
+
+        Notes
+        -----
+        Adding an edge that already exists updates the edge data.
+
+        Many NetworkX algorithms designed for weighted graphs use
+        an edge attribute (by default ``weight``) to hold a numerical value.
+
+        Examples
+        --------
+        The following all add the edge e=(1, 2) to graph G:
+
+        >>> G = nx.Graph()  # or DiGraph, MultiGraph, MultiDiGraph, etc
+        >>> e = (1, 2)
+        >>> G.add_edge(1, 2)  # explicit two-node form
+        >>> G.add_edge(*e)  # single edge as tuple of two nodes
+        >>> G.add_edges_from([(1, 2)])  # add edges from iterable container
+
+        Associate data to edges using keywords:
+
+        >>> G.add_edge(1, 2, weight=3)
+        >>> G.add_edge(1, 3, weight=7, capacity=15, length=342.7)
+
+        For non-string attribute keys, use subscript notation.
+
+        >>> G.add_edge(1, 2)
+        >>> G[1][2].update({0: 5})
+        >>> G.edges[1, 2].update({0: 5})
+        """
+        self.dag.add_edge(u_of_edge, v_of_edge, **attr)
+
+    def add_edges_from(self, ebunch, **attr):
+        """Add directed edges."""
+        self.dag.add_edges_from(ebunch, **attr)
+
+    def remove_edges_from(self, ebunch):
+        """Remove directed edges."""
+        self.dag.remove_edges_from(ebunch)
+
+    def remove_edge(self, u, v):
+        """Remove directed edge."""
+        self.dag.remove_edge(u, v)
+
     def copy(self):
         """Return a copy of the causal graph."""
         return self.__class__(*self._graphs, **self.dag.graph)
@@ -138,7 +245,10 @@ class NetworkXMixin:
 
     def size(self, weight=None):
         """Return the total number of edges possibly with weights."""
-        return self.dag.size(weight) + self.c_component_graph.size(weight)
+        size_ = 0
+        for graph in self._graphs:
+            size_ += graph.size(weight)
+        return size_
 
     def degree(self, n):
         """Compute the degree of the DiGraph."""
@@ -186,10 +296,10 @@ class GraphSampleMixin:
         #         return x not in self.exogenous.keys()
 
         #     result_df = result_df[sorted(result_df, key=key)]
-        # return result_df
+        return df_values
 
 
-class AddingEdgeMixin:
+class AddingEdgeMixin(Protocol):
     def add_chain(self, node_chain):
         """Add a causal chain."""
         ebunch = []
@@ -199,13 +309,238 @@ class AddingEdgeMixin:
 
 
 class ExportMixin:
-    def to_dot_graph(self):
-        """Convert to 'dot' graph representation."""
-        pass
+    """Mixin class for exporting causal graphs to other formats."""
+
+    @typing.no_type_check
+    def to_dot_graph(self, to_dagitty: bool = False) -> str:
+        """Convert to 'dot' graph representation.
+
+        The DOT language for graphviz is what is commonly
+        used in R's ``dagitty`` package. This is a string
+        representation of the graph. However, this converts to a
+        string format that is not 100% representative of DOT [1]. See
+        Notes for more information.
+
+        Parameters
+        ----------
+        to_dagitty : bool
+            Whether to conform to the Dagitty format, where the
+            string begins with ``dag {`` instead of ``strict digraph {``.
+
+        Returns
+        -------
+        dot_graph : str
+            A string representation in DOT format for the graph.
+
+        Notes
+        -----
+        The output of this function can be immediately plugged into
+        the dagitty online portal for drawing a graph.
+
+        For example, if we have a mixed edge graph, with directed
+        and bidirected arrows (i.e. a causal DAG). Specifically, if
+        we had ``0 -> 1`` with a latent confounder, we would get the
+        following output:
+
+        .. code-block:: text
+
+            strict digraph {
+                0;
+                1;
+                0 -> 1;
+                0 <-> 1;
+            }
+
+        To represent for example a bidirected edge, ``A <-> B``,
+        the DOT format would make you use ``A -> B [dir=both]``, but
+        this is not as intuitive. ``A <-> B`` also complies with dagitty
+        and other approaches to drawing graphs in Python/R.
+
+        References
+        ----------
+        [1] https://github.com/pydot/pydot
+
+        """
+        node_str_list = []
+        for node in self.nodes:
+            node_str_list.append(f"{node};")
+        node_str = "\n".join(node_str_list)
+
+        # for each graph handle edges' string representation
+        # differently
+        edge_str_list = []
+        for name, graph in zip(self._graph_names, self._graphs):
+            dot = nx.nx_pydot.to_pydot(graph)
+            dot_str = dot.to_string()
+
+            # only keep rows with edge strings
+            edge_list = []
+            for row in dot_str.split("\n")[1:-2]:
+                if f"{row}" not in node_str_list:
+                    # replace edge marks with their appropriate string representation
+                    if name == EdgeType.bidirected.value:
+                        row = row.replace("--", "<->")
+                    elif name == EdgeType.circle.value:
+                        row = row.replace("->", "-o")
+                    edge_list.append(row)
+            edge_str_list.extend(edge_list)
+        edge_str = "\n".join(edge_str_list)
+
+        # form the final DOT string representation
+        if to_dagitty:
+            header = "dag"
+        else:
+            header = "strict digraph"
+        dot_graph = header + " {\n" f"{node_str}\n" f"{edge_str}\n" "}"
+        return dot_graph
+
+
+class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
+    """Causal directed acyclic graph.
+
+    This is a causal Bayesian network, or a Bayesian network
+    with directed edges that constitute causal relations, rather than
+    probabilistic dependences.
+
+    Parameters
+    ----------
+    incoming_graph_data : input graph (optional, default: None)
+        Data to initialize directed acyclic graph. If None (default) an empty
+        graph is created.  The data can be an edge list, or any
+        NetworkX graph object.  If the corresponding optional Python
+        packages are installed the data can also be a 2D NumPy array, a
+        SciPy sparse matrix, or a PyGraphviz graph. The edges in this graph
+        represent directed edges between observed variables, which are
+        represented using a ``networkx.DiGraph``. This is a DAG, meaning
+        there are no cycles.
+
+    attr : keyword arguments, optional (default= no attributes)
+        Attributes to add to graph as key=value pairs.
+
+    See Also
+    --------
+    networkx.DiGraph
+
+    Notes
+    -----
+    ``_graphs`` and ``_graph_names`` private properties store graph
+    objects denoting different types of edges and their corresponding
+    names. These are useful for encoding various extensions of the causal DAG.
+    """
+
+    _graphs: List[nx.Graph]
+    _graph_names: List[str]
+    _current_hash: Optional[int]
+    _full_graph: Optional[nx.DiGraph]
+
+    def __init__(self, incoming_graph_data=None, **attr) -> None:
+        # create the DAG of observed variables
+        self.dag = nx.DiGraph(incoming_graph_data, **attr)
+
+        # initialize the backend of graphs
+        self._init_graphs()
+
+        # keep track of the full graph
+        self._full_graph = None
+        self._current_hash = None
+        if not self.is_acyclic():
+            raise RuntimeError("Causal DAG must be acyclic.")
+
+        # make sure to add all nodes to the dag that
+        # are present in other internal graphs.
+        # Note: This enables one to leverage the underlying DiGraph DAG
+        # to do various graph traversals, such as d/m-separation.
+        for graph in self._graphs:
+            for node in graph.nodes:
+                if node not in self:
+                    self.dag.add_node(node)
+
+    def _init_graphs(self):
+        """Private function to initialize graphs.
+
+        Should always be called after setting certain graph structures.
+        """
+        # create a list of the internal graphs
+        self._graphs = [self.dag]
+        self._graph_names = [EdgeType.arrow.value]
+
+        # number of edges allowed between nodes
+        self.allowed_edges = 1
+
+    def children(self, n):
+        """Return an iterator over children of node n.
+
+        Children of node 'n' are nodes with a directed
+        edge from 'n' to that node. For example,
+        'n' -> 'x', 'n' -> 'y'. Nodes only connected
+        via a bidirected edge are not considered children:
+        'n' <-> 'y'.
+
+        Parameters
+        ----------
+        n : node
+            A node in the causal DAG.
+
+        Returns
+        -------
+        children : Iterator
+            An iterator of the children of node 'n'.
+        """
+        return self.dag.successors(n)
+
+    def parents(self, n):
+        """Return an iterator over parents of node n.
+
+        Parents of node 'n' are nodes with a directed
+        edge from 'n' to that node. For example,
+        'n' <- 'x', 'n' <- 'y'. Nodes only connected
+        via a bidirected edge are not considered parents:
+        'n' <-> 'y'.
+
+        Parameters
+        ----------
+        n : node
+            A node in the causal DAG.
+
+        Returns
+        -------
+        parents : Iterator
+            An iterator of the parents of node 'n'.
+        """
+        return self.dag.predecessors(n)
+
+    def is_acyclic(self):
+        """Check if graph is acyclic."""
+        return nx.is_directed_acyclic_graph(self.dag)
+
+    def _check_adding_edge(self, u_of_edge, v_of_edge, edge_type):
+        """Check compatibility among internal graphs when adding an edge of a certain type.
+
+        Parameters
+        ----------
+        u_of_edge : node
+            The start node.
+        v_of_edge : node
+            The end node.
+        edge_type : str of EdgeType
+            The edge type that is being added.
+        """
+        raise_error = False
+        if edge_type == EdgeType.arrow.value:
+            # there should not be a circle edge, or a bidirected edge
+            if u_of_edge == v_of_edge:
+                raise_error = True
+
+        if raise_error:
+            raise RuntimeError(
+                f"There is already an existing edge between {u_of_edge} and {v_of_edge}. "
+                f"Adding a {edge_type} edge is not possible. Please remove the existing "
+                f"edge first."
+            )
 
 
 # TODO: implement graph views for ADMG
-class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
+class ADMG(DAG):
     """Initialize a causal graphical model.
 
     This is a causal Bayesian network, where now the edges represent
@@ -274,9 +609,6 @@ class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
     that only have say bidirected edges pointing to it.
     """
 
-    _graphs: List[nx.Graph]
-    _current_hash: Optional[int]
-    _full_graph: Optional[nx.DiGraph]
     _cond_set: Set
 
     def __init__(
@@ -286,41 +618,29 @@ class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
         incoming_selection_bias=None,
         **attr,
     ) -> None:
-        # create the DAG of observed variables
-        self.dag = nx.DiGraph(incoming_graph_data, **attr)
-
         # form the bidirected edge graph
         self.c_component_graph = nx.Graph(incoming_latent_data, **attr)
 
         # form selection bias graph
         # self.selection_bias_graph = nx.Graph(incoming_selection_bias, **attr)
 
-        # keep track of the full graph
-        self._full_graph = None
-        self._current_hash = None
+        # call parent constructor
+        super().__init__(incoming_graph_data=incoming_graph_data, **attr)
 
         # the conditioning set used in d-separation
         # keep track of variables that are always conditioned on
         self._cond_set = set()
 
-        # set the internal graph properties
-        self._set_internal_graph_properties()
-
-        # make sure to add all nodes to the dag
-        for graph in self._graphs:
-            for node in graph.nodes:
-                if node not in self:
-                    self.dag.add_node(node)
-
         # check that there is no cycles within the graph
         # self._edge_error_check()
 
-    def _set_internal_graph_properties(self):
+    def _init_graphs(self):
         # create a list of the internal graphs
         self._graphs = [self.dag, self.c_component_graph]
+        self._graph_names = [EdgeType.arrow.value, EdgeType.bidirected.value]
 
         # number of edges allowed between nodes
-        self.allowed_edges = np.inf
+        self.allowed_edges = 2
 
     def to_adjacency_graph(self):
         """Compute an adjacency undirected graph.
@@ -356,78 +676,6 @@ class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
         """
         c_comps = nx.connected_components(self.c_component_graph)
         return [comp for comp in c_comps if len(comp) > 1]
-
-    def has_edge(self, u, v):
-        """Check if graph has edge (u, v)."""
-        return self.dag.has_edge(u, v)
-
-    def number_of_edges(self):
-        """Return number of edges in graph."""
-        return len(self.edges)
-
-    def add_edge(self, u_of_edge, v_of_edge, **attr):
-        """Add an edge between u and v.
-
-        The nodes u and v will be automatically added if they are
-        not already in the graph.
-
-        Edge attributes can be specified with keywords or by directly
-        accessing the edge's attribute dictionary. See examples below.
-
-        Parameters
-        ----------
-        u_of_edge, v_of_edge : nodes
-            Nodes can be, for example, strings or numbers.
-            Nodes must be hashable (and not None) Python objects.
-        attr : keyword arguments, optional
-            Edge data (or labels or objects) can be assigned using
-            keyword arguments.
-
-        See Also
-        --------
-        add_edges_from : add a collection of edges
-
-        Notes
-        -----
-        Adding an edge that already exists updates the edge data.
-
-        Many NetworkX algorithms designed for weighted graphs use
-        an edge attribute (by default ``weight``) to hold a numerical value.
-
-        Examples
-        --------
-        The following all add the edge e=(1, 2) to graph G:
-
-        >>> G = nx.Graph()  # or DiGraph, MultiGraph, MultiDiGraph, etc
-        >>> e = (1, 2)
-        >>> G.add_edge(1, 2)  # explicit two-node form
-        >>> G.add_edge(*e)  # single edge as tuple of two nodes
-        >>> G.add_edges_from([(1, 2)])  # add edges from iterable container
-
-        Associate data to edges using keywords:
-
-        >>> G.add_edge(1, 2, weight=3)
-        >>> G.add_edge(1, 3, weight=7, capacity=15, length=342.7)
-
-        For non-string attribute keys, use subscript notation.
-
-        >>> G.add_edge(1, 2)
-        >>> G[1][2].update({0: 5})
-        >>> G.edges[1, 2].update({0: 5})
-        """
-        self.dag.add_edge(u_of_edge, v_of_edge, **attr)
-
-    def add_edges_from(self, ebunch, **attr):
-        """Add directed edges."""
-        self.dag.add_edges_from(ebunch, **attr)
-
-    def remove_edges_from(self, ebunch):
-        """Remove directed edges."""
-        self.dag.remove_edges_from(ebunch)
-
-    def remove_edge(self, u, v):
-        """Remove directed edge."""
-        self.dag.remove_edge(u, v)
 
     def _edge_error_check(self):
         if not nx.is_directed_acyclic_graph(self.dag):
@@ -562,48 +810,6 @@ class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
                 self.dag.remove_node(u_of_edge)
             if v_of_edge in self.dag and nx.is_isolate(self.dag, v_of_edge):
                 self.dag.remove_node(v_of_edge)
-
-    def children(self, n):
-        """Return an iterator over children of node n.
-
-        Children of node 'n' are nodes with a directed
-        edge from 'n' to that node. For example,
-        'n' -> 'x', 'n' -> 'y'. Nodes only connected
-        via a bidirected edge are not considered children:
-        'n' <-> 'y'.
-
-        Parameters
-        ----------
-        n : node
-            A node in the causal DAG.
-
-        Returns
-        -------
-        children : Iterator
-            An iterator of the children of node 'n'.
-        """
-        return self.dag.successors(n)
-
-    def parents(self, n):
-        """Return an iterator over parents of node n.
-
-        Parents of node 'n' are nodes with a directed
-        edge from 'n' to that node. For example,
-        'n' <- 'x', 'n' <- 'y'. Nodes only connected
-        via a bidirected edge are not considered parents:
-        'n' <-> 'y'.
-
-        Parameters
-        ----------
-        n : node
-            A node in the causal DAG.
-
-        Returns
-        -------
-        parents : Iterator
-            An iterator of the parents of node 'n'.
-        """
-        return self.dag.predecessors(n)
 
     def do(self, nodes):
         """Apply a do-intervention on nodes to causal graph.
@@ -825,7 +1031,12 @@ class PAG(ADMG):
         self.circle_edge_graph = nx.DiGraph(incoming_uncertain_data, **attr)
 
         # construct the causal graph
-        super().__init__(incoming_graph_data, incoming_latent_data, incoming_selection_data, **attr)
+        super().__init__(
+            incoming_graph_data=incoming_graph_data,
+            incoming_latent_data=incoming_latent_data,
+            incoming_selection_bias=incoming_selection_data,
+            **attr,
+        )
 
         # check the PAG
         self._check_pag()
@@ -838,12 +1049,13 @@ class PAG(ADMG):
             "circle": self.circle_edges,
         }
 
-    def _set_internal_graph_properties(self):
+    def _init_graphs(self):
         self._graphs = [
             self.dag,
             self.c_component_graph,
             self.circle_edge_graph,
         ]
+        self._graph_names = [EdgeType.arrow.value, EdgeType.bidirected.value, EdgeType.circle.value]
 
         # number of allowed edges between any two nodes
         self.allowed_edges = 1
