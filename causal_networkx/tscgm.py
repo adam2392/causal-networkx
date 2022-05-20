@@ -1,10 +1,10 @@
 """Time-series causal graphs."""
 
 
-from causal_networkx.cgm import CausalGraph
+from causal_networkx.cgm import ADMG
 
 
-class TimeSeriesCausalGraph(CausalGraph):
+class TimeSeriesCausalGraph(ADMG):
     def __init__(
         self,
         incoming_graph_data=None,

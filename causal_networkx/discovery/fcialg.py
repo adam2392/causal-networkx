@@ -6,7 +6,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from causal_networkx import PAG, CausalGraph
+from causal_networkx import ADMG, PAG
 from causal_networkx.algorithms.pag import discriminating_path, uncovered_pd_path
 from causal_networkx.discovery.classes import ConstraintDiscovery
 
@@ -18,7 +18,7 @@ class FCI(ConstraintDiscovery):
         self,
         ci_estimator: Callable,
         alpha: float = 0.05,
-        init_graph: Union[nx.Graph, CausalGraph] = None,
+        init_graph: Union[nx.Graph, ADMG] = None,
         fixed_edges: nx.Graph = None,
         max_cond_set_size: int = None,
         max_path_length: int = None,

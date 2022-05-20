@@ -4,7 +4,7 @@ from typing import Callable, Dict
 
 import pandas as pd
 
-from causal_networkx.cgm import CausalGraph
+from causal_networkx.cgm import ADMG
 
 
 class StructuralCausalModel:
@@ -169,7 +169,7 @@ class StructuralCausalModel:
             result_table[name] = self._sample_function(self.endogenous[name], result_table)
         return func(*[result_table[name] for name in input_vars])
 
-    def get_causal_graph(self) -> CausalGraph:
+    def get_causal_graph(self) -> ADMG:
         """Compute the induced causal diagram.
 
         Returns
@@ -197,7 +197,7 @@ class StructuralCausalModel:
             if len(pc_comps) == 2:
                 latent_edge_list.append(pc_comps)
 
-        G = CausalGraph(
+        G = ADMG(
             incoming_graph_data=edge_list,
             incoming_latent_data=latent_edge_list,
             name="Induced Causal Graph from SCM",

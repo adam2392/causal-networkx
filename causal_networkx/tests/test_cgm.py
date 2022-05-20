@@ -2,14 +2,14 @@ import networkx as nx
 import pytest
 
 from causal_networkx.algorithms import d_separated
-from causal_networkx.cgm import PAG, CausalGraph
+from causal_networkx.cgm import ADMG, PAG
 
 
 class TestGraph:
     def setup_method(self):
         # start every graph with the confounded graph
         # 0 -> 1, 0 -> 2 with 1 <--> 0
-        self.Graph = CausalGraph
+        self.Graph = ADMG
         incoming_latent_data = [(0, 1)]
 
         # build dict-of-dict-of-dict K3

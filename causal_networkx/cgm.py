@@ -205,7 +205,7 @@ class ExportMixin:
 
 
 # TODO: implement graph views for CausalGraph
-class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
+class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
     """Initialize a causal graphical model.
 
     This is a causal Bayesian network, where now the edges represent
@@ -645,7 +645,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
             for parent in parents:
                 dag.remove_edge(parent, node)
 
-        return CausalGraph(dag, bd_graph, **self.dag.graph)
+        return ADMG(dag, bd_graph, **self.dag.graph)
 
     def soft_do(self, nodes, dependencies="original"):
         """Apply a soft-intervention on node to causal graph.
@@ -696,7 +696,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
                 if parent not in dependencies[idx]:
                     dag.remove_edge(parent, node)
 
-        return CausalGraph(dag, bd_graph, **self.dag.graph)
+        return ADMG(dag, bd_graph, **self.dag.graph)
 
     def is_acyclic(self):
         """Check if graph is acyclic."""
@@ -751,7 +751,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
 
 
 # TODO: implement m-separation algorithm
-class PAG(CausalGraph):
+class PAG(ADMG):
     """Partial ancestral graph (PAG).
 
     An equivalence class of MAGs, which represent a large

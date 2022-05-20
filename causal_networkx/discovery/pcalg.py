@@ -4,7 +4,7 @@ from typing import Callable, Dict, Set, Tuple, Union
 import networkx as nx
 import pandas as pd
 
-from causal_networkx import CausalGraph
+from causal_networkx import ADMG
 from causal_networkx.discovery.classes import ConstraintDiscovery
 
 
@@ -21,7 +21,7 @@ class PC(ConstraintDiscovery):
         self,
         ci_estimator: Callable,
         alpha: float = 0.05,
-        init_graph: Union[nx.Graph, CausalGraph] = None,
+        init_graph: Union[nx.Graph, ADMG] = None,
         fixed_edges: nx.Graph = None,
         max_cond_set_size: int = None,
         **ci_estimator_kwargs,

@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from causal_networkx.algorithms import d_separated, possibly_d_sep_sets
-from causal_networkx.cgm import PAG, CausalGraph
+from causal_networkx.cgm import ADMG, PAG
 from causal_networkx.ci import Oracle
 from causal_networkx.discovery import FCI
 from causal_networkx.scm import StructuralCausalModel
@@ -420,7 +420,7 @@ class Test_FCI:
             ("x1", "x2"),
         ]
         latent_edge_list = [("x1", "x2")]
-        G = CausalGraph(edge_list, latent_edge_list)
+        G = ADMG(edge_list, latent_edge_list)
         sample = np.random.normal(size=(len(G.nodes), 5)).T
         sample = pd.DataFrame(sample)
         sample.columns = list(G.nodes)
@@ -463,7 +463,7 @@ class Test_FCI:
         # reconstruct the PAG the way FCI would
         edge_list = [("D", "A"), ("B", "E"), ("F", "B"), ("C", "F"), ("C", "H"), ("H", "D")]
         latent_edge_list = [("A", "B"), ("D", "E")]
-        graph = CausalGraph(edge_list, latent_edge_list)
+        graph = ADMG(edge_list, latent_edge_list)
         alg = FCI(ci_estimator=Oracle(graph).ci_test)
 
         sample = graph.dummy_sample()
@@ -513,7 +513,7 @@ class Test_FCI:
             ("x5", "x6"),
         ]
         latent_edge_list = [("x1", "x2"), ("x4", "x5")]
-        G = CausalGraph(edge_list, latent_edge_list)
+        G = ADMG(edge_list, latent_edge_list)
         sample = np.random.normal(size=(len(G.nodes), 5)).T
         sample = pd.DataFrame(sample)
         sample.columns = list(G.nodes)

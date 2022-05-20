@@ -6,7 +6,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from causal_networkx import PAG, CausalGraph
+from causal_networkx import ADMG, PAG
 from causal_networkx.discovery.skeleton import learn_skeleton_graph
 
 
@@ -54,7 +54,7 @@ class ConstraintDiscovery:
         self,
         ci_estimator: Callable,
         alpha: float = 0.05,
-        init_graph: Union[nx.Graph, CausalGraph] = None,
+        init_graph: Union[nx.Graph, ADMG] = None,
         fixed_edges: nx.Graph = None,
         max_cond_set_size: int = None,
         **ci_estimator_kwargs,
