@@ -62,6 +62,7 @@ variable and then ``sep_set`` is the conditioning set of variables.
    g_square_discrete
    fisherz
    Oracle
+   KernelCITest
 
 Utility Algorithms for Causal Graphs
 ====================================
