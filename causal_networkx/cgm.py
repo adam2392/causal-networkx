@@ -611,6 +611,7 @@ class CPDAG(DAG):
 
     @property
     def undirected_edges(self):
+        """Return the undirected edges of the graph."""
         return self.undirected_edge_graph.edges
 
     def _check_cpdag(self):
