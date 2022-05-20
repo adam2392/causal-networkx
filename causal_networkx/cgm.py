@@ -54,7 +54,7 @@ class NetworkXMixin:
         successor.
         """
         return self.dag.successors(u)
-        
+
     def get_edge_data(self, u, v, default=None):
         """Get edge data from underlying DiGraph."""
         return self.dag.get_edge_data(u, v, default)
@@ -440,6 +440,15 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
         if not self.is_acyclic():
             raise RuntimeError("Causal DAG must be acyclic.")
 
+        # make sure to add all nodes to the dag that
+        # are present in other internal graphs.
+        # Note: This enables one to leverage the underlying DiGraph DAG
+        # to do various graph traversals, such as d/m-separation.
+        for graph in self._graphs:
+            for node in graph.nodes:
+                if node not in self:
+                    self.dag.add_node(node)
+
     def _init_graphs(self):
         """Private function to initialize graphs.
 
@@ -525,7 +534,7 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
 
 
 # TODO: implement graph views for ADMG
-class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
+class ADMG(DAG):
     """Initialize a causal graphical model.
 
     This is a causal Bayesian network, where now the edges represent
@@ -611,12 +620,8 @@ class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
         # form selection bias graph
         # self.selection_bias_graph = nx.Graph(incoming_selection_bias, **attr)
 
-        # create the DAG of observed variables
-        self.dag = nx.DiGraph(incoming_graph_data, **attr)
-        self._init_graphs()
-
         # call parent constructor
-        # super().__init__(incoming_graph_data=incoming_graph_data, **attr)
+        super().__init__(incoming_graph_data=incoming_graph_data, **attr)
 
         # keep track of the full graph
         self._full_graph = None
@@ -636,12 +641,6 @@ class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
 
         # number of edges allowed between nodes
         self.allowed_edges = 2
-
-        # make sure to add all nodes to the dag
-        for graph in self._graphs:
-            for node in graph.nodes:
-                if node not in self:
-                    self.dag.add_node(node)
 
     def to_adjacency_graph(self):
         """Compute an adjacency undirected graph.
@@ -811,48 +810,6 @@ class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
                 self.dag.remove_node(u_of_edge)
             if v_of_edge in self.dag and nx.is_isolate(self.dag, v_of_edge):
                 self.dag.remove_node(v_of_edge)
-
-    def children(self, n):
-        """Return an iterator over children of node n.
-
-        Children of node 'n' are nodes with a directed
-        edge from 'n' to that node. For example,
-        'n' -> 'x', 'n' -> 'y'. Nodes only connected
-        via a bidirected edge are not considered children:
-        'n' <-> 'y'.
-
-        Parameters
-        ----------
-        n : node
-            A node in the causal DAG.
-
-        Returns
-        -------
-        children : Iterator
-            An iterator of the children of node 'n'.
-        """
-        return self.dag.successors(n)
-
-    def parents(self, n):
-        """Return an iterator over parents of node n.
-
-        Parents of node 'n' are nodes with a directed
-        edge from 'n' to that node. For example,
-        'n' <- 'x', 'n' <- 'y'. Nodes only connected
-        via a bidirected edge are not considered parents:
-        'n' <-> 'y'.
-
-        Parameters
-        ----------
-        n : node
-            A node in the causal DAG.
-
-        Returns
-        -------
-        parents : Iterator
-            An iterator of the parents of node 'n'.
-        """
-        return self.dag.predecessors(n)
 
     def do(self, nodes):
         """Apply a do-intervention on nodes to causal graph.
@@ -1074,9 +1031,12 @@ class PAG(ADMG):
         self.circle_edge_graph = nx.DiGraph(incoming_uncertain_data, **attr)
 
         # construct the causal graph
-        super().__init__(incoming_graph_data=incoming_graph_data,
-           incoming_latent_data=incoming_latent_data, 
-           incoming_selection_bias=incoming_selection_data, **attr)
+        super().__init__(
+            incoming_graph_data=incoming_graph_data,
+            incoming_latent_data=incoming_latent_data,
+            incoming_selection_bias=incoming_selection_data,
+            **attr,
+        )
 
         # check the PAG
         self._check_pag()

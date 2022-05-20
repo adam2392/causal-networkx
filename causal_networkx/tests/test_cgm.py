@@ -1,6 +1,6 @@
 import networkx as nx
-import pytest
 import numpy as np
+import pytest
 
 from causal_networkx.algorithms import d_separated
 from causal_networkx.cgm import ADMG, PAG
@@ -362,7 +362,7 @@ class TestADMG(TestGraph):
         G.add_bidirected_edge(2, 3)
         assert [] == list(G.parents(3))
         assert [] == list(G.children(3))
-    
+
     def test_export_dot(self):
         """Test exporting to DOT format."""
         # 0 -> 1, 0 -> 2 with 1 <--> 0
