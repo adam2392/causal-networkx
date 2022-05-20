@@ -204,7 +204,7 @@ class ExportMixin:
         pass
 
 
-# TODO: implement graph views for CausalGraph
+# TODO: implement graph views for ADMG
 class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
     """Initialize a causal graphical model.
 
@@ -250,7 +250,7 @@ class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
     The data structure underneath the hood is stored in two networkx graphs:
     ``networkx.Graph`` and ``networkx.DiGraph`` to represent the latent unobserved
     confounders and observed variables. These data structures should never be
-    modified directly, but should use the CausalGraph class methods.
+    modified directly, but should use the ADMG class methods.
 
     - Bidirected edges (<->, indicating latent confounder) = networkx.Graph
     - Normal directed edges (<-, ->, indicating causal relationship) = networkx.DiGraph
@@ -615,7 +615,7 @@ class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
 
         Returns
         -------
-        causal_graph : CausalGraph
+        causal_graph : ADMG
             The mutilated causal graph.
 
         Raises
@@ -663,7 +663,7 @@ class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
 
         Returns
         -------
-        causal_graph : CausalGraph
+        causal_graph : ADMG
             The mutilated graph.
         """
         # check that nodes and dependencies are same length

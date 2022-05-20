@@ -39,7 +39,7 @@ class PC(ConstraintDiscovery):
             keyword arguments.
         alpha : float, optional
             The significance level for the conditional independence test, by default 0.05.
-        init_graph : nx.Graph | CausalGraph, optional
+        init_graph : nx.Graph | ADMG, optional
             An initialized graph. If ``None``, then will initialize PC using a
             complete graph. By default None.
         fixed_edges : nx.Graph, optional

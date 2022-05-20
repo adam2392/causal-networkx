@@ -128,7 +128,7 @@ numpydoc_xref_aliases = {
     "nx.Graph": "networkx.Graph",
     "nx.DiGraph": "networkx.DiGraph",
     # Causal-Networkx
-    "CausalGraph": "causal_networkx.CausalGraph",
+    "ADMG": "causal_networkx.ADMG",
     "PAG": "causal_networkx.PAG",
     # joblib
     "joblib.Parallel": "joblib.Parallel",

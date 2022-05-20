@@ -11,7 +11,7 @@ def is_directed_acyclic_graph(G):
 
     Parameters
     ----------
-    G : CausalGraph
+    G : ADMG
 
     Returns
     -------
@@ -22,19 +22,19 @@ def is_directed_acyclic_graph(G):
     --------
     Undirected graph::
 
-        >>> G = CausalGraph(nx.Graph([(1, 2), (2, 3)]))
+        >>> G = ADMG(nx.Graph([(1, 2), (2, 3)]))
         >>> causal_networkx.is_directed_acyclic_graph(G)
         False
 
     Directed graph with cycle::
 
-        >>> G = CausalGraph(nx.DiGraph([(1, 2), (2, 3), (3, 1)]))
+        >>> G = ADMG(nx.DiGraph([(1, 2), (2, 3), (3, 1)]))
         >>> causal_networkx.is_directed_acyclic_graph(G)
         False
 
     Directed acyclic graph::
 
-        >>> G = CausalGraph(nx.DiGraph([(1, 2), (2, 3)]))
+        >>> G = ADMG(nx.DiGraph([(1, 2), (2, 3)]))
         >>> causal_networkx.is_directed_acyclic_graph(G)
         True
 
@@ -55,7 +55,7 @@ def topological_sort(G: ADMG):
 
     Parameters
     ----------
-    G : CausalGraph
+    G : ADMG
         A causal directed acyclic graph (DAG)
 
     Yields

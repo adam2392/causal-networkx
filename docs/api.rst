@@ -22,7 +22,7 @@ Most-used classes
    :toctree: generated/
 
    StructuralCausalModel
-   CausalGraph
+   ADMG
    PAG
 
 Discovery functions

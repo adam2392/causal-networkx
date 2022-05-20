@@ -39,7 +39,7 @@ def _sample_cg(
 
     Returns
     -------
-    cg : CausalGraph
+    cg : ADMG
         Sampled causal graph.
     """
     cg = None
@@ -81,12 +81,12 @@ def convert_latent_to_unobserved_confounders(G: ADMG) -> ADMG:
 
     Parameters
     ----------
-    G : CausalGraph
+    G : ADMG
         A causal graph with bidirected edges.
 
     Returns
     -------
-    G_copy : CausalGraph
+    G_copy : ADMG
         A networkx DiGraph that is a fully specified DAG with unobserved
         variables added in place of bidirected edges.
     """
@@ -122,7 +122,7 @@ def _integrate_circle_edges_to_graph(G: PAG):
 
     Returns
     -------
-    G_copy : CausalGraph
+    G_copy : ADMG
         The causal graph with the modified edges.
 
     Notes
@@ -182,12 +182,12 @@ def convert_selection_vars_to_common_effects(G: ADMG) -> nx.DiGraph:
 
     Parameters
     ----------
-    G : CausalGraph
+    G : ADMG
         A causal graph with undirected edges.
 
     Returns
     -------
-    G_copy : CausalGraph
+    G_copy : ADMG
         A causal graph that is a fully specified DAG with unobserved
         selection variables added in place of undirected edges.
     """

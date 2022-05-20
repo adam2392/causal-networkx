@@ -10,7 +10,7 @@ def d_separated(G: Union[ADMG, PAG], x, y, z):
     """Check d-separation among 'x' and 'y' given 'z' in graph G.
 
     This algorithm wraps ``networkx.algorithms.d_separated``, but
-    allows one to pass in a ``CausalGraph`` instance instead.
+    allows one to pass in a ``ADMG`` instance instead.
 
     It first converts all bidirected edges into explicit unobserved
     confounding nodes in an explicit ``networkx.DiGraph``, which then
@@ -20,7 +20,7 @@ def d_separated(G: Union[ADMG, PAG], x, y, z):
 
     Parameters
     ----------
-    G : CausalGraph
+    G : ADMG
         Causal graph.
     x : set
         First set of nodes in ``G``.
@@ -31,13 +31,13 @@ def d_separated(G: Union[ADMG, PAG], x, y, z):
 
     See Also
     --------
-    causal_networkx.CausalGraph
+    causal_networkx.ADMG
     networkx.algorithms.d_separation.d_separated
 
     Notes
     -----
     This wraps the networkx implementation, which only allows DAGs. Since
-    ``CausalGraph`` is not represented.
+    ``ADMG`` is not represented.
 
     """
     # get the full graph by converting bidirected edges into latent confounders

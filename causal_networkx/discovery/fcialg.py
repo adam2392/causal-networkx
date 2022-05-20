@@ -38,7 +38,7 @@ class FCI(ConstraintDiscovery):
             _description_
         alpha : float, optional
             _description_, by default 0.05
-        init_graph : Union[nx.Graph, CausalGraph], optional
+        init_graph : Union[nx.Graph, ADMG], optional
             _description_, by default None
         fixed_edges : nx.Graph, optional
             _description_, by default None
