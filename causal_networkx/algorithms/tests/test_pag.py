@@ -7,7 +7,7 @@ from causal_networkx.algorithms import (
     possibly_d_sep_sets,
     uncovered_pd_path,
 )
-from causal_networkx.cgm import PAG, CausalGraph
+from causal_networkx.cgm import ADMG, PAG
 from causal_networkx.ci import Oracle
 from causal_networkx.discovery import FCI
 
@@ -49,7 +49,7 @@ def test_possibly_d_separated():
     # reconstruct the PAG the way FCI would
     edge_list = [("D", "A"), ("B", "E"), ("F", "B"), ("C", "F"), ("C", "H"), ("H", "D")]
     latent_edge_list = [("A", "B"), ("D", "E")]
-    graph = CausalGraph(edge_list, latent_edge_list)
+    graph = ADMG(edge_list, latent_edge_list)
     alg = FCI(ci_estimator=Oracle(graph).ci_test)
     sample = graph.dummy_sample()
     skel_graph, sep_set = alg.learn_skeleton(sample)

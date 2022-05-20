@@ -3,7 +3,7 @@ import pytest
 from numpy.testing import assert_array_equal
 from scipy.stats import multiscale_graphcorr
 
-from causal_networkx.cgm import CausalGraph
+from causal_networkx.cgm import ADMG
 from causal_networkx.scm import StructuralCausalModel
 
 seed = 12345
@@ -54,7 +54,7 @@ def test_scm_induced_graph():
 
     expected_c_comps = [{"x", "y"}]
     c_components = list(G.c_components)
-    assert isinstance(G, CausalGraph)
+    assert isinstance(G, ADMG)
     assert c_components == expected_c_comps
     assert all(node in G.nodes for node in ["x", "y", "z"])
 

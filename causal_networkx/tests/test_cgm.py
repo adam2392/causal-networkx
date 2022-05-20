@@ -2,14 +2,14 @@ import networkx as nx
 import pytest
 
 from causal_networkx.algorithms import d_separated
-from causal_networkx.cgm import PAG, CausalGraph
+from causal_networkx.cgm import ADMG, PAG
 
 
 class TestGraph:
     def setup_method(self):
         # start every graph with the confounded graph
         # 0 -> 1, 0 -> 2 with 1 <--> 0
-        self.Graph = CausalGraph
+        self.Graph = ADMG
         incoming_latent_data = [(0, 1)]
 
         # build dict-of-dict-of-dict K3
@@ -19,7 +19,7 @@ class TestGraph:
 
 
 class TestNetworkxGraph(TestGraph):
-    """Test CausalGraph relevant networkx properties."""
+    """Test ADMG relevant networkx properties."""
 
     def test_data_input(self):
         G = self.Graph({1: [2], 2: [1]}, name="test")
@@ -248,7 +248,7 @@ class TestNetworkxGraph(TestGraph):
         G.add_edge(2, 1, foo=ll)
 
 
-class TestCausalGraph(TestGraph):
+class TestADMG(TestGraph):
     """Test relevant causal graph properties."""
 
     def test_hash(self):
@@ -372,7 +372,7 @@ class TestCausalGraph(TestGraph):
         pass
 
 
-class TestPAG(TestCausalGraph):
+class TestPAG(TestADMG):
     def setup_method(self):
         # setup the causal graph in previous method
         # start every graph with the confounded graph

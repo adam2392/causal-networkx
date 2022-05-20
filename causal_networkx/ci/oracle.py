@@ -3,18 +3,18 @@ from typing import Union
 import networkx as nx
 
 from causal_networkx.algorithms.d_separation import d_separated
-from causal_networkx.cgm import CausalGraph
+from causal_networkx.cgm import ADMG
 
 
 class Oracle:
-    def __init__(self, graph: Union[CausalGraph, nx.DiGraph]) -> None:
+    def __init__(self, graph: Union[ADMG, nx.DiGraph]) -> None:
         """Oracle conditional independence testing.
 
         Used for unit testing and checking intuition.
 
         Parameters
         ----------
-        graph : nx.DiGraph | CausalGraph
+        graph : nx.DiGraph | ADMG
 
         """
         self.graph = graph

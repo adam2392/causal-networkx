@@ -3,7 +3,7 @@ from networkx.algorithms import (
 )
 from networkx.algorithms import topological_sort as nx_topological_sort
 
-from causal_networkx.cgm import CausalGraph
+from causal_networkx.cgm import ADMG
 
 
 def is_directed_acyclic_graph(G):
@@ -11,7 +11,7 @@ def is_directed_acyclic_graph(G):
 
     Parameters
     ----------
-    G : CausalGraph
+    G : ADMG
 
     Returns
     -------
@@ -22,19 +22,19 @@ def is_directed_acyclic_graph(G):
     --------
     Undirected graph::
 
-        >>> G = CausalGraph(nx.Graph([(1, 2), (2, 3)]))
+        >>> G = ADMG(nx.Graph([(1, 2), (2, 3)]))
         >>> causal_networkx.is_directed_acyclic_graph(G)
         False
 
     Directed graph with cycle::
 
-        >>> G = CausalGraph(nx.DiGraph([(1, 2), (2, 3), (3, 1)]))
+        >>> G = ADMG(nx.DiGraph([(1, 2), (2, 3), (3, 1)]))
         >>> causal_networkx.is_directed_acyclic_graph(G)
         False
 
     Directed acyclic graph::
 
-        >>> G = CausalGraph(nx.DiGraph([(1, 2), (2, 3)]))
+        >>> G = ADMG(nx.DiGraph([(1, 2), (2, 3)]))
         >>> causal_networkx.is_directed_acyclic_graph(G)
         True
 
@@ -45,7 +45,7 @@ def is_directed_acyclic_graph(G):
     return nx_is_directed_acyclic_graph(G.dag)
 
 
-def topological_sort(G: CausalGraph):
+def topological_sort(G: ADMG):
     """Returns a generator of nodes in topologically sorted order.
 
     A topological sort is a nonunique permutation of the nodes of a
@@ -55,7 +55,7 @@ def topological_sort(G: CausalGraph):
 
     Parameters
     ----------
-    G : CausalGraph
+    G : ADMG
         A causal directed acyclic graph (DAG)
 
     Yields
@@ -67,7 +67,7 @@ def topological_sort(G: CausalGraph):
     --------
     networkx.algorithms.dag.topological_sort
     """
-    assert isinstance(G, CausalGraph)
+    assert isinstance(G, ADMG)
 
     # topological sorting only occurs from the directed edges,
     # not bi-directed edges

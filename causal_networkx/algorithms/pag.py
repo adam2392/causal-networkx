@@ -309,7 +309,7 @@ def uncovered_pd_path(
 
     Parameters
     ----------
-    graph : CausalGraph
+    graph : ADMG
         PAG to orient.
     u : node
         A node in the graph to start the uncovered path.

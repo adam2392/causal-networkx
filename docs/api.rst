@@ -22,7 +22,7 @@ Most-used classes
    :toctree: generated/
 
    StructuralCausalModel
-   CausalGraph
+   ADMG
    PAG
 
 Discovery functions
@@ -62,6 +62,7 @@ variable and then ``sep_set`` is the conditioning set of variables.
    g_square_discrete
    fisherz
    Oracle
+   KernelCITest
 
 Utility Algorithms for Causal Graphs
 ====================================

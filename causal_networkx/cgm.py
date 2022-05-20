@@ -204,8 +204,8 @@ class ExportMixin:
         pass
 
 
-# TODO: implement graph views for CausalGraph
-class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
+# TODO: implement graph views for ADMG
+class ADMG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
     """Initialize a causal graphical model.
 
     This is a causal Bayesian network, where now the edges represent
@@ -250,7 +250,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
     The data structure underneath the hood is stored in two networkx graphs:
     ``networkx.Graph`` and ``networkx.DiGraph`` to represent the latent unobserved
     confounders and observed variables. These data structures should never be
-    modified directly, but should use the CausalGraph class methods.
+    modified directly, but should use the ADMG class methods.
 
     - Bidirected edges (<->, indicating latent confounder) = networkx.Graph
     - Normal directed edges (<-, ->, indicating causal relationship) = networkx.DiGraph
@@ -615,7 +615,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
 
         Returns
         -------
-        causal_graph : CausalGraph
+        causal_graph : ADMG
             The mutilated causal graph.
 
         Raises
@@ -645,7 +645,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
             for parent in parents:
                 dag.remove_edge(parent, node)
 
-        return CausalGraph(dag, bd_graph, **self.dag.graph)
+        return ADMG(dag, bd_graph, **self.dag.graph)
 
     def soft_do(self, nodes, dependencies="original"):
         """Apply a soft-intervention on node to causal graph.
@@ -663,7 +663,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
 
         Returns
         -------
-        causal_graph : CausalGraph
+        causal_graph : ADMG
             The mutilated graph.
         """
         # check that nodes and dependencies are same length
@@ -696,7 +696,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
                 if parent not in dependencies[idx]:
                     dag.remove_edge(parent, node)
 
-        return CausalGraph(dag, bd_graph, **self.dag.graph)
+        return ADMG(dag, bd_graph, **self.dag.graph)
 
     def is_acyclic(self):
         """Check if graph is acyclic."""
@@ -751,7 +751,7 @@ class CausalGraph(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin):
 
 
 # TODO: implement m-separation algorithm
-class PAG(CausalGraph):
+class PAG(ADMG):
     """Partial ancestral graph (PAG).
 
     An equivalence class of MAGs, which represent a large

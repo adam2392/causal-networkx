@@ -1,9 +1,9 @@
 from typing import Iterator
 
-from causal_networkx.cgm import CausalGraph
+from causal_networkx.cgm import ADMG
 
 
-def find_cliques(G: CausalGraph, nodes=None) -> Iterator:
+def find_cliques(G: ADMG, nodes=None) -> Iterator:
     """Find all maximal cliques in causal DAG.
 
     This operates over the directed edges of the causal graph, excluding
@@ -11,7 +11,7 @@ def find_cliques(G: CausalGraph, nodes=None) -> Iterator:
 
     Parameters
     ----------
-    G : CausalGraph
+    G : ADMG
         The causal diagram.
     nodes : list, optional
         The list of nodes to consider, by default None
