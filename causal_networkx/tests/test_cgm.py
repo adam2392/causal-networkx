@@ -44,7 +44,7 @@ class TestNetworkxGraph(TestGraph):
         G.add_node(0)
         assert 0 in G
         assert 0 in G.dag
-        assert 0 not in G.c_component_graph
+        assert all(0 not in graph for graph in G._graphs[1:])
         # test add attributes
         G.add_node(1, c="red")
         G.add_node(2, c="blue")
@@ -66,7 +66,7 @@ class TestNetworkxGraph(TestGraph):
         for i in [0, 1, 2]:
             assert i in G
             assert i in G.dag
-            assert i not in G.c_component_graph
+            assert all(i not in graph for graph in G._graphs[1:])
         # test add attributes
         G.add_nodes_from([0, 1, 2], c="red")
         assert G.nodes[0]["c"] == "red"
@@ -214,33 +214,11 @@ class TestNetworkxGraph(TestGraph):
         assert G.has_edge(0, 1)
         assert not G.has_edge(0, -1)
 
-    def test_size(self):
-        G = self.G
-
-        # size stores all edges
-        assert G.size() == 3
-        assert G.number_of_edges() == 2
-        assert G.number_of_bidirected_edges() == 1
-
     def test_name(self):
         G = self.Graph(name="")
         assert G.name == ""
         G = self.Graph(name="test")
         assert G.name == "test"
-
-    def test_str_unnamed(self):
-        G = self.Graph()
-        G.add_edges_from([(1, 2), (2, 3)])
-        G.add_bidirected_edge(1, 2)
-        assert str(G) == f"{type(G).__name__} with 3 nodes, 2 edges and 1 bidirected edges"
-
-    def test_str_named(self):
-        G = self.Graph(name="foo")
-        G.add_edges_from([(1, 2), (2, 3)])
-        G.add_bidirected_edge(1, 2)
-        assert (
-            str(G) == f"{type(G).__name__} named 'foo' with 3 nodes, 2 edges and 1 bidirected edges"
-        )
 
     def add_attributes(self, G):
         """Test adding edges with attributes to graph."""
@@ -273,6 +251,31 @@ class TestCPDAG(TestNetworkxGraph):
 
 class TestADMG(TestGraph):
     """Test relevant causal graph properties."""
+
+    def setup_method(self):
+        # start every graph with the confounded graph
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
+        self.Graph = ADMG
+        incoming_latent_data = [(0, 1)]
+
+        # build dict-of-dict-of-dict K3
+        ed1, ed2 = ({}, {})
+        incoming_graph_data = {0: {1: ed1, 2: ed2}}
+        self.G = self.Graph(incoming_graph_data, incoming_latent_data)
+
+    def test_str_unnamed(self):
+        G = self.Graph()
+        G.add_edges_from([(1, 2), (2, 3)])
+        G.add_bidirected_edge(1, 3)
+        assert str(G) == f"{type(G).__name__} with 3 nodes, 2 edges and 1 bidirected edges"
+
+    def test_str_named(self):
+        G = self.Graph(name="foo")
+        G.add_edges_from([(1, 2), (2, 3)])
+        G.add_bidirected_edge(1, 3)
+        assert (
+            str(G) == f"{type(G).__name__} named 'foo' with 3 nodes, 2 edges and 1 bidirected edges"
+        )
 
     def test_hash(self):
         """Test hashing a causal graph."""
@@ -419,6 +422,14 @@ class TestADMG(TestGraph):
         expected_arr[1, 0] = 1
         assert numpy_graph
 
+    def test_size(self):
+        G = self.G
+
+        # size stores all edges
+        assert G.size() == 3
+        assert G.number_of_edges() == 2
+        assert G.number_of_bidirected_edges() == 1
+
     def test_do_intervention(self):
         """Test do interventions with causal graph."""
         pass
@@ -448,6 +459,24 @@ class TestPAG(TestADMG):
 
         # also setup a PAG with uncertain edges
         self.PAG.add_circle_edge(1, 4, bidirected=True)
+
+    def test_str_unnamed(self):
+        G = self.Graph()
+        G.add_edges_from([(1, 2), (2, 3)])
+        G.add_bidirected_edge(1, 3)
+        assert (
+            str(G)
+            == f"{type(G).__name__} with 3 nodes, 2 edges, 1 bidirected edges and 0 circle edges."
+        )
+
+    def test_str_named(self):
+        G = self.Graph(name="foo")
+        G.add_edges_from([(1, 2), (2, 3)])
+        G.add_bidirected_edge(1, 3)
+        assert (
+            str(G)
+            == f"{type(G).__name__} named 'foo' with 3 nodes, 2 edges, 1 bidirected edges and 0 circle edges."
+        )
 
     def test_neighbors(self):
         # 0 -> 1, 0 -> 2 with 1 <--> 0
