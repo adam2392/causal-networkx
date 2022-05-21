@@ -639,7 +639,7 @@ class CPDAG(DAG):
     See Also
     --------
     DAG
-    APMG
+    ADMG
     PAG
     causal_networkx.discovery.PC
 
@@ -668,12 +668,6 @@ class CPDAG(DAG):
         # number of edges allowed between nodes
         self.allowed_edges = 1
 
-        # make sure to add all nodes to the dag
-        for graph in self._graphs:
-            for node in graph.nodes:
-                if node not in self:
-                    self.dag.add_node(node)
-
     def __str__(self):
         return "".join(
             [
@@ -687,6 +681,7 @@ class CPDAG(DAG):
 
     @property
     def undirected_edges(self):
+        """Return the undirected edges of the graph."""
         return self.undirected_edge_graph.edges
 
     def _check_cpdag(self):

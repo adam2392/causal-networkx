@@ -41,7 +41,6 @@ class EdgeType(Enum, metaclass=MetaEnum):
     tail = "tail"
     undirected = "undirected"
 
-
 CAUSAL_EDGE_MAPPING = {}
 
 # amat[i,j] = 0 iff no edge btw i,j
@@ -53,3 +52,4 @@ PAG_EDGE_MAPPING = {
     EdgeType.circle.value: 1,
     EdgeType.arrow.value: 2,
 }
+

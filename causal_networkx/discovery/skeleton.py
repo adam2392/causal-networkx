@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from itertools import combinations, permutations
-from typing import Callable, Dict, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 import networkx as nx
 import numpy as np
@@ -11,13 +11,12 @@ from causal_networkx.algorithms.pag import possibly_d_sep_sets
 from causal_networkx.cgm import PAG
 
 logger = logging.getLogger()
-# TODO: add a dictionary mapping to store the "smallest" test-statistic values
-# TODO: use permutations or combinations? for pdsep maybe perm?
+
 def learn_skeleton_graph_with_pdsep(
     X: pd.DataFrame,
     ci_estimator: Callable,
-    adj_graph: nx.Graph = None,
-    sep_set: Dict[str, Dict[str, Set]] = None,
+    adj_graph: Optional[nx.Graph] = None,
+    sep_set: Optional[Dict[str, Dict[str, Set]]] = None,
     fixed_edges: Optional[Set] = None,
     alpha: float = 0.05,
     min_cond_set_size: int = 0,
@@ -83,7 +82,7 @@ def learn_skeleton_graph_with_pdsep(
         adj_graph = nx.complete_graph(nodes, create_using=nx.Graph)
     if sep_set is None:
         # keep track of separating sets
-        sep_set: Dict[str, Dict[str, Set]] = defaultdict(lambda: defaultdict(set))
+        sep_set = defaultdict(lambda: defaultdict(set))
 
     if max_cond_set_size is None:
         max_cond_set_size = np.inf
@@ -197,7 +196,7 @@ def learn_skeleton_graph_with_neighbors(
         adj_graph = nx.complete_graph(nodes, create_using=nx.Graph)
     if sep_set is None:
         # keep track of separating sets
-        sep_set: Dict[str, Dict[str, Set]] = defaultdict(lambda: defaultdict(set))
+        sep_set = defaultdict(lambda: defaultdict(set))
 
     if max_cond_set_size is None:
         max_cond_set_size = np.inf
@@ -238,7 +237,8 @@ def learn_skeleton_graph_with_neighbors(
                         if adj_graph.has_edge(i, j):
                             remove_edges.append((i, j))
                         logger.debug(
-                            f"Removing edge {i} {j} with conditioning set {cond_set}: alpha={alpha}, pvalue={pvalue}"
+                            f"Removing edge {i} {j} with conditioning set {cond_set}: "
+                            f"alpha={alpha}, pvalue={pvalue}"
                         )
                         sep_set[i][j] |= set(cond_set)
                         sep_set[j][i] |= set(cond_set)
@@ -331,7 +331,7 @@ def learn_skeleton_graph_with_order(
         adj_graph = nx.complete_graph(nodes, create_using=nx.Graph)
     if sep_set is None:
         # keep track of separating sets
-        sep_set: Dict[str, Dict[str, Set]] = defaultdict(lambda: defaultdict(set))
+        sep_set = defaultdict(lambda: defaultdict(set))
 
     if max_cond_set_size is None:
         max_cond_set_size = np.inf
@@ -342,15 +342,15 @@ def learn_skeleton_graph_with_order(
 
     # store the absolute value of test-statistic values for every single
     # candidate parent-child edge (X -> Y)
-    test_stat_dict = dict()
-    pvalue_dict = dict()
+    test_stat_dict: Dict[Any, Dict[Any, float]] = dict()
+    pvalue_dict: Dict[Any, Dict[Any, float]] = dict()
 
     # store the actual minimum test-statistic value for every
     # single candidate parent-child edge
-    stat_min_dict = dict()
+    stat_min_dict: Dict[Any, Dict[Any, float]] = dict()
 
     nodes = adj_graph.nodes
-    parents_mapping = dict()
+    parents_mapping: Dict[Any, List] = dict()
     for node in nodes:
         parents_mapping[node] = [
             other_node for other_node in adj_graph.neighbors(node) if other_node != node
@@ -433,7 +433,7 @@ def learn_skeleton_graph_with_order(
             # Pvalues are sorted in ascending order, so that means most dependent to least dependent
             # Therefore test statistic values are sorted in descending order.
             abs_values = {k: np.abs(test_stat_dict[i][k]) for k in list(test_stat_dict[i])}
-            possible_parents = sorted(abs_values, key=abs_values.get, reverse=True)
+            possible_parents = sorted(abs_values, key=abs_values.get, reverse=True)  # type: ignore
 
     return adj_graph, sep_set
 
