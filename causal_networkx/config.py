@@ -42,8 +42,6 @@ class EdgeType(Enum, metaclass=MetaEnum):
     undirected = "undirected"
 
 
-CAUSAL_EDGE_MAPPING = {}
-
 # amat[i,j] = 0 iff no edge btw i,j
 # amat[i,j] = 1 iff i *-o j
 # amat[i,j] = 2 iff i *-> j

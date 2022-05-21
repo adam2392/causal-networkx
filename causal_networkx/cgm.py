@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import typing
 from typing import List, Optional, Protocol, Set
-from numpy.typing import NDArray
 
 import networkx as nx
+import numpy as np
 import pandas as pd
 from networkx import NetworkXError
+from numpy.typing import NDArray
 
-from causal_networkx.config import EdgeType, PAG_EDGE_MAPPING
+from causal_networkx.config import PAG_EDGE_MAPPING, EdgeType
 
 
 class NetworkXMixin(Protocol):

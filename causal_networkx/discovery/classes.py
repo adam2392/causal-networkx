@@ -6,7 +6,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from causal_networkx import ADMG, PAG
+from causal_networkx import ADMG, CPDAG, PAG
 from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_neighbors
 
 
@@ -31,9 +31,17 @@ class ConstraintDiscovery:
     fixed_edges : nx.Graph, optional
         An undirected graph with fixed edges. If ``None``, then will initialize PC using a
         complete graph. By default None.
+    min_cond_set_size : int, optional
+        Minimum size of the conditioning set, by default None, which will be set to '0'.
+        Used to constrain the computation spent on the algorithm.
     max_cond_set_size : int, optional
         Maximum size of the conditioning set, by default None. Used to limit
         the computation spent on the algorithm.
+    max_combinations : int, optional
+        Maximum number of tries with a conditioning set chosen from the set of possible
+        parents still, by default None. If None, then will not be used. If set, then
+        the conditioning set will be chosen lexographically based on the sorted
+        test statistic values of 'ith Pa(X) -> X', for each possible parent node of 'X'.
     ci_estimator_kwargs : dict
         Keyword arguments for the ``ci_estimator`` function.
 
@@ -47,7 +55,7 @@ class ConstraintDiscovery:
         variables in the graph that separate the two.
     """
 
-    graph_: Optional[PAG]
+    graph_: Optional[Union[PAG, CPDAG]]
     separating_sets_: Optional[Dict[str, Dict[str, Set[Any]]]]
 
     def __init__(
@@ -56,7 +64,9 @@ class ConstraintDiscovery:
         alpha: float = 0.05,
         init_graph: Union[nx.Graph, ADMG] = None,
         fixed_edges: nx.Graph = None,
+        min_cond_set_size: int = None,
         max_cond_set_size: int = None,
+        max_combinations: int = None,
         **ci_estimator_kwargs,
     ):
         self.alpha = alpha
@@ -68,7 +78,12 @@ class ConstraintDiscovery:
         if max_cond_set_size is None:
             max_cond_set_size = np.inf
         self.max_cond_set_size = max_cond_set_size
-
+        if min_cond_set_size is None:
+            min_cond_set_size = 0
+        self.min_cond_set_size = min_cond_set_size
+        if max_combinations is None:
+            max_combinations = np.inf
+        self.max_combinations = max_combinations
         self.separating_sets_ = None
         self.graph_ = None
 
@@ -150,6 +165,12 @@ class ConstraintDiscovery:
         ValueError
             If the nodes in the fixed-edge graph do not match the variable
             names in passed in data, ``X``.
+
+        Notes
+        -----
+        Learning the skeleton of a causal DAG uses (conditional) independence testing
+        to determine which variables are (in)dependent. This specific algorithm
+        compares exhaustively pairs of adjacent variables.
         """
         # perform pairwise tests to learn skeleton
         skel_graph, sep_set = learn_skeleton_graph_with_neighbors(
@@ -159,6 +180,7 @@ class ConstraintDiscovery:
             sep_set=sep_set,
             fixed_edges=fixed_edges,
             alpha=self.alpha,
+            min_cond_set_size=self.min_cond_set_size,
             max_cond_set_size=self.max_cond_set_size,
             **self.ci_estimator_kwargs,
         )
