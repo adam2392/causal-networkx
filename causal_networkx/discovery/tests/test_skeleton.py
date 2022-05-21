@@ -43,7 +43,7 @@ def test_learn_skeleton(indep_test_func, data_matrix, g_answer, alpha=0.01):
     """Test PC algorithm for estimating the causal DAG."""
     data_df = pd.DataFrame(data_matrix)
     alg = PC(ci_estimator=indep_test_func, alpha=alpha)
-    skel_graph, _ = alg.learn_skeleton(data_df)
+    skel_graph, _ = alg._learn_skeleton_from_neighbors(data_df)
 
     # all edges in the answer should be part of the skeleton graph
     for edge in g_answer.edges:

@@ -129,8 +129,8 @@ class ConstraintDiscovery:
     def _learn_skeleton_from_neighbors(
         self,
         X: pd.DataFrame,
-        graph: nx.Graph,
-        sep_set: Dict[str, Dict[str, Set[Any]]],
+        graph: nx.Graph = None,
+        sep_set: Dict[str, Dict[str, Set[Any]]] = None,
         fixed_edges: Set = set(),
     ):
         """Learns the skeleton of a causal DAG using pairwise independence testing.

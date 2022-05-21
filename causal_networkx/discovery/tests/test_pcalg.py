@@ -10,21 +10,22 @@ from causal_networkx.discovery import PC
 
 
 @pytest.mark.parametrize(
-    ("indep_test_func", "data_matrix", "g_answer"),
+    ("indep_test_func", "data_matrix", "g_answer", "alpha"),
     [
-        # (
-        #     g_square_binary,
-        #     np.array(bin_data).reshape((5000, 5)),
-        #     nx.DiGraph(
-        #         {
-        #             0: (1,),
-        #             1: (),
-        #             2: (3, 4),
-        #             3: (1, 2),
-        #             4: (1, 2),
-        #         }
-        #     ),
-        # ),
+        (
+            g_square_binary,
+            np.array(bin_data).reshape((5000, 5)),
+            nx.DiGraph(
+                {
+                    0: (1,),
+                    1: (),
+                    2: (),
+                    3: (1,),
+                    4: (1,),
+                }
+            ),
+            0.01,
+        ),
         (
             g_square_discrete,
             np.array(dis_data).reshape((10000, 5)),
@@ -37,10 +38,11 @@ from causal_networkx.discovery import PC
                     4: (3,),
                 }
             ),
+            0.1,
         ),
     ],
 )
-def test_estimate_cpdag(indep_test_func, data_matrix, g_answer, alpha=0.01):
+def test_estimate_cpdag(indep_test_func, data_matrix, g_answer, alpha):
     """Test PC algorithm for estimating the causal DAG."""
     data_df = pd.DataFrame(data_matrix)
     alg = PC(ci_estimator=indep_test_func, alpha=alpha)
@@ -48,18 +50,15 @@ def test_estimate_cpdag(indep_test_func, data_matrix, g_answer, alpha=0.01):
     graph = alg.graph_
 
     error_msg = "True edges should be: %s" % (g_answer.edges(),)
-    print(graph.all_edges())
-    from pprint import pprint
-    pprint(alg.separating_sets_)
-    assert nx.is_isomorphic(graph.to_directed(), g_answer), error_msg
+    assert nx.is_isomorphic(graph.dag, g_answer), error_msg
 
     # test what happens if fixed edges are present
     fixed_edges = nx.complete_graph(data_df.columns.values)
     alg = PC(fixed_edges=fixed_edges, ci_estimator=indep_test_func, alpha=alpha)
     alg.fit(data_df)
     complete_graph = alg.graph_
-    assert nx.is_isomorphic(complete_graph.to_undirected(), fixed_edges)
-    assert not nx.is_isomorphic(complete_graph, g_answer)
+    assert nx.is_isomorphic(complete_graph.undirected_edge_graph, fixed_edges)
+    assert not nx.is_isomorphic(complete_graph.dag, g_answer)
 
 
 def test_collider():

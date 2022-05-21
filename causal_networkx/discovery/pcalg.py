@@ -86,6 +86,8 @@ class MeekRules(Protocol):
         while idx < self.max_iter and not finished:  # type: ignore
             change_flag = False
             for (i, j) in permutations(node_ids, 2):
+                if i == j:
+                    continue
                 # Rule 1: Orient i-j into i->j whenever there is an arrow k->i
                 # such that k and j are nonadjacent.
                 r1_add = self._apply_rule1(skel_graph, i, j)
@@ -125,17 +127,13 @@ class MeekRules(Protocol):
         # Check if i-j.
         if graph.has_undirected_edge(i, j):
             for k in graph.predecessors(i):
-                # for k in graph.adjacencies(i):
-                #     # Skip if there is an arrow i->k.
-                #     if graph.has_edge(i, k):
-                #         continue
-                #     # Skip if k and j are adjacent because then it is a
-                #     # shielded triple
+                # Skip if k and j are adjacent because then it is a
+                # shielded triple
                 if graph.has_adjacency(k, j):
                     continue
 
                 # Make i-j into i->j
-                logger.debug(f"R1: Removing edge ({j}, {j}) and orienting as {i} -> {j}.")
+                logger.debug(f"R1: Removing edge ({i}, {j}) and orienting as {k} -> {i} -> {j}.")
                 graph.orient_undirected_edge(i, j)
 
                 added_arrows = True
@@ -219,7 +217,8 @@ class PC(ConstraintDiscovery, MeekRules):
         """Peter and Clarke (PC) algorithm for causal discovery.
 
         Assumes causal sufficiency, that is, all confounders in the
-        causal graph are observed variables.
+        causal graph are observed variables. See :footcite:`Spirtes1993` for
+        full details on the algorithm.
 
         Parameters
         ----------
@@ -246,18 +245,24 @@ class PC(ConstraintDiscovery, MeekRules):
             orientation rules.
         apply_orientations : bool
             Whether or not to apply orientation rules given the learned skeleton graph
-            and separating set per pair of variables.
+            and separating set per pair of variables. If ``True`` (default), will
+            apply Meek's orientation rules R0-3, orienting colliders and certain
+            arrowheads :footcite:`Meek1995`.
         ci_estimator_kwargs : dict
             Keyword arguments for the ``ci_estimator`` function.
 
         Attributes
         ----------
-        graph_ : PAG
+        graph_ : CPDAG
             The graph discovered.
         separating_sets_ : dict
             The dictionary of separating sets, where it is a nested dictionary from
             the variable name to the variable it is being compared to the set of
             variables in the graph that separate the two.
+
+        References
+        ----------
+        .. footbibliography::
         """
         super().__init__(
             ci_estimator,
