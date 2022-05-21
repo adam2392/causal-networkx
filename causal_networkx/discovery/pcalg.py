@@ -5,7 +5,7 @@ from typing import Callable, Dict, Protocol, Set, Union
 import networkx as nx
 import pandas as pd
 
-from causal_networkx import ADMG, CPDAG
+from causal_networkx import CPDAG, DAG
 from causal_networkx.discovery.classes import ConstraintDiscovery
 
 logger = logging.getLogger()
@@ -17,8 +17,8 @@ class MeekRules(Protocol):
 
         Parameters
         ----------
-        graph : PAG
-            The partial ancestral graph (PAG).
+        graph : CPDAG
+            The CPDAG.
         sep_set : Dict[Dict[Set]]
             The separating set between any two nodes.
         """
@@ -47,7 +47,7 @@ class MeekRules(Protocol):
 
         Parameters
         ----------
-        skel_graph : CPDAG
+        skel_graph : causal_networkx.CPDAG
             A skeleton graph. If ``None``, then will initialize PC using a
             complete graph. By default None.
         sep_set : Dict[Dict[Set]]
@@ -206,7 +206,7 @@ class PC(ConstraintDiscovery, MeekRules):
         self,
         ci_estimator: Callable,
         alpha: float = 0.05,
-        init_graph: Union[nx.Graph, ADMG] = None,
+        init_graph: Union[nx.Graph, DAG, CPDAG] = None,
         fixed_edges: nx.Graph = None,
         min_cond_set_size: int = None,
         max_cond_set_size: int = None,

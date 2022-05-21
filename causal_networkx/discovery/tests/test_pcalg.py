@@ -38,7 +38,7 @@ from causal_networkx.discovery import PC
                     4: (3,),
                 }
             ),
-            0.1,
+            0.1,  # Note: that alpha level of >= 0.1 is required for 2 and 3 to be dependent
         ),
     ],
 )
