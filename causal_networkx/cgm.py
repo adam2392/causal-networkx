@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import typing
 from typing import List, Optional, Protocol, Set
+from numpy.typing import NDArray
 
 import networkx as nx
 import pandas as pd
 from networkx import NetworkXError
 
-from causal_networkx.config import EdgeType
+from causal_networkx.config import EdgeType, PAG_EDGE_MAPPING
 
 
 class NetworkXMixin(Protocol):
@@ -762,14 +763,12 @@ class CPDAG(DAG):
 
 # TODO: implement graph views for ADMG
 class ADMG(DAG):
-    """Initialize a causal graphical model.
+    """Acyclic directed mixed graph (ADMG).
 
-    This is a causal Bayesian network, where now the edges represent
-    causal influences. Self loops are not allowed. This graph type
-    inherits functionality from networkx. Two different edge
-    types are allowed: bidirected and traditional directed edges.
-
-    This is also known as an Acyclic Directed Mixed Graph (ADMG).
+    A causal graph with two different edge types: bidirected and traditional
+    directed edges. Directed edges constitute causal relations as a
+    causal DAG did, while bidirected edges constitute the presence of a
+    latent confounder.
 
     Parameters
     ----------
@@ -800,6 +799,9 @@ class ADMG(DAG):
     --------
     networkx.DiGraph
     networkx.Graph
+    DAG
+    CPDAG
+    PAG
 
     Notes
     -----
@@ -1865,3 +1867,57 @@ class PAG(ADMG):
             else:
                 return_str = f"{u} o-o {v}"
         return return_str
+
+    def to_numpy_array(self) -> NDArray:
+        """Convert to a matrix representation.
+
+        A single 2D numpy array is returned, since a PAG only
+        maps one edge between any two nodes.
+
+        Returns
+        -------
+        numpy_graph : np.ndarray of shape (n_nodes, n_nodes)
+            The causal graph with values specified as a string
+            character. For example, if A has a directed edge to B,
+            then the array at indices for A and B has ``'->'``.
+
+        Notes
+        -----
+        In R's ``pcalg`` package, the following encodes the
+        types of edges as an array. We will follow the same encoding
+        for our numpy array representation.
+
+            # amat[i,j] = 0 iff no edge btw i,j
+            # amat[i,j] = 1 iff i *-o j
+            # amat[i,j] = 2 iff i *-> j
+            # amat[i,j] = 3 iff i *-- j
+
+        References
+        ----------
+        https://rdrr.io/cran/pcalg/man/fci.html
+        """
+        # master list of nodes is in the internal dag
+        node_list = self.nodes
+        n_nodes = len(node_list)
+
+        numpy_graph = np.zeros((n_nodes, n_nodes))
+        bidirected_graph_arr = None
+        for name, graph in zip(self._graph_names, self._graphs):
+            # make sure all nodes are in the internal graph
+            if any(node not in graph for node in node_list):
+                graph.add_nodes_from(node_list)
+
+            # handle bidirected edge separately
+            if name == EdgeType.bidirected.value:
+                bidirected_graph_arr = nx.to_numpy_array(graph, nodelist=node_list)
+                continue
+
+            # convert internal graph to a numpy array
+            graph_arr = nx.to_numpy_array(graph, nodelist=node_list)
+            graph_arr[graph_arr != 0] = PAG_EDGE_MAPPING[name]
+            numpy_graph += graph_arr
+
+        if bidirected_graph_arr is not None:
+            bidirected_graph_arr[bidirected_graph_arr != 0] = PAG_EDGE_MAPPING[EdgeType.arrow.value]
+            numpy_graph += bidirected_graph_arr
+        return numpy_graph
