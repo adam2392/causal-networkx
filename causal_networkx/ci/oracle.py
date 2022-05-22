@@ -1,6 +1,7 @@
 from typing import Union
 
 import networkx as nx
+import numpy as np
 
 from causal_networkx.algorithms.d_separation import d_separated
 from causal_networkx.cgm import ADMG
@@ -52,6 +53,8 @@ class Oracle:
 
         if is_sep:
             pvalue = 1
+            test_stat = 0
         else:
             pvalue = 0
-        return None, pvalue
+            test_stat = np.inf
+        return test_stat, pvalue

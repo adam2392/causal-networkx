@@ -33,60 +33,61 @@ class FCI(PC):
     ):
         """The Fast Causal Inference (FCI) algorithm for causal discovery.
 
-                A complete constraint-based causal discovery algorithm that
-                operates on observational data :footcite:`Zhang2008`.
+        A complete constraint-based causal discovery algorithm that
+        operates on observational data :footcite:`Zhang2008`.
 
-                Parameters
-                ----------
-                ci_estimator : Callable
-                    The conditional independence test function. The arguments of the estimator should
-                    be data, node, node to compare, conditioning set of nodes, and any additional
-                    keyword arguments.
-                alpha : float, optional
-                    The significance level for the conditional independence test, by default 0.05.
-        An initialized graph. If ``None``, then will initialize PC using a
-                    complete graph. By default None.
-                fixed_edges : nx.Graph, optional
-                    An undirected graph with fixed edges. If ``None``, then will initialize PC using a
-                    complete graph. By default None.
-                min_cond_set_size : int, optional
-                    Minimum size of the conditioning set, by default None, which will be set to '0'.
-                    Used to constrain the computation spent on the algorithm.
-                max_cond_set_size : int, optional
-                    Maximum size of the conditioning set, by default None. Used to limit
-                    the computation spent on the algorithm.
-                max_iter : int
-                    The maximum number of iterations through the graph to apply
-                    orientation rules.
-                max_combinations : int, optional
-                    Maximum number of tries with a conditioning set chosen from the set of possible
-                    parents still, by default None. If None, then will not be used. If set, then
-                    the conditioning set will be chosen lexographically based on the sorted
-                    test statistic values of 'ith Pa(X) -> X', for each possible parent node of 'X'.
-                apply_orientations : bool
-                    Whether or not to apply orientation rules given the learned skeleton graph
-                    and separating set per pair of variables. If ``True`` (default), will
-                    apply Zhang's orientation rules R0-10, orienting colliders and certain
-                    arrowheads and tails :footcite:`Zhang2008`.
-                selection_bias : bool
-                    Whether or not to account for selection bias within the causal PAG.
-                    See :footcite:`Zhang2008`.
-                max_path_length : int, optional
-                    The maximum length of any discriminating path, or None if unlimited.
-                augmented : bool
-                    Whether or not to run the augmented version of FCI. See :footcite:`Zhang2008`.
-                ci_estimator_kwargs : dict
-                    Keyword arguments for the ``ci_estimator`` function.
+        Parameters
+        ----------
+        ci_estimator : Callable
+            The conditional independence test function. The arguments of the estimator should
+            be data, node, node to compare, conditioning set of nodes, and any additional
+            keyword arguments.
+        alpha : float, optional
+            The significance level for the conditional independence test, by default 0.05.
+        init_graph : nx.Graph
+            An initialized graph. If ``None``, then will initialize PC using a
+            complete graph. By default None.
+        fixed_edges : nx.Graph, optional
+            An undirected graph with fixed edges. If ``None``, then will initialize PC using a
+            complete graph. By default None.
+        min_cond_set_size : int, optional
+            Minimum size of the conditioning set, by default None, which will be set to '0'.
+            Used to constrain the computation spent on the algorithm.
+        max_cond_set_size : int, optional
+            Maximum size of the conditioning set, by default None. Used to limit
+            the computation spent on the algorithm.
+        max_iter : int
+            The maximum number of iterations through the graph to apply
+            orientation rules.
+        max_combinations : int, optional
+            Maximum number of tries with a conditioning set chosen from the set of possible
+            parents still, by default None. If None, then will not be used. If set, then
+            the conditioning set will be chosen lexographically based on the sorted
+            test statistic values of 'ith Pa(X) -> X', for each possible parent node of 'X'.
+        apply_orientations : bool
+            Whether or not to apply orientation rules given the learned skeleton graph
+            and separating set per pair of variables. If ``True`` (default), will
+            apply Zhang's orientation rules R0-10, orienting colliders and certain
+            arrowheads and tails :footcite:`Zhang2008`.
+        selection_bias : bool
+            Whether or not to account for selection bias within the causal PAG.
+            See :footcite:`Zhang2008`.
+        max_path_length : int, optional
+            The maximum length of any discriminating path, or None if unlimited.
+        augmented : bool
+            Whether or not to run the augmented version of FCI. See :footcite:`Zhang2008`.
+        ci_estimator_kwargs : dict
+            Keyword arguments for the ``ci_estimator`` function.
 
-                References
-                ----------
-                .. footbibliography::
+        References
+        ----------
+        .. footbibliography::
 
-                Notes
-                -----
-                Note that the algorithm is called "fast causal inference", but in reality
-                the algorithm is quite expensive in terms of the number of conditional
-                independence tests it must run.
+        Notes
+        -----
+        Note that the algorithm is called "fast causal inference", but in reality
+        the algorithm is quite expensive in terms of the number of conditional
+        independence tests it must run.
         """
         super().__init__(
             ci_estimator=ci_estimator,

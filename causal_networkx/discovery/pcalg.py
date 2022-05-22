@@ -142,10 +142,11 @@ class PC(ConstraintDiscovery):
         """
         from causal_networkx.discovery.skeleton import (
             learn_skeleton_graph_with_neighbors,
+            learn_skeleton_graph_with_order,
         )
 
         # perform pairwise tests to learn skeleton
-        skel_graph, sep_set = learn_skeleton_graph_with_neighbors(
+        skel_graph, sep_set, _, _ = learn_skeleton_graph_with_order(
             X,
             self.ci_estimator,
             adj_graph=graph,
@@ -154,6 +155,8 @@ class PC(ConstraintDiscovery):
             alpha=self.alpha,
             min_cond_set_size=self.min_cond_set_size,
             max_cond_set_size=self.max_cond_set_size,
+            max_combinations=self.max_combinations,
+            keep_sorted=False,
             **self.ci_estimator_kwargs,
         )
         return skel_graph, sep_set
@@ -344,3 +347,31 @@ class PC(ConstraintDiscovery):
                     added_arrows = True
                     break
         return added_arrows
+
+
+class RobustPC(PC):
+    def __init__(
+        self,
+        ci_estimator: Callable,
+        alpha: float = 0.05,
+        init_graph: Union[nx.Graph, DAG, CPDAG] = None,
+        fixed_edges: nx.Graph = None,
+        min_cond_set_size: int = None,
+        max_cond_set_size: int = None,
+        max_iter: int = 1000,
+        max_combinations: int = None,
+        apply_orientations: bool = True,
+        **ci_estimator_kwargs,
+    ):
+        super().__init__(
+            ci_estimator,
+            alpha,
+            init_graph,
+            fixed_edges,
+            min_cond_set_size,
+            max_cond_set_size,
+            max_iter,
+            max_combinations,
+            apply_orientations,
+            **ci_estimator_kwargs,
+        )
