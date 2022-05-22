@@ -56,10 +56,6 @@ def learn_skeleton_graph_with_pdsep(
     max_cond_set_size : int, optional
         Maximum size of the conditioning set, by default None. Used to limit
         the computation spent on the algorithm.
-    only_neighbors : bool
-        Whether to only consider adjacent nodes to the start/end node in the
-        conditioning set, or to consider the superset of combinations by computing
-        the set of possibly d-separating nodes. Default is False.
     max_path_length : int
         The maximum length of a path to consider when looking for possibly d-separating
         sets among two nodes. Only used if ``only_neighbors=False``. Default is infinite.

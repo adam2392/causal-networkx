@@ -7,63 +7,98 @@ import numpy as np
 import pandas as pd
 
 from causal_networkx import ADMG, PAG
-from causal_networkx.algorithms.pag import discriminating_path, uncovered_pd_path
-from causal_networkx.discovery.classes import ConstraintDiscovery
+
+from ..algorithms.pag import discriminating_path, uncovered_pd_path
+from .pcalg import PC
 
 logger = logging.getLogger()
 
 
-class FCI(ConstraintDiscovery):
+class FCI(PC):
     def __init__(
         self,
         ci_estimator: Callable,
         alpha: float = 0.05,
         init_graph: Union[nx.Graph, ADMG] = None,
         fixed_edges: nx.Graph = None,
+        min_cond_set_size: int = None,
         max_cond_set_size: int = None,
-        max_path_length: int = None,
-        selection_bias: bool = False,
-        augmented: bool = False,
         max_iter: int = 1000,
+        max_combinations: int = None,
+        apply_orientations: bool = True,
+        selection_bias: bool = False,
+        max_path_length: int = None,
+        augmented: bool = False,
         **ci_estimator_kwargs,
     ):
         """The Fast Causal Inference (FCI) algorithm for causal discovery.
 
-        A complete constraint-based causal discovery algorithm that
-        operates on observational data :footcite:`Zhang2008`.
+                A complete constraint-based causal discovery algorithm that
+                operates on observational data :footcite:`Zhang2008`.
 
-        Parameters
-        ----------
-        ci_estimator : Callable
-            _description_
-        alpha : float, optional
-            _description_, by default 0.05
-        init_graph : Union[nx.Graph, ADMG], optional
-            _description_, by default None
-        fixed_edges : nx.Graph, optional
-            _description_, by default None
-        max_cond_set_size : int, optional
-            _description_, by default None
-        max_path_length : int, optional
-            The maximum length of any discriminating path, or None if unlimited.
-        selection_bias : bool
-            Whether or not to account for selection bias within the causal PAG.
-            See [1].
-        augmented : bool
-            Whether or not to run the augmented version of FCI. See [1].
+                Parameters
+                ----------
+                ci_estimator : Callable
+                    The conditional independence test function. The arguments of the estimator should
+                    be data, node, node to compare, conditioning set of nodes, and any additional
+                    keyword arguments.
+                alpha : float, optional
+                    The significance level for the conditional independence test, by default 0.05.
+        An initialized graph. If ``None``, then will initialize PC using a
+                    complete graph. By default None.
+                fixed_edges : nx.Graph, optional
+                    An undirected graph with fixed edges. If ``None``, then will initialize PC using a
+                    complete graph. By default None.
+                min_cond_set_size : int, optional
+                    Minimum size of the conditioning set, by default None, which will be set to '0'.
+                    Used to constrain the computation spent on the algorithm.
+                max_cond_set_size : int, optional
+                    Maximum size of the conditioning set, by default None. Used to limit
+                    the computation spent on the algorithm.
+                max_iter : int
+                    The maximum number of iterations through the graph to apply
+                    orientation rules.
+                max_combinations : int, optional
+                    Maximum number of tries with a conditioning set chosen from the set of possible
+                    parents still, by default None. If None, then will not be used. If set, then
+                    the conditioning set will be chosen lexographically based on the sorted
+                    test statistic values of 'ith Pa(X) -> X', for each possible parent node of 'X'.
+                apply_orientations : bool
+                    Whether or not to apply orientation rules given the learned skeleton graph
+                    and separating set per pair of variables. If ``True`` (default), will
+                    apply Zhang's orientation rules R0-10, orienting colliders and certain
+                    arrowheads and tails :footcite:`Zhang2008`.
+                selection_bias : bool
+                    Whether or not to account for selection bias within the causal PAG.
+                    See :footcite:`Zhang2008`.
+                max_path_length : int, optional
+                    The maximum length of any discriminating path, or None if unlimited.
+                augmented : bool
+                    Whether or not to run the augmented version of FCI. See :footcite:`Zhang2008`.
+                ci_estimator_kwargs : dict
+                    Keyword arguments for the ``ci_estimator`` function.
 
-        References
-        ----------
-        .. footbibliography::
+                References
+                ----------
+                .. footbibliography::
 
-        Notes
-        -----
-        Note that the algorithm is called "fast causal inference", but in reality
-        the algorithm is quite expensive in terms of the number of conditional
-        independence tests it must run.
+                Notes
+                -----
+                Note that the algorithm is called "fast causal inference", but in reality
+                the algorithm is quite expensive in terms of the number of conditional
+                independence tests it must run.
         """
         super().__init__(
-            ci_estimator, alpha, init_graph, fixed_edges, max_cond_set_size, **ci_estimator_kwargs
+            ci_estimator=ci_estimator,
+            alpha=alpha,
+            init_graph=init_graph,
+            fixed_edges=fixed_edges,
+            min_cond_set_size=min_cond_set_size,
+            max_cond_set_size=max_cond_set_size,
+            max_iter=max_iter,
+            max_combinations=max_combinations,
+            apply_orientations=apply_orientations,
+            **ci_estimator_kwargs,
         )
 
         if max_path_length is None:
@@ -71,7 +106,6 @@ class FCI(ConstraintDiscovery):
         self.max_path_length = max_path_length
         self.selection_bias = selection_bias
         self.augmented = augmented
-        self.max_iter = max_iter
 
     def _orient_colliders(self, graph: PAG, sep_set: Dict[str, Dict[str, Set]]):
         """Orient colliders given a graph and separation set.
@@ -591,17 +625,30 @@ class FCI(ConstraintDiscovery):
         )
         return skel_graph, sep_set
 
-    def learn_skeleton(self, X: pd.DataFrame) -> Tuple[nx.Graph, Dict[str, Dict[str, Set]]]:
+    def learn_skeleton(
+        self,
+        X: pd.DataFrame,
+        graph: nx.Graph = None,
+        sep_set: Dict[str, Dict[str, Set[Any]]] = None,
+        fixed_edges: Set = set(),
+    ) -> Tuple[nx.Graph, Dict[str, Dict[str, Set]]]:
         """Learn skeleton from data.
 
         Parameters
         ----------
         X : pd.DataFrame
             Dataset.
+        graph : nx.Graph
+            The undirected graph containing initialized skeleton of the causal
+            relationships.
+        sep_set : set
+            The separating set.
+        fixed_edges : set, optional
+            The set of fixed edges. By default, is the empty set.
 
         Returns
         -------
-        skel_graph : nx.Graph
+        pag : PAG
             The skeleton graph.
         sep_set : Dict[str, Dict[str, Set]]
             The separating set.
@@ -609,8 +656,8 @@ class FCI(ConstraintDiscovery):
         # initialize the graph
         graph, sep_set, fixed_edges = self._initialize_graph(X)
 
-        # learn the skeleton of the graph
-        skel_graph, sep_set = self._learn_skeleton_from_neighbors(X, graph, sep_set, fixed_edges)
+        # learn the initial skeleton of the graph
+        skel_graph, sep_set = super().learn_skeleton(X, graph, sep_set, fixed_edges)
 
         # convert the undirected skeleton graph to a PAG, where
         # all left-over edges have a "circle" endpoint
@@ -621,36 +668,22 @@ class FCI(ConstraintDiscovery):
 
         # # now compute all possibly d-separating sets and learn a better skeleton
         skel_graph, sep_set = self._learn_better_skeleton(X, pag, sep_set, fixed_edges)
+
+        self.skel_graph = skel_graph.copy()
         return skel_graph, sep_set
 
-    def fit(self, X: pd.DataFrame):
-        """Perform causal discovery algorithm.
-
-        Parameters
-        ----------
-        X : pd.DataFrame
-            The dataset.
-
-        Returns
-        -------
-        self : instance of FCI
-            FCI instance with fitted attributes.
-        """
-        # learn skeleton
-        skel_graph, sep_set = self.learn_skeleton(X)
-
-        # convert the undirected skeleton graph to a PAG, where
-        # all left-over edges have a "circle" endpoint
-        pag = PAG(incoming_uncertain_data=skel_graph, name="PAG derived with FCI")
-
+    def orient_edges(self, graph, sep_set):
         # orient colliders again
-        self._orient_colliders(pag, sep_set)
-        self.orient_coll_graph = pag.copy()
+        self._orient_colliders(graph, sep_set)
+        self.orient_coll_graph = graph.copy()
 
         # run the rest of the rules to orient as many edges
         # as possible
-        self._apply_rules_1to10(pag, sep_set)
+        self._apply_rules_1to10(graph, sep_set)
+        return graph
 
-        self.skel_graph = skel_graph
-        self.graph_ = pag
-        return self
+    def convert_skeleton_graph(self, graph: nx.Graph) -> PAG:
+        # convert the undirected skeleton graph to a PAG, where
+        # all left-over edges have a "circle" endpoint
+        pag = PAG(incoming_uncertain_data=graph, name="PAG derived with FCI")
+        return pag

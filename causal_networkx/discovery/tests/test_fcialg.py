@@ -431,8 +431,6 @@ class Test_FCI:
         fci.fit(sample)
         pag = fci.graph_
 
-        print(fci.skel_graph.edges)
-
         expected_pag = PAG()
         expected_pag.add_edges_from(
             [

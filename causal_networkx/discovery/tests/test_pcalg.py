@@ -129,7 +129,6 @@ class Test_PC:
         pc = PC(ci_estimator=self.ci_estimator, apply_orientations=False)
         pc.fit(sample)
         skel_graph = pc.graph_
-        print(skel_graph)
         assert list(skel_graph.undirected_edges) == [("x", "y"), ("z", "y")]
 
     def test_pc_basic_collider(self):

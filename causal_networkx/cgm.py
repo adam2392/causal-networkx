@@ -256,6 +256,22 @@ class NetworkXMixin(Protocol):
         """Compute the degree of the DiGraph."""
         return self.dag.degree(n)
 
+    def to_adjacency_graph(self):
+        """Compute an adjacency undirected graph.
+
+        Two nodes are considered adjacent if there exist
+        any type of edge between the two nodes.
+        """
+        # form the undirected graph of all inner graphs
+        graph_list = []
+        for graph in self._graphs:
+            graph_list.append(graph.to_undirected())
+
+        adj_graph = graph_list[0]
+        for idx in range(1, len(graph_list)):
+            adj_graph = nx.compose(adj_graph, graph_list[idx])
+        return adj_graph
+
 
 class GraphSampleMixin:
     def dummy_sample(self):
@@ -865,22 +881,6 @@ class ADMG(DAG):
 
         # number of edges allowed between nodes
         self.allowed_edges = 2
-
-    def to_adjacency_graph(self):
-        """Compute an adjacency undirected graph.
-
-        Two nodes are considered adjacent if there exist
-        any type of edge between the two nodes.
-        """
-        # form the undirected graph of all inner graphs
-        graph_list = []
-        for graph in self._graphs:
-            graph_list.append(graph.to_undirected())
-
-        adj_graph = graph_list[0]
-        for idx in range(1, len(graph_list)):
-            adj_graph = nx.compose(adj_graph, graph_list[idx])
-        return adj_graph
 
     @property
     def bidirected_edges(self):
