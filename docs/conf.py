@@ -130,6 +130,8 @@ numpydoc_xref_aliases = {
     # Causal-Networkx
     "ADMG": "causal_networkx.ADMG",
     "PAG": "causal_networkx.PAG",
+    "CPDAG": "causal_networkx.CPDAG",
+    "DAG": "causal_networkx.DAG",
     # joblib
     "joblib.Parallel": "joblib.Parallel",
     # pandas

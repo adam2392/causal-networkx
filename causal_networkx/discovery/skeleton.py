@@ -39,7 +39,7 @@ def learn_skeleton_graph_with_pdsep(
         The conditional independence test function. The arguments of the estimator should
         be data, node, node to compare, conditioning set of nodes, and any additional
         keyword arguments.
-    adj_graph : networkx.Graph, optional
+    adj_graph : nx.Graph
         The initialized graph. Can be for example a complete graph.
         If ``None``, then a complete graph will be initialized.
     sep_set : dictionary of dictionary of sets
@@ -70,9 +70,11 @@ def learn_skeleton_graph_with_pdsep(
 
     Returns
     -------
-    graph : networkx.Graph
+    adj_graph : nx.Graph
         The discovered graph from data. Stored using an undirected
         graph.
+    sep_set : dictionary of dictionary of sets
+        Mapping node to other nodes to separating sets of variables.
 
     See Also
     --------

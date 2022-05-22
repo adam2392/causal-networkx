@@ -1888,11 +1888,6 @@ class PAG(ADMG):
         types of edges as an array. We will follow the same encoding
         for our numpy array representation.
 
-            # amat[i,j] = 0 iff no edge btw i,j
-            # amat[i,j] = 1 iff i *-o j
-            # amat[i,j] = 2 iff i *-> j
-            # amat[i,j] = 3 iff i *-- j
-
         References
         ----------
         https://rdrr.io/cran/pcalg/man/fci.html
