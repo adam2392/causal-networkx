@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import typing
 from typing import List, Optional, Protocol, Set
 
@@ -776,6 +774,26 @@ class CPDAG(DAG):
         graph = self.dag.copy()
         ud_graph = self.undirected_edge_graph.to_directed()
         return nx.compose(graph, ud_graph)
+
+    def orient_uncertain_edge(self, u, v):
+        """Orient undirected edge into an arrowhead.
+
+        If there is an undirected edge u - v, then the arrowhead
+        will orient u -> v. If the correct order is v <- u, then
+        simply pass the arguments in different order.
+
+        Parameters
+        ----------
+        u : node
+            The parent node
+        v : node
+            The node that 'u' points to in the graph.
+        """
+        raise NotImplementedError()
+
+    def has_uncertain_edge(self, u, v):
+        """Check if graph has undirected edge (u, v)."""
+        raise NotImplementedError()
 
 
 # TODO: implement graph views for ADMG
@@ -1828,16 +1846,6 @@ class PAG(ADMG):
         # C and A that is into A, or there is a collider path between C and A
         # that is into A and every vertex on the path is a parent of B.
         # Otherwise A → B is said to be invisible.
-
-    def neighbors(self, u):
-        """Get all adjacent nodes of 'u' with any edge to/from it."""
-        # we use a dictionary compared to a set to make sure order is kept
-        nghbrs = dict()
-        for graph in self._graphs:
-            graph = graph.to_undirected()
-            if u in graph:
-                nghbrs.update({node: None for node in graph.neighbors(u)})
-        return list(nghbrs.keys())
 
     def print_edge(self, u, v):
         """Representation of edge between u and v as string.

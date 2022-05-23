@@ -155,7 +155,7 @@ class Test_PC:
 
         # First test:
         # C -> A -> B
-        self.alg._apply_rule1(G, "A", "B")
+        self.alg._apply_meek_rule1(G, "A", "B")
         assert G.has_edge("A", "B")
         assert not G.has_undirected_edge("A", "B")
         assert G.has_edge("C", "A")
@@ -164,7 +164,7 @@ class Test_PC:
         # if it is a shielded triple
         G = G_copy.copy()
         G.add_edge("C", "B")
-        added_arrows = self.alg._apply_rule1(G, "A", "B")
+        added_arrows = self.alg._apply_meek_rule1(G, "A", "B")
         assert not added_arrows
 
     def test_pc_rule2(self):
@@ -178,7 +178,7 @@ class Test_PC:
 
         # First test:
         # C -> B
-        added_arrows = self.alg._apply_rule2(G, "C", "B")
+        added_arrows = self.alg._apply_meek_rule2(G, "C", "B")
         assert G.has_edge("A", "B")
         assert G.has_edge("C", "A")
         assert G.has_edge("C", "B")
@@ -196,7 +196,7 @@ class Test_PC:
         G.add_edge("D", "A")
         G_copy = G.copy()
 
-        added_arrows = self.alg._apply_rule3(G, "C", "A")
+        added_arrows = self.alg._apply_meek_rule3(G, "C", "A")
         assert added_arrows
         assert G.has_edge("C", "A")
 
@@ -204,5 +204,5 @@ class Test_PC:
         # not be added
         G = G_copy.copy()
         G.add_edge("B", "D")
-        added_arrows = self.alg._apply_rule3(G, "C", "A")
+        added_arrows = self.alg._apply_meek_rule3(G, "C", "A")
         assert not added_arrows

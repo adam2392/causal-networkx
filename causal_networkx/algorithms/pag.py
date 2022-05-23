@@ -71,7 +71,7 @@ def possibly_d_sep_sets(graph: PAG, node_x, node_y=None, max_path_length: int = 
     # get a list of all neighbors of node_x that is not y
     # and add these as candidates to explore a path
     # and also add them to the possibly d-separating set
-    for node_v in graph.neighbors(node_x):
+    for node_v in graph.adjacencies(node_x):
         # ngbhr cannot be endpoint
         if node_v == node_y:
             continue
@@ -120,7 +120,7 @@ def possibly_d_sep_sets(graph: PAG, node_x, node_y=None, max_path_length: int = 
 
         # now we want to check the subpath that is created
         # using the previous node, the current node and the next node
-        for next_node in graph.neighbors(this_node):
+        for next_node in graph.adjacencies(this_node):
             # check if 'node_c' in (X, Y, prev_node)
             if next_node in (prev_node, node_x, node_y):
                 continue
@@ -396,7 +396,7 @@ def uncovered_pd_path(
             return uncov_pd_path, found_uncovered_pd_path
 
         # get all adjacent nodes to 'this_node'
-        for next_node in graph.neighbors(this_node):
+        for next_node in graph.adjacencies(this_node):
             # if we have already explored this neighbor, then ignore
             if next_node in explored_nodes:
                 continue

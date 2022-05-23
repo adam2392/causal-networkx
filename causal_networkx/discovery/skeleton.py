@@ -280,7 +280,9 @@ def learn_skeleton_graph_with_order(
     parent_dep_dict: Dict[str, Dict[str, float]] = None,
     size_inclusive: bool = False,
     **ci_estimator_kwargs,
-) -> Tuple[nx.Graph, Dict[str, Dict[str, Set]]]:
+) -> Tuple[
+    nx.Graph, Dict[str, Dict[str, Set]], Dict[Any, Dict[Any, float]], Dict[Any, Dict[Any, float]]
+]:
     """Learn a skeleton graph from data.
 
     Proceed by testing neighboring nodes, while keeping track of test
@@ -409,7 +411,7 @@ def learn_skeleton_graph_with_order(
 
         # get the additional conditioning set if MCI
         if with_mci:
-            possible_conds_x = list(parent_dep_dict[i].keys())
+            possible_conds_x = list(parent_dep_dict[i].keys())  # type: ignore
             conds_x = set(possible_conds_x[:max_conds_x])
 
         # the total number of conditioning set variables
@@ -437,7 +439,7 @@ def learn_skeleton_graph_with_order(
 
                 # get the additional conditioning set if MCI
                 if with_mci:
-                    possible_conds_y = list(parent_dep_dict[j].keys())
+                    possible_conds_y = list(parent_dep_dict[j].keys())  # type: ignore
                     conds_y = set(possible_conds_y[:max_conds_y])
 
                     # make sure X and Y are not in the additional conditionals
@@ -508,7 +510,7 @@ def learn_skeleton_graph_with_order(
                 # Therefore test statistic values are sorted in descending order.
                 possible_adjacencies = sorted(abs_values, key=abs_values.get, reverse=True)  # type: ignore
             else:
-                possible_adjacencies = abs_values
+                possible_adjacencies = list(abs_values.keys())
 
     return adj_graph, sep_set, test_stat_dict, pvalue_dict
 

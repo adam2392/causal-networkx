@@ -1,9 +1,8 @@
 import logging
 from itertools import combinations, permutations
-from typing import Any, Callable, Dict, Set, Tuple, Union
+from typing import Callable, Dict, Set, Union
 
 import networkx as nx
-import pandas as pd
 
 from causal_networkx import CPDAG, DAG
 
@@ -17,7 +16,7 @@ class PC(ConstraintDiscovery):
         self,
         ci_estimator: Callable,
         alpha: float = 0.05,
-        init_graph: Union[nx.Graph, DAG, CPDAG] = None,
+        init_graph: Union[nx.Graph, CPDAG] = None,
         fixed_edges: nx.Graph = None,
         min_cond_set_size: int = None,
         max_cond_set_size: int = None,
@@ -94,73 +93,6 @@ class PC(ConstraintDiscovery):
         self.max_iter = max_iter
         self.apply_orientations = apply_orientations
 
-    def learn_skeleton(
-        self,
-        X: pd.DataFrame,
-        graph: nx.Graph = None,
-        sep_set: Dict[str, Dict[str, Set[Any]]] = None,
-        fixed_edges: Set = set(),
-    ) -> Tuple[nx.Graph, Dict[str, Dict[str, Set[Any]]]]:
-        """Learns the skeleton of a causal DAG using pairwise independence testing.
-
-        Encodes the skeleton via an undirected graph, `nx.Graph`. Only
-        tests with adjacent nodes in the conditioning set.
-
-        Parameters
-        ----------
-        X : pd.DataFrame
-            The data with columns as variables and samples as rows.
-        graph : nx.Graph
-            The undirected graph containing initialized skeleton of the causal
-            relationships.
-        sep_set : set
-            The separating set.
-        fixed_edges : set, optional
-            The set of fixed edges. By default, is the empty set.
-
-        Returns
-        -------
-        skel_graph : nx.Graph
-            The undirected graph of the causal graph's skeleton.
-        sep_set : dict of dict of set
-            The separating set per pairs of variables.
-
-        Raises
-        ------
-        ValueError
-            If the nodes in the initialization graph do not match the variable
-            names in passed in data, ``X``.
-        ValueError
-            If the nodes in the fixed-edge graph do not match the variable
-            names in passed in data, ``X``.
-
-        Notes
-        -----
-        Learning the skeleton of a causal DAG uses (conditional) independence testing
-        to determine which variables are (in)dependent. This specific algorithm
-        compares exhaustively pairs of adjacent variables.
-        """
-        from causal_networkx.discovery.skeleton import (
-            learn_skeleton_graph_with_neighbors,
-            learn_skeleton_graph_with_order,
-        )
-
-        # perform pairwise tests to learn skeleton
-        skel_graph, sep_set, _, _ = learn_skeleton_graph_with_order(
-            X,
-            self.ci_estimator,
-            adj_graph=graph,
-            sep_set=sep_set,
-            fixed_edges=fixed_edges,
-            alpha=self.alpha,
-            min_cond_set_size=self.min_cond_set_size,
-            max_cond_set_size=self.max_cond_set_size,
-            max_combinations=self.max_combinations,
-            keep_sorted=False,
-            **self.ci_estimator_kwargs,
-        )
-        return skel_graph, sep_set
-
     def convert_skeleton_graph(self, graph: nx.Graph) -> CPDAG:
         """Convert skeleton graph as undirected networkx Graph to CPDAG.
 
@@ -180,7 +112,7 @@ class PC(ConstraintDiscovery):
         graph = CPDAG(incoming_uncertain_data=graph)
         return graph
 
-    def orient_edges(self, skel_graph: CPDAG, sep_set) -> CPDAG:
+    def orient_edges(self, skel_graph: CPDAG, sep_set: Dict[str, Dict[str, Set]]) -> CPDAG:
         """Orient edges in a skeleton graph to estimate the causal DAG, or CPDAG.
 
         Uses the separation sets to orient edges via conditional independence
@@ -211,15 +143,15 @@ class PC(ConstraintDiscovery):
                     continue
                 # Rule 1: Orient i-j into i->j whenever there is an arrow k->i
                 # such that k and j are nonadjacent.
-                r1_add = self._apply_rule1(skel_graph, i, j)
+                r1_add = self._apply_meek_rule1(skel_graph, i, j)
 
                 # Rule 2: Orient i-j into i->j whenever there is a chain
                 # i->k->j.
-                r2_add = self._apply_rule2(skel_graph, i, j)
+                r2_add = self._apply_meek_rule2(skel_graph, i, j)
 
                 # Rule 3: Orient i-j into i->j whenever there are two chains
                 # i-k->j and i-l->j such that k and l are nonadjacent.
-                r3_add = self._apply_rule3(skel_graph, i, j)
+                r3_add = self._apply_meek_rule3(skel_graph, i, j)
 
                 # Rule 4: Orient i-j into i->j whenever there are two chains
                 # i-k->l and k->l->j such that k and j are nonadjacent.
@@ -264,7 +196,7 @@ class PC(ConstraintDiscovery):
                     if graph.has_undirected_edge(v_j, u):
                         graph.orient_undirected_edge(v_j, u)
 
-    def _apply_rule1(self, graph: CPDAG, i, j):
+    def _apply_meek_rule1(self, graph: CPDAG, i, j):
         """Apply rule 1 of Meek's rules.
 
         Looks for i - j such that k -> i, such that (k,i,j)
@@ -288,7 +220,7 @@ class PC(ConstraintDiscovery):
                 break
         return added_arrows
 
-    def _apply_rule2(self, graph: CPDAG, i, j):
+    def _apply_meek_rule2(self, graph: CPDAG, i, j):
         """Apply rule 2 of Meek's rules.
 
         Check for i - j, and then looks for i -> k -> j
@@ -316,7 +248,7 @@ class PC(ConstraintDiscovery):
                 added_arrows = True
         return added_arrows
 
-    def _apply_rule3(self, graph: CPDAG, i, j):
+    def _apply_meek_rule3(self, graph: CPDAG, i, j):
         """Apply rule 3 of Meek's rules.
 
         Check for i - j, and then looks for k -> j <- l

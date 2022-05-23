@@ -6,8 +6,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from causal_networkx import ADMG, CPDAG, PAG
-from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_neighbors
+from causal_networkx import ADMG
 
 
 # TODO: Add ways to fix directed edges
@@ -59,7 +58,7 @@ class ConstraintDiscovery:
         variables in the graph that separate the two.
     """
 
-    graph_: Optional[Union[PAG, CPDAG]]
+    graph_: Optional[Any]
     separating_sets_: Optional[Dict[str, Dict[str, Set[Any]]]]
 
     def __init__(
@@ -93,7 +92,7 @@ class ConstraintDiscovery:
         self.separating_sets_ = None
         self.graph_ = None
 
-    def _initialize_graph(self, X):
+    def _initialize_graph(self, X: pd.DataFrame):
         nodes = X.columns.values
 
         # keep track of separating sets
@@ -132,25 +131,19 @@ class ConstraintDiscovery:
                 fixed_edges.add((j, i))
         return graph, sep_set, fixed_edges
 
-    def learn_skeleton(
-        self,
-        X: pd.DataFrame,
-        graph: nx.Graph,
-        sep_set: Dict[str, Dict[str, Set]],
-        fixed_edges: nx.Graph,
-    ) -> Tuple[nx.Graph, Dict[str, Dict[str, Set[Any]]]]:
-        raise NotImplementedError(
-            "All constraint discovery algorithms need to implement a function to learn the skeleton graph."
-        )
-
     def orient_edges(self, graph: Any, sep_set: Dict[str, Dict[str, Set]]) -> Any:
         raise NotImplementedError(
-            "All constraint discovery algorithms need to implement a function to orient the skeleton graph given a separating set."
+            "All constraint discovery algorithms need to implement a function to orient the "
+            "skeleton graph given a separating set."
         )
 
-    def convert_skeleton_graph(self, graph: nx.Graph):
+    def _orient_colliders(self, graph: Any, sep_set: Dict[str, Dict[str, Set]]):
+        raise NotImplementedError()
+
+    def convert_skeleton_graph(self, graph: nx.Graph) -> Any:
         raise NotImplementedError(
-            "All constraint discovery algorithms need to implement a function to convert the skeleton graph to a causal graph."
+            "All constraint discovery algorithms need to implement a function to convert "
+            "the skeleton graph to a causal graph."
         )
 
     def fit(self, X: pd.DataFrame) -> None:
@@ -171,3 +164,67 @@ class ConstraintDiscovery:
         # store resulting data structures
         self.separating_sets_ = sep_set
         self.graph_ = graph
+
+    def learn_skeleton(
+        self,
+        X: pd.DataFrame,
+        graph: nx.Graph = None,
+        sep_set: Dict[str, Dict[str, Set[Any]]] = None,
+        fixed_edges: Set = set(),
+    ) -> Tuple[nx.Graph, Dict[str, Dict[str, Set[Any]]]]:
+        """Learns the skeleton of a causal DAG using pairwise independence testing.
+
+        Encodes the skeleton via an undirected graph, `nx.Graph`. Only
+        tests with adjacent nodes in the conditioning set.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            The data with columns as variables and samples as rows.
+        graph : nx.Graph
+            The undirected graph containing initialized skeleton of the causal
+            relationships.
+        sep_set : set
+            The separating set.
+        fixed_edges : set, optional
+            The set of fixed edges. By default, is the empty set.
+
+        Returns
+        -------
+        skel_graph : nx.Graph
+            The undirected graph of the causal graph's skeleton.
+        sep_set : dict of dict of set
+            The separating set per pairs of variables.
+
+        Raises
+        ------
+        ValueError
+            If the nodes in the initialization graph do not match the variable
+            names in passed in data, ``X``.
+        ValueError
+            If the nodes in the fixed-edge graph do not match the variable
+            names in passed in data, ``X``.
+
+        Notes
+        -----
+        Learning the skeleton of a causal DAG uses (conditional) independence testing
+        to determine which variables are (in)dependent. This specific algorithm
+        compares exhaustively pairs of adjacent variables.
+        """
+        from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_order
+
+        # perform pairwise tests to learn skeleton
+        skel_graph, sep_set, _, _ = learn_skeleton_graph_with_order(  # type: ignore
+            X,
+            self.ci_estimator,
+            adj_graph=graph,
+            sep_set=sep_set,
+            fixed_edges=fixed_edges,
+            alpha=self.alpha,
+            min_cond_set_size=self.min_cond_set_size,
+            max_cond_set_size=self.max_cond_set_size,
+            max_combinations=self.max_combinations,
+            keep_sorted=False,
+            **self.ci_estimator_kwargs,
+        )
+        return skel_graph, sep_set

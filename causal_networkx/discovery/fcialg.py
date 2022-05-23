@@ -7,14 +7,14 @@ import numpy as np
 import pandas as pd
 
 from causal_networkx import ADMG, PAG
+from causal_networkx.discovery.classes import ConstraintDiscovery
 
 from ..algorithms.pag import discriminating_path, uncovered_pd_path
-from .pcalg import PC
 
 logger = logging.getLogger()
 
 
-class FCI(PC):
+class FCI(ConstraintDiscovery):
     def __init__(
         self,
         ci_estimator: Callable,
@@ -107,6 +107,7 @@ class FCI(PC):
         self.max_path_length = max_path_length
         self.selection_bias = selection_bias
         self.augmented = augmented
+        self.max_iter = max_iter
 
     def _orient_colliders(self, graph: PAG, sep_set: Dict[str, Dict[str, Set]]):
         """Orient colliders given a graph and separation set.
@@ -120,7 +121,7 @@ class FCI(PC):
         """
         # for every node in the PAG, evaluate neighbors that have any edge
         for u in graph.nodes:
-            for v_i, v_j in combinations(graph.neighbors(u), 2):
+            for v_i, v_j in combinations(graph.adjacencies(u), 2):
                 # Check that there is no edge of any type between
                 # v_i and v_j, else this is a "shielded" collider.
                 # Then check to see if 'u' is in the separating
@@ -134,9 +135,6 @@ class FCI(PC):
                         graph.orient_circle_edge(v_i, u, "arrow")
                     if graph.has_circle_edge(v_j, u):
                         graph.orient_circle_edge(v_j, u, "arrow")
-                # else:
-                # definite non-collider
-                # test = 1
 
     def _apply_rule1(self, graph: PAG, u, a, c) -> bool:
         """Apply rule 1 of the FCI algorithm.
@@ -270,7 +268,7 @@ class FCI(PC):
 
             # check for all other neighbors to find a 'v' node
             # with the structure A *-o v o-* C
-            for v in graph.neighbors(u):
+            for v in graph.adjacencies(u):
                 # check that v is not a, or c
                 if v in (a, c):
                     continue
@@ -496,7 +494,7 @@ class FCI(PC):
             if graph.has_edge(u, c) and not graph.has_circle_edge(c, u):
                 # loop through all adjacent neighbors of c now to get
                 # possible 'v' node
-                for v in graph.neighbors(c):
+                for v in graph.adjacencies(c):
                     if v in (a, u):
                         continue
 
@@ -564,7 +562,7 @@ class FCI(PC):
             logger.debug(f"Running R1-10 for iteration {idx}")
 
             for u in graph.nodes:
-                for (a, c) in permutations(graph.neighbors(u), 2):
+                for (a, c) in permutations(graph.adjacencies(u), 2):
                     # apply R1-3 to orient triples and arrowheads
                     r1_add = self._apply_rule1(graph, u, a, c)
                     r2_add = self._apply_rule2(graph, u, a, c)
