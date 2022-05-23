@@ -1375,7 +1375,7 @@ class PAG(ADMG):
         """
         for node in self.nodes:
             # get neighbors that are adjacent with any edge
-            for nghbr in self.neighbors(node):
+            for nghbr in self.adjacencies(node):
                 if self.edge_type(node, nghbr) == "circle":
                     self._check_circle_edge(node, nghbr)
                 elif self.edge_type(node, nghbr) == "arrow":

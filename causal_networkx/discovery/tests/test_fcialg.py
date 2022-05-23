@@ -70,7 +70,7 @@ class Test_FCI:
         G.add_circle_edge("u", "C", bidirected=True)
         G_copy = G.copy()
 
-        self.alg._apply_meek_rule1(G, "u", "A", "C")
+        self.alg._apply_rule1(G, "u", "A", "C")
         assert G.has_edge("u", "C")
         assert not G.has_circle_edge("C", "u")
         assert not G.has_edge("C", "u")
@@ -81,7 +81,7 @@ class Test_FCI:
         # A -> u o-> C
         G = G_copy.copy()
         G.orient_circle_edge("u", "C", "arrow")
-        self.alg._apply_meek_rule1(G, "u", "A", "C")
+        self.alg._apply_rule1(G, "u", "A", "C")
         assert G.has_edge("u", "C")
         assert not G.has_circle_edge("C", "u")
         assert not G.has_edge("C", "u")
@@ -93,7 +93,7 @@ class Test_FCI:
         G = G_copy.copy()
         G.remove_edge("A", "u")
         G.add_bidirected_edge("u", "A")
-        self.alg._apply_meek_rule1(G, "u", "A", "C")
+        self.alg._apply_rule1(G, "u", "A", "C")
         assert G.has_edge("u", "C")
         assert not G.has_circle_edge("C", "u")
         assert not G.has_edge("C", "u")
@@ -105,7 +105,7 @@ class Test_FCI:
         G = G_copy.copy()
         G.add_circle_edge("u", "A")
         G.orient_circle_edge("u", "C", "arrow")
-        self.alg._apply_meek_rule1(G, "u", "A", "C")
+        self.alg._apply_rule1(G, "u", "A", "C")
         assert G.has_edge("u", "C")
         assert not G.has_circle_edge("C", "u")
         assert not G.has_edge("C", "u")
@@ -121,14 +121,14 @@ class Test_FCI:
         G.add_circle_edge("A", "C", bidirected=True)
         G_copy = G.copy()
 
-        self.alg._apply_meek_rule2(G, "u", "A", "C")
+        self.alg._apply_rule2(G, "u", "A", "C")
         assert G.has_edge("A", "C")
         assert G.has_circle_edge("C", "A")
 
         # if A o-> u, then it should not work
         G = G_copy.copy()
         G.add_circle_edge("u", "A")
-        added_arrows = self.alg._apply_meek_rule2(G, "u", "A", "C")
+        added_arrows = self.alg._apply_rule2(G, "u", "A", "C")
         assert not added_arrows
         assert G.has_circle_edge("A", "C")
         assert G.has_circle_edge("C", "A")
@@ -138,14 +138,14 @@ class Test_FCI:
         G = G_copy.copy()
         G.remove_edge("A", "u")
         G.add_bidirected_edge("u", "A")
-        added_arrows = self.alg._apply_meek_rule2(G, "u", "A", "C")
+        added_arrows = self.alg._apply_rule2(G, "u", "A", "C")
         assert G.has_circle_edge("A", "C")
         assert not added_arrows
 
         # 3. then test that A <-> u -> C with A o-o C
         G.remove_bidirected_edge("C", "u")
         G.add_edge("u", "C")
-        added_arrows = self.alg._apply_meek_rule2(G, "u", "A", "C")
+        added_arrows = self.alg._apply_rule2(G, "u", "A", "C")
         assert G.has_edge("A", "C")
         assert G.has_circle_edge("C", "A")
         assert added_arrows
@@ -165,7 +165,7 @@ class Test_FCI:
         G.add_circle_edge("v", "u", bidirected=True)
         G_copy = G.copy()
 
-        self.alg._apply_meek_rule3(G, "u", "A", "C")
+        self.alg._apply_rule3(G, "u", "A", "C")
         for edge in G_copy.edges:
             assert G.has_edge(*edge)
         for edge in G_copy.circle_edges:
@@ -179,13 +179,13 @@ class Test_FCI:
         G = G_copy.copy()
         G.remove_edge("A", "u")
         G.add_bidirected_edge("A", "u")
-        added_arrows = self.alg._apply_meek_rule3(G, "u", "A", "C")
+        added_arrows = self.alg._apply_rule3(G, "u", "A", "C")
         assert added_arrows
 
         # adding a circle edge should make it not work
         G = G_copy.copy()
         G.add_circle_edge("A", "C", bidirected=True)
-        added_arrows = self.alg._apply_meek_rule3(G, "u", "A", "C")
+        added_arrows = self.alg._apply_rule3(G, "u", "A", "C")
         assert not added_arrows
 
     def test_fci_rule4_without_sepset(self):

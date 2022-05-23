@@ -482,10 +482,10 @@ class TestPAG(TestADMG):
         # 0 -> 1, 0 -> 2 with 1 <--> 0
         G = self.PAG
 
-        assert G.neighbors(2) == [0]
-        assert G.neighbors(0) == [2, 1]
-        assert G.neighbors(1) == [0, 4]
-        assert G.neighbors(4) == [1]
+        assert G.adjacencies(2) == [0]
+        assert G.adjacencies(0) == [2, 1]
+        assert G.adjacencies(1) == [0, 4]
+        assert G.adjacencies(4) == [1]
 
     def test_wrong_construction(self):
         # PAGs only allow one type of edge between any two nodes

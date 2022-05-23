@@ -96,7 +96,6 @@ class FCI(ConstraintDiscovery):
             fixed_edges=fixed_edges,
             min_cond_set_size=min_cond_set_size,
             max_cond_set_size=max_cond_set_size,
-            max_iter=max_iter,
             max_combinations=max_combinations,
             apply_orientations=apply_orientations,
             **ci_estimator_kwargs,
@@ -508,7 +507,7 @@ class FCI(ConstraintDiscovery):
                     # that:
                     # i) begin the uncovered pd path and
                     # ii) are distinct (done by construction) here
-                    for (m, w) in combinations(graph.neighbors(a), 2):  # type: ignore
+                    for (m, w) in combinations(graph.adjacencies(a), 2):  # type: ignore
                         if m == c or w == c:
                             continue
 
