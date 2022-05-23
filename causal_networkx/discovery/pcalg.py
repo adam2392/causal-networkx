@@ -1,10 +1,13 @@
 import logging
+from collections import defaultdict
 from itertools import combinations, permutations
-from typing import Callable, Dict, Set, Union
+from typing import Any, Callable, Dict, Set, Tuple, Union
 
 import networkx as nx
+import pandas as pd
 
 from causal_networkx import CPDAG, DAG
+from causal_networkx.discovery import learn_skeleton_graph_with_order
 
 from .classes import ConstraintDiscovery
 
@@ -293,6 +296,9 @@ class RobustPC(PC):
         max_iter: int = 1000,
         max_combinations: int = None,
         apply_orientations: bool = True,
+        max_conds_x: int = None,
+        max_conds_y: int = None,
+        size_inclusive: bool = False,
         **ci_estimator_kwargs,
     ):
         super().__init__(
@@ -307,3 +313,79 @@ class RobustPC(PC):
             apply_orientations,
             **ci_estimator_kwargs,
         )
+        self.max_conds_x = max_conds_x
+        self.max_conds_y = max_conds_y
+        self.size_inclusive = size_inclusive
+
+    def learn_skeleton(
+        self,
+        X: pd.DataFrame,
+        graph: nx.Graph = None,
+        sep_set: Dict[str, Dict[str, Set[Any]]] = None,
+        fixed_edges: Set = None,
+    ) -> Tuple[
+        nx.Graph,
+        Dict[str, Dict[str, Set[Any]]],
+        Dict[Any, Dict[Any, float]],
+        Dict[Any, Dict[Any, float]],
+    ]:
+
+        if graph is None:
+            nodes = X.columns
+            graph = nx.complete_graph(nodes, create_using=nx.Graph)
+        if sep_set is None:
+            # keep track of separating sets
+            sep_set = defaultdict(lambda: defaultdict(set))
+        orig_graph = graph.copy()
+        orig_sep_set = sep_set.copy()
+
+        graph, sep_set, test_stat_dict, pvalue_dict = super().learn_skeleton(
+            X, graph, sep_set, fixed_edges
+        )
+
+        # convert graph to a CPDAG
+        graph = self.convert_skeleton_graph(graph)
+
+        # orient the edges of the skeleton graph to build up a set of
+        # "definite" parents
+        graph = self.orient_edges(graph, sep_set)
+
+        # now obtain the definite parents for every node in the set
+        def_parent_dict = self._get_definite_parents(graph)
+
+        # use definite parents to filter the dependencies in the test statistics / pvalue
+        for node, parents in def_parent_dict.items():
+            for parent, _ in test_stat_dict[node].items():
+                if parent not in parents:
+                    test_stat_dict[node].pop(parent)
+                    pvalue_dict[node].pop(parent)
+
+        # now we will re-learn the skeleton using the MCI condition
+        skel_graph, sep_set, test_stat_dict, pvalue_dict = learn_skeleton_graph_with_order(  # type: ignore
+            X,
+            self.ci_estimator,
+            adj_graph=orig_graph,
+            sep_set=orig_sep_set,
+            fixed_edges=fixed_edges,
+            alpha=self.alpha,
+            min_cond_set_size=self.min_cond_set_size,
+            max_cond_set_size=self.max_cond_set_size,
+            max_combinations=self.max_combinations,
+            keep_sorted=False,
+            with_mci=True,
+            max_conds_x=self.max_conds_x,
+            max_conds_y=self.max_conds_y,
+            parent_dep_dict=test_stat_dict,
+            size_inclusive=self.size_inclusive,
+            **self.ci_estimator_kwargs,
+        )
+        return skel_graph, sep_set, test_stat_dict, pvalue_dict
+
+    def _get_definite_parents(self, graph: CPDAG):
+        def_parent_dict = dict()
+
+        for node in graph.nodes:
+            # get all predecessors of the node that have an arrowhead into node
+            def_parent_dict[node] = graph.predecessors(node)
+
+        return def_parent_dict

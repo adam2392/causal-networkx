@@ -1,6 +1,6 @@
 import logging
 from itertools import combinations, permutations
-from typing import Any, Callable, Dict, List, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import networkx as nx
 import numpy as np
@@ -601,7 +601,7 @@ class FCI(ConstraintDiscovery):
         X,
         pag: nx.Graph,
         sep_set: Dict[str, Dict[str, Set[Any]]],
-        fixed_edges: Set[Tuple[Any, Any]] = set(),
+        fixed_edges: Optional[Set] = set(),
     ):
         from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_pdsep
 
@@ -627,9 +627,14 @@ class FCI(ConstraintDiscovery):
         self,
         X: pd.DataFrame,
         graph: nx.Graph = None,
-        sep_set: Dict[str, Dict[str, Set[Any]]] = None,
-        fixed_edges: Set = set(),
-    ) -> Tuple[nx.Graph, Dict[str, Dict[str, Set]]]:
+        sep_set: Optional[Dict[str, Dict[str, Set[Any]]]] = None,
+        fixed_edges: Optional[Set] = None,
+    ) -> Tuple[
+        nx.Graph,
+        Dict[str, Dict[str, Set[Any]]],
+        Dict[Any, Dict[Any, float]],
+        Dict[Any, Dict[Any, float]],
+    ]:
         """Learn skeleton from data.
 
         Parameters
@@ -655,7 +660,9 @@ class FCI(ConstraintDiscovery):
         graph, sep_set, fixed_edges = self._initialize_graph(X)
 
         # learn the initial skeleton of the graph
-        skel_graph, sep_set = super().learn_skeleton(X, graph, sep_set, fixed_edges)
+        skel_graph, sep_set, test_stat_dict, pvalue_dict = super().learn_skeleton(
+            X, graph, sep_set, fixed_edges
+        )
 
         # convert the undirected skeleton graph to a PAG, where
         # all left-over edges have a "circle" endpoint
@@ -668,7 +675,7 @@ class FCI(ConstraintDiscovery):
         skel_graph, sep_set = self._learn_better_skeleton(X, pag, sep_set, fixed_edges)
 
         self.skel_graph = skel_graph.copy()
-        return skel_graph, sep_set
+        return skel_graph, sep_set, test_stat_dict, pvalue_dict
 
     def orient_edges(self, graph, sep_set):
         # orient colliders again

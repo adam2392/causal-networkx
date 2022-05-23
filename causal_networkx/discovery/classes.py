@@ -152,7 +152,7 @@ class ConstraintDiscovery:
         graph, sep_set, fixed_edges = self._initialize_graph(X)
 
         # learn skeleton graph and the separating sets per variable
-        graph, sep_set = self.learn_skeleton(X, graph, sep_set, fixed_edges)
+        graph, sep_set, _, _ = self.learn_skeleton(X, graph, sep_set, fixed_edges)
 
         # convert networkx.Graph to relevant causal graph object
         graph = self.convert_skeleton_graph(graph)
@@ -168,10 +168,15 @@ class ConstraintDiscovery:
     def learn_skeleton(
         self,
         X: pd.DataFrame,
-        graph: nx.Graph = None,
-        sep_set: Dict[str, Dict[str, Set[Any]]] = None,
-        fixed_edges: Set = set(),
-    ) -> Tuple[nx.Graph, Dict[str, Dict[str, Set[Any]]]]:
+        graph: Optional[nx.Graph] = None,
+        sep_set: Optional[Dict[str, Dict[str, Set[Any]]]] = None,
+        fixed_edges: Optional[Set] = None,
+    ) -> Tuple[
+        nx.Graph,
+        Dict[str, Dict[str, Set[Any]]],
+        Dict[Any, Dict[Any, float]],
+        Dict[Any, Dict[Any, float]],
+    ]:
         """Learns the skeleton of a causal DAG using pairwise independence testing.
 
         Encodes the skeleton via an undirected graph, `nx.Graph`. Only
@@ -188,6 +193,9 @@ class ConstraintDiscovery:
             The separating set.
         fixed_edges : set, optional
             The set of fixed edges. By default, is the empty set.
+        return_deps : bool
+            Whether to return the two mappings for the dictionary of test statistic
+            and pvalues.
 
         Returns
         -------
@@ -213,8 +221,11 @@ class ConstraintDiscovery:
         """
         from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_order
 
+        if fixed_edges is None:
+            fixed_edges = set()
+
         # perform pairwise tests to learn skeleton
-        skel_graph, sep_set, _, _ = learn_skeleton_graph_with_order(  # type: ignore
+        skel_graph, sep_set, test_stat_dict, pvalue_dict = learn_skeleton_graph_with_order(  # type: ignore
             X,
             self.ci_estimator,
             adj_graph=graph,
@@ -227,4 +238,5 @@ class ConstraintDiscovery:
             keep_sorted=False,
             **self.ci_estimator_kwargs,
         )
-        return skel_graph, sep_set
+
+        return skel_graph, sep_set, test_stat_dict, pvalue_dict
