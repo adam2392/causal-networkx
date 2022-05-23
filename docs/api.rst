@@ -44,6 +44,7 @@ also should work on numpy array inputs.
 
    PC
    FCI
+   RobustPC
 
 Conditional independence testing functions
 ==========================================
