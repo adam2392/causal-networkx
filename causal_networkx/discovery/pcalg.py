@@ -7,7 +7,6 @@ import networkx as nx
 import pandas as pd
 
 from causal_networkx import CPDAG, DAG
-from causal_networkx.discovery import learn_skeleton_graph_with_order
 
 from .classes import ConstraintDiscovery
 
@@ -329,6 +328,7 @@ class RobustPC(PC):
         Dict[Any, Dict[Any, float]],
         Dict[Any, Dict[Any, float]],
     ]:
+        from causal_networkx.discovery import learn_skeleton_graph_with_order
 
         if graph is None:
             nodes = X.columns

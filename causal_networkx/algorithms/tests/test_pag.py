@@ -52,7 +52,7 @@ def test_possibly_d_separated():
     graph = ADMG(edge_list, latent_edge_list)
     alg = FCI(ci_estimator=Oracle(graph).ci_test)
     sample = graph.dummy_sample()
-    skel_graph, sep_set = alg.learn_skeleton(sample)
+    skel_graph, sep_set, _, _ = alg.learn_skeleton(sample)
     fci_pag = PAG(incoming_uncertain_data=skel_graph)
     alg._orient_colliders(fci_pag, sep_set)
 

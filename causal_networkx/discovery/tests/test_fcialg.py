@@ -43,12 +43,12 @@ class Test_FCI:
 
     def test_fci_skel_graph(self):
         sample = self.scm.sample(n=1, include_latents=False)
-        skel_graph, _ = self.alg.learn_skeleton(sample)
+        skel_graph, _, _, _ = self.alg.learn_skeleton(sample)
         assert list(skel_graph.edges) == [("x", "y"), ("z", "y")]
 
     def test_fci_basic_collider(self):
         sample = self.scm.sample(n=1, include_latents=False)
-        skel_graph, sep_set = self.alg.learn_skeleton(sample)
+        skel_graph, sep_set, _, _ = self.alg.learn_skeleton(sample)
         graph = PAG(incoming_uncertain_data=skel_graph)
         self.alg._orient_colliders(graph, sep_set)
 
