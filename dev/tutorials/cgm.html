@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Causal Graphical Models &#8212; causal-networkx v0.1.0</title>
     
@@ -34,6 +34,7 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
@@ -50,7 +51,7 @@
     <script type="text/javascript" src="../_static/scrollfix.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
+    <meta name="docsearch:language" content="en">
     
 
     <!-- Google Analytics -->
@@ -482,7 +483,7 @@ div.rendered_html tbody tr:hover {
 }
 </style>
 <section id="Causal-Graphical-Models">
-<h1>Causal Graphical Models<a class="headerlink" href="#Causal-Graphical-Models" title="Permalink to this headline">#</a></h1>
+<h1>Causal Graphical Models<a class="headerlink" href="#Causal-Graphical-Models" title="Permalink to this heading">#</a></h1>
 <p>In this section, we explore what are known as causal graphical models (CGM), which are essentially Bayesian networks where edges imply causal influence rather then just probabilistic dependence.</p>
 <p>CGMs are assumed to be acyclic, meaning they do not have cycles among their variables.</p>
 <div class="nbinput nblast docutils container">
@@ -497,7 +498,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <section id="Causally-Sufficient-Models">
-<h2>Causally Sufficient Models<a class="headerlink" href="#Causally-Sufficient-Models" title="Permalink to this headline">#</a></h2>
+<h2>Causally Sufficient Models<a class="headerlink" href="#Causally-Sufficient-Models" title="Permalink to this heading">#</a></h2>
 <p>Here, we don’t have any latent variables. We demonstrate how a CGM works in code and what we can do with it.</p>
 <p>We also demonstrate Clustered DAGs (CDAGs), which form from a cluster of variables, which is represented underneath the hood with two graphs. One consisting of all the variables denoting the cluster ID in the metadata, and another consisting of the graph between clusters. The first graph may be incompletely specified, since we do not require the edges within a cluster be fully specified.</p>
 <p>Based on knowledge of CDAGs, we know that d-separation is complete.</p>
@@ -755,7 +756,7 @@ File <span class="ansi-green-fg">~/miniforge3/envs/causal3.8m1/lib/python3.8/sit
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.0.<br>
 </p>
     </div>
     

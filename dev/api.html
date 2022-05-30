@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>API &#8212; causal-networkx v0.1.0</title>
     
@@ -34,6 +34,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
@@ -48,7 +49,7 @@
     <script type="text/javascript" src="_static/scrollfix.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
+    <meta name="docsearch:language" content="en">
     
 
     <!-- Google Analytics -->
@@ -343,7 +344,7 @@
               <div>
                 
   <section id="api">
-<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">#</a></h1>
+<h1>API<a class="headerlink" href="#api" title="Permalink to this heading">#</a></h1>
 <p><a class="reference internal" href="#module-causal_networkx" title="causal_networkx"><code class="xref py py-mod docutils literal notranslate"><span class="pre">causal_networkx</span></code></a>:</p>
 <span class="target" id="module-causal_networkx"></span><p>Causal modeling with structural causal models and causal graphs.</p>
 <p>This is the application programming interface (API) reference
@@ -351,14 +352,10 @@ for classes (<code class="docutils literal notranslate"><span class="pre">CamelC
 (<code class="docutils literal notranslate"><span class="pre">underscore_case</span></code> names) of Causal-Networkx, grouped thematically by analysis
 stage.</p>
 <section id="most-used-classes">
-<h2>Most-used classes<a class="headerlink" href="#most-used-classes" title="Permalink to this headline">#</a></h2>
+<h2>Most-used classes<a class="headerlink" href="#most-used-classes" title="Permalink to this heading">#</a></h2>
 <p>These are the causal classes for Structural Causal Models (SCMs), or various causal
 graphs encountered in the literature.</p>
 <table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel" title="causal_networkx.StructuralCausalModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StructuralCausalModel</span></code></a>(exogenous, endogenous)</p></td>
 <td><p>Structural Causal Model (SCM) class.</p></td>
@@ -379,16 +376,12 @@ graphs encountered in the literature.</p>
 </table>
 </section>
 <section id="discovery-functions">
-<h2>Discovery functions<a class="headerlink" href="#discovery-functions" title="Permalink to this headline">#</a></h2>
+<h2>Discovery functions<a class="headerlink" href="#discovery-functions" title="Permalink to this heading">#</a></h2>
 <p>These functions compute try to learn the causal graph from data.
 All these functions work with a Pandas <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> object,
 which is the recommended input to these functions. However, they
 also should work on numpy array inputs.</p>
 <table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.discovery.PC.html#causal_networkx.discovery.PC" title="causal_networkx.discovery.PC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PC</span></code></a>(ci_estimator[, alpha, init_graph, ...])</p></td>
 <td><p><p class="rubric">Methods</p>
@@ -402,7 +395,7 @@ also should work on numpy array inputs.</p>
 </table>
 </section>
 <section id="conditional-independence-testing-functions">
-<h2>Conditional independence testing functions<a class="headerlink" href="#conditional-independence-testing-functions" title="Permalink to this headline">#</a></h2>
+<h2>Conditional independence testing functions<a class="headerlink" href="#conditional-independence-testing-functions" title="Permalink to this heading">#</a></h2>
 <p>These functions are implementations of common conditional independence (CI) testing
 functions. These will eventually be ported out of this repository as they are of
 independent interest.</p>
@@ -411,10 +404,6 @@ input, where <code class="docutils literal notranslate"><span class="pre">data</
 <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> are single columns of the DataFrame corresponding to a single
 variable and then <code class="docutils literal notranslate"><span class="pre">sep_set</span></code> is the conditioning set of variables.</p>
 <table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.ci.g_square_binary.html#causal_networkx.ci.g_square_binary" title="causal_networkx.ci.g_square_binary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">g_square_binary</span></code></a>(data, x, y, sep_set)</p></td>
 <td><p>G square test for a binary data.</p></td>
@@ -437,12 +426,8 @@ variable and then <code class="docutils literal notranslate"><span class="pre">s
 </table>
 </section>
 <section id="utility-algorithms-for-causal-graphs">
-<h2>Utility Algorithms for Causal Graphs<a class="headerlink" href="#utility-algorithms-for-causal-graphs" title="Permalink to this headline">#</a></h2>
+<h2>Utility Algorithms for Causal Graphs<a class="headerlink" href="#utility-algorithms-for-causal-graphs" title="Permalink to this heading">#</a></h2>
 <table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.algorithms.d_separated.html#causal_networkx.algorithms.d_separated" title="causal_networkx.algorithms.d_separated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">d_separated</span></code></a>(G, x, y, z)</p></td>
 <td><p>Check d-separation among 'x' and 'y' given 'z' in graph G.</p></td>
@@ -511,7 +496,7 @@ variable and then <code class="docutils literal notranslate"><span class="pre">s
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.0.<br>
 </p>
     </div>
     
