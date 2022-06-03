@@ -266,7 +266,7 @@ def discriminating_path(graph: PAG, u, a, c, max_path_length: int):
             # Check if 'next_node' is now the end of the discriminating path.
             # Note we now have 3 edges in the path by construction.
             if not graph.has_adjacency(next_node, c) and next_node != c:
-                logger.debug(f"Reached the end of the discriminating path with {next_node}.")
+                logger.info(f"Reached the end of the discriminating path with {next_node}.")
                 explored_nodes[next_node] = None
                 descendant_nodes[next_node] = this_node
                 found_discriminating_path = True
@@ -420,7 +420,7 @@ def uncovered_pd_path(
             # if we have reached our end node, then we have found an
             # uncovered possibly-directed path
             if next_node == c:
-                logger.debug(f"Reached the end of the uncovered pd path with {next_node}.")
+                logger.info(f"Reached the end of the uncovered pd path with {next_node}.")
                 found_uncovered_pd_path = True
                 break
 

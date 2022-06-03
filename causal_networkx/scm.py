@@ -117,7 +117,6 @@ class StructuralCausalModel:
         -------
         result_df : pd.DataFrame
             The sampled dataset.
-
         """
         df_values = []
 

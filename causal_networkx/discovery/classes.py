@@ -165,6 +165,12 @@ class ConstraintDiscovery:
         self.separating_sets_ = sep_set
         self.graph_ = graph
 
+    def test_edge(self, data, X, Y, Z=None):
+        if Z is None:
+            Z = []
+        test_stat, pvalue = self.ci_estimator(data, X, Y, set(Z), **self.ci_estimator_kwargs)
+        return test_stat, pvalue
+
     def learn_skeleton(
         self,
         X: pd.DataFrame,

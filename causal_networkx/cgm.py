@@ -1,5 +1,5 @@
 import typing
-from typing import List, Optional, Protocol, Set
+from typing import List, Optional, Protocol, Set, Any
 
 import networkx as nx
 import numpy as np
@@ -7,7 +7,7 @@ import pandas as pd
 from networkx import NetworkXError
 from numpy.typing import NDArray
 
-from causal_networkx.config import PAG_EDGE_MAPPING, EdgeType
+from causal_networkx.config import EdgeType
 
 
 class NetworkXMixin(Protocol):
@@ -270,6 +270,12 @@ class NetworkXMixin(Protocol):
             adj_graph = nx.compose(adj_graph, graph_list[idx])
         return adj_graph
 
+    def is_directed(self):
+        return True
+
+    def is_multigraph(self):
+        return False
+
 
 class GraphSampleMixin:
     def dummy_sample(self):
@@ -329,7 +335,7 @@ class ExportMixin:
 
     @typing.no_type_check
     def to_dot_graph(self, to_dagitty: bool = False) -> str:
-        """Convert to 'dot' graph representation.
+        """Convert to 'dot' graph representation as a string.
 
         The DOT language for graphviz is what is commonly
         used in R's ``dagitty`` package. This is a string
@@ -380,6 +386,8 @@ class ExportMixin:
         node_str_list = []
         for node in self.nodes:
             node_str_list.append(f"{node};")
+        # node_str_list.append(f'{self.nodes[-1]};')
+        # node_str = ''.join(node_str_list)
         node_str = "\n".join(node_str_list)
 
         # for each graph handle edges' string representation
@@ -407,8 +415,20 @@ class ExportMixin:
             header = "dag"
         else:
             header = "strict digraph"
-        dot_graph = header + " {\n" f"{node_str}\n" f"{edge_str}\n" "}"
+        dot_graph = header + "\t{\n" f"{node_str}" "\n" f"{edge_str}" "\n" "}"
         return dot_graph
+
+    def save(self, fname, format='dot'):
+        import pydot
+
+        if format == 'dot':
+            str_dot_graph = self.to_dot_graph()
+            graph = pydot.graph_from_dot_data(str_dot_graph)[0]
+            graph.write_raw(fname, encoding='utf-8')
+        elif format == 'txt':
+            str_dot_graph = self.to_dot_graph()
+            with open(fname, 'w') as fout:
+                fout.write(str_dot_graph)
 
 
 class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
@@ -553,6 +573,65 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
                 f"Adding a {edge_type} edge is not possible. Please remove the existing "
                 f"edge first."
             )
+
+    def draw(self, **kwargs):
+        nx.draw_networkx(self.dag, with_labels=True, **kwargs)
+
+    def is_node_common_cause(self, node, exclude_nodes: List[Any]=None):
+        """Check if a node is a common cause within the graph.
+
+        Parameters
+        ----------
+        node : node
+            A node in the graph.
+        exclude_nodes : list, optional
+            Set of nodes to exclude from consideration, by default None.
+
+        Returns
+        -------
+        is_common_cause : bool
+            Whether or not the node is a common cause or not.
+        """
+        if exclude_nodes is None:
+            exclude_nodes = []
+
+        successors = self.successors(node)
+        count = 0
+        for succ in successors:
+            if succ not in exclude_nodes:
+                count += 1
+            if count >= 2:
+                return True
+        return False
+
+
+    def set_nodes_as_latent_confounders(self, nodes):
+        """Set nodes as latent unobserved confounders.
+
+        Note that this only works if the original node is a common cause
+        of some variables in the graph.
+
+        Parameters
+        ----------
+        nodes : list
+            A list of nodes to set. They must all be common causes of
+            variables within the graph.
+
+        Returns
+        -------
+        graph : ADMG
+            The mixed-edge causal graph that results.
+        """
+        bidirected_edges = []
+
+        for node in nodes:
+            # check if the node is a common cause
+            if not self.is_node_common_cause(node, exclude_nodes=nodes):
+                raise RuntimeError(f'{node} is not a common cause within the graph '
+                    f'given excluding variables. This function will only convert common '
+                    f'causes to latent confounders.')
+            
+            # get all successors of the node and create a c-component among them
 
 
 class CPDAG(DAG):
@@ -1918,10 +1997,11 @@ class PAG(ADMG):
 
             # convert internal graph to a numpy array
             graph_arr = nx.to_numpy_array(graph, nodelist=node_list)
-            graph_arr[graph_arr != 0] = PAG_EDGE_MAPPING[name]
-            numpy_graph += graph_arr
+            # TODO: fix to use EndPoints
+            # graph_arr[graph_arr != 0] = PAG_EDGE_MAPPING[name]
+            # numpy_graph += graph_arr
 
         if bidirected_graph_arr is not None:
-            bidirected_graph_arr[bidirected_graph_arr != 0] = PAG_EDGE_MAPPING[EdgeType.arrow.value]
+            # bidirected_graph_arr[bidirected_graph_arr != 0] = PAG_EDGE_MAPPING[EdgeType.arrow.value]
             numpy_graph += bidirected_graph_arr
         return numpy_graph

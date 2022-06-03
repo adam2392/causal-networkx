@@ -1,8 +1,11 @@
+from ast import Call
 import logging
 from collections import defaultdict
 from itertools import combinations, permutations
 from typing import Any, Callable, Dict, Set, Tuple, Union
+from copy import copy
 
+import numpy as np
 import networkx as nx
 import pandas as pd
 
@@ -165,7 +168,7 @@ class PC(ConstraintDiscovery):
                     change_flag = True
             if not change_flag:
                 finished = True
-                logger.debug(f"Finished applying R1-3, with {idx} iterations")
+                logger.info(f"Finished applying R1-3, with {idx} iterations")
                 break
             idx += 1
 
@@ -189,7 +192,7 @@ class PC(ConstraintDiscovery):
                 # Then check to see if 'u' is in the separating
                 # set. If it is not, then there is a collider.
                 if not graph.has_adjacency(v_i, v_j) and u not in sep_set[v_i][v_j]:
-                    logger.debug(
+                    logger.info(
                         f"orienting collider: {v_i} -> {u} and {v_j} -> {u} to make {v_i} -> {u} <- {v_j}."
                     )
 
@@ -215,7 +218,7 @@ class PC(ConstraintDiscovery):
                     continue
 
                 # Make i-j into i->j
-                logger.debug(f"R1: Removing edge ({i}, {j}) and orienting as {k} -> {i} -> {j}.")
+                logger.info(f"R1: Removing edge ({i}, {j}) and orienting as {k} -> {i} -> {j}.")
                 graph.orient_undirected_edge(i, j)
 
                 added_arrows = True
@@ -245,7 +248,7 @@ class PC(ConstraintDiscovery):
             # Check if there is any node k where i->k->j.
             if len(succs_i.intersection(preds_j)) > 0:
                 # Make i-j into i->j
-                logger.debug(f"R2: Removing edge {i}-{j} to form {i}->{j}.")
+                logger.info(f"R2: Removing edge {i}-{j} to form {i}->{j}.")
                 graph.orient_undirected_edge(i, j)
                 added_arrows = True
         return added_arrows
@@ -276,7 +279,7 @@ class PC(ConstraintDiscovery):
                 # if i - k and i - l, then  at this point, we have a valid path
                 # to orient
                 if graph.has_undirected_edge(k, i) and graph.has_undirected_edge(l, i):
-                    logger.debug(f"R3: Removing edge {i}-{j} to form {i}->{j}")
+                    logger.info(f"R3: Removing edge {i}-{j} to form {i}->{j}")
                     graph.orient_undirected_edge(i, j)
                     added_arrows = True
                     break
@@ -295,9 +298,13 @@ class RobustPC(PC):
         max_iter: int = 1000,
         max_combinations: int = None,
         apply_orientations: bool = True,
+        mci_alpha: float = 0.05,
         max_conds_x: int = None,
         max_conds_y: int = None,
         size_inclusive: bool = False,
+        mci_ci_estimator: Callable = None,
+        partial_knowledge: object = None,
+        only_mci: bool = False,
         **ci_estimator_kwargs,
     ):
         super().__init__(
@@ -315,6 +322,11 @@ class RobustPC(PC):
         self.max_conds_x = max_conds_x
         self.max_conds_y = max_conds_y
         self.size_inclusive = size_inclusive
+        self.mci_alpha = mci_alpha
+        self.partial_knowledge = partial_knowledge
+        self.only_mci = only_mci
+        if mci_ci_estimator is None:
+            self.mci_ci_estimator = ci_estimator
 
     def learn_skeleton(
         self,
@@ -339,44 +351,67 @@ class RobustPC(PC):
         orig_graph = graph.copy()
         orig_sep_set = sep_set.copy()
 
+        # learn skeleton using original PC algorithm
         graph, sep_set, test_stat_dict, pvalue_dict = super().learn_skeleton(
             X, graph, sep_set, fixed_edges
         )
-
         # convert graph to a CPDAG
         graph = self.convert_skeleton_graph(graph)
-
         # orient the edges of the skeleton graph to build up a set of
         # "definite" parents
         graph = self.orient_edges(graph, sep_set)
 
-        # now obtain the definite parents for every node in the set
-        def_parent_dict = self._get_definite_parents(graph)
+        # now obtain the definite parents for every node in the set either using
+        # partial knowledge oracle, or using the existing graph oriented after initial PC
+        if hasattr(self.partial_knowledge, "get_parents"):
+            def_parent_dict = dict()
+            def_children_dict = dict()
+            test_stat_dict = dict()
+            for node in graph.nodes:
+                parents = self.partial_knowledge.get_parents(node)
+                children = self.partial_knowledge.get_children(node)
+                def_parent_dict[node] = parents
+                def_children_dict[node] = children
 
-        # use definite parents to filter the dependencies in the test statistics / pvalue
-        for node, parents in def_parent_dict.items():
-            for parent, _ in test_stat_dict[node].items():
-                if parent not in parents:
-                    test_stat_dict[node].pop(parent)
-                    pvalue_dict[node].pop(parent)
+                test_stat_dict[node] = {_node: np.inf for _node in parents}
+        else:
+            def_parent_dict = self._get_definite_parents(graph)
+            def_children_dict = self._get_definite_children(graph)
+
+            # use definite parents to filter the dependencies in the test statistics / pvalue
+            for node, parents in def_parent_dict.items():
+                # create a copy of the possible parents, since we will be removing
+                # certain keys in the nested dictionary
+                possible_parents = copy(list(test_stat_dict[node].keys()))
+                childrens = def_children_dict[node]
+                for adj_node in possible_parents:
+                    # now remove any adjacent nodes from consideration if they
+                    # are not part of parent set
+                    if adj_node not in parents and adj_node not in childrens:
+                        test_stat_dict[node].pop(adj_node)
+                        # pvalue_dict[node].pop(parent)
+
+        self._inter_test_stat_dict = test_stat_dict
+        self.def_parents_ = def_parent_dict
 
         # now we will re-learn the skeleton using the MCI condition
         skel_graph, sep_set, test_stat_dict, pvalue_dict = learn_skeleton_graph_with_order(  # type: ignore
             X,
-            self.ci_estimator,
+            self.mci_ci_estimator,
             adj_graph=orig_graph,
             sep_set=orig_sep_set,
             fixed_edges=fixed_edges,
-            alpha=self.alpha,
+            alpha=self.mci_alpha,
             min_cond_set_size=self.min_cond_set_size,
             max_cond_set_size=self.max_cond_set_size,
-            max_combinations=self.max_combinations,
+            max_combinations=1,
             keep_sorted=False,
             with_mci=True,
             max_conds_x=self.max_conds_x,
             max_conds_y=self.max_conds_y,
             parent_dep_dict=test_stat_dict,
             size_inclusive=self.size_inclusive,
+            only_mci=self.only_mci,
             **self.ci_estimator_kwargs,
         )
         return skel_graph, sep_set, test_stat_dict, pvalue_dict
@@ -386,6 +421,15 @@ class RobustPC(PC):
 
         for node in graph.nodes:
             # get all predecessors of the node that have an arrowhead into node
-            def_parent_dict[node] = graph.predecessors(node)
+            def_parent_dict[node] = list(graph.predecessors(node))
 
         return def_parent_dict
+
+    def _get_definite_children(self, graph: CPDAG):
+        def_children_dict = dict()
+
+        for node in graph.nodes:
+            # get all predecessors of the node that have an arrowhead into node
+            def_children_dict[node] = list(graph.successors(node))
+
+        return def_children_dict

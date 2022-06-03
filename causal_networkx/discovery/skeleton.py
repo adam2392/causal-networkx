@@ -241,7 +241,7 @@ def learn_skeleton_graph_with_neighbors(
                     if pvalue > alpha:
                         if adj_graph.has_edge(i, j):
                             remove_edges.append((i, j))
-                        logger.debug(
+                        logger.info(
                             f"Removing edge {i} {j} with conditioning set {cond_set}: "
                             f"alpha={alpha}, pvalue={pvalue}"
                         )
@@ -279,6 +279,7 @@ def learn_skeleton_graph_with_order(
     max_conds_y: int = None,
     parent_dep_dict: Dict[str, Dict[str, float]] = None,
     size_inclusive: bool = False,
+    only_mci: bool = False,
     **ci_estimator_kwargs,
 ) -> Tuple[
     nx.Graph, Dict[str, Dict[str, Set]], Dict[Any, Dict[Any, float]], Dict[Any, Dict[Any, float]]
@@ -330,6 +331,16 @@ def learn_skeleton_graph_with_order(
         Whether or not to keep the considered adjacencies in sorted dependency order.
         If True (default) will sort the existing adjacencies of each variable by its
         dependencies from strongest to weakest (i.e. largest CI test statistic value to lowest).
+    with_mci : bool
+        False.
+    max_conds_x : int
+
+    max_conds_y : int
+
+    parent_dep_dict : Dict[str, Dict[str, float]]
+
+    size_inclusive : bool
+
     ci_estimator_kwargs : dict
         Keyword arguments for the ``ci_estimator`` function.
 
@@ -357,6 +368,9 @@ def learn_skeleton_graph_with_order(
     The ``keep_sorted`` hyperparameter keeps the considered parents in
     a sorted order. The ``max_combinations`` parameter allows one to
     limit the fourth loop through combinations of the conditioning set.
+
+    The iteration through combination of the conditioning set only
+    considers adjacencies of the existing variables.
     """
     # error checks of passed in arguments
     if with_mci and parent_dep_dict is None:
@@ -378,10 +392,6 @@ def learn_skeleton_graph_with_order(
         max_cond_set_size = np.inf
     if fixed_edges is None:
         fixed_edges = set()
-    if max_conds_x is None:
-        max_conds_x = -1
-    if max_conds_y is None:
-        max_conds_y = -1
 
     # store the absolute value of test-statistic values for every single
     # candidate parent-child edge (X -> Y)
@@ -443,25 +453,29 @@ def learn_skeleton_graph_with_order(
                     conds_y = set(possible_conds_y[:max_conds_y])
 
                     # make sure X and Y are not in the additional conditionals
-                    if i in conds_y:
-                        conds_y.remove(i)
-                    if j in conds_x:
-                        conds_x.remove(j)
                     mci_inclusion_set = conds_x.union(conds_y)
+
+                    if i in mci_inclusion_set:
+                        mci_inclusion_set.remove(i)
+                    if j in mci_inclusion_set:
+                        mci_inclusion_set.remove(j)
                 else:
                     mci_inclusion_set = set()
 
-                # now iterate through the possible parents
-                # f(possible_adjacencies, size_cond_set, j)
-                for comb_idx, cond_set in enumerate(
-                    _iter_conditioning_set(
+                if not only_mci:
+                    conditioning_sets = _iter_conditioning_set(
                         possible_adjacencies,
                         size_cond_set,
                         exclude_var=j,
                         mci_inclusion_set=mci_inclusion_set,
                         size_inclusive=size_inclusive,
                     )
-                ):
+                else:
+                    conditioning_sets = combinations(mci_inclusion_set, size_cond_set)
+
+                # now iterate through the possible parents
+                # f(possible_adjacencies, size_cond_set, j)
+                for comb_idx, cond_set in enumerate(conditioning_sets):
                     # check the number of combinations of possible parents we have tried
                     # to use as a separating set
                     if max_combinations is not None and comb_idx >= max_combinations:
@@ -481,14 +495,31 @@ def learn_skeleton_graph_with_order(
                         stat_min_dict[i][j] = test_stat
 
                     # two variables found to be independent given a separating set
+                    if with_mci:
+                        mci_set = mci_inclusion_set
+                        logger.info(f"{conds_x}, {conds_y}")
+                    else:
+                        mci_set = "No MCI"
                     if pvalue > alpha:
+                        logger.info(
+                            f"Removing edge {i}-{j} conditioned on {cond_set}: "
+                            f"MCI={mci_set}, "
+                            f"alpha={alpha}, pvalue={pvalue}"
+                        )
                         remove_edges.append((i, j))
                         sep_set[i][j] |= set(cond_set)
                         sep_set[j][i] |= set(cond_set)
                         break
+                    else:
+                        logger.info(
+                            f"Did not remove edge {i}-{j} conditioned on {cond_set}: "
+                            f"MCI={mci_set}, "
+                            f"alpha={alpha}, pvalue={pvalue}"
+                        )
 
             # finally remove edges after performing
             # conditional independence tests
+            logger.info(f"Removed all edges with p = {size_cond_set}")
             adj_graph.remove_edges_from(remove_edges)
 
             # also remove them from the parent dict mapping
@@ -496,8 +527,8 @@ def learn_skeleton_graph_with_order(
 
             # Remove non-significant links from the test statistic and pvalue dict
             for _, parent in remove_edges:
-                del test_stat_dict[i][parent]
-                del pvalue_dict[i][parent]
+                test_stat_dict[i].pop(parent)
+                pvalue_dict[i].pop(parent)
 
             # variable mapping to its adjacencies and absolute value of their current dependencies
             # assuming there is still an edge (if the pvalue rejected the null hypothesis)
@@ -548,7 +579,7 @@ def _iter_conditioning_set(
     Z : set
         The set of variables for the conditioning set.
     """
-    all_parents_excl_current = [
+    all_adj_excl_current = [
         p for p in possible_adjacencies if p != exclude_var and p not in mci_inclusion_set
     ]
 
@@ -556,7 +587,11 @@ def _iter_conditioning_set(
     # else, set it to the passed in size
     cond_size = size_cond_set - len(mci_inclusion_set) if size_inclusive else size_cond_set
 
+    # if size_inclusive and mci set is larger, then we will just return the MCI set
+    if cond_size < 0:
+        return [mci_inclusion_set]
+
     # loop through all possible combinations of the conditioning set size
-    for cond in combinations(all_parents_excl_current, cond_size):
+    for cond in combinations(all_adj_excl_current, cond_size):
         cond = set(cond).union(mci_inclusion_set)
         yield cond

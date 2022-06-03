@@ -126,7 +126,7 @@ class FCI(ConstraintDiscovery):
                 # Then check to see if 'u' is in the separating
                 # set. If it is not, then there is a collider.
                 if not graph.has_adjacency(v_i, v_j) and u not in sep_set[v_i][v_j]:
-                    logger.debug(
+                    logger.info(
                         f"orienting collider: {v_i} -> {u} and {v_j} -> {u} to make {v_i} -> {u} <- {v_j}."
                     )
 
@@ -167,7 +167,7 @@ class FCI(ConstraintDiscovery):
             if (graph.has_edge(a, u) or graph.has_bidirected_edge(a, u)) and graph.has_circle_edge(
                 c, u
             ):
-                logger.debug(f"Rule 1: Orienting edge {u} o-* {c} to {u} -> {c}.")
+                logger.info(f"Rule 1: Orienting edge {u} o-* {c} to {u} -> {c}.")
                 # orient the edge from u to c and delete
                 # the edge from c to u
                 if graph.has_circle_edge(u, c):
@@ -225,7 +225,7 @@ class FCI(ConstraintDiscovery):
             )
 
             if condition_one or condition_two:
-                logger.debug(f"Rule 2: Orienting circle edge to {a} -> {c}")
+                logger.info(f"Rule 2: Orienting circle edge to {a} -> {c}")
                 # orient a *-> c
                 graph.orient_circle_edge(a, c, "arrow")
                 added_arrows = True
@@ -279,7 +279,7 @@ class FCI(ConstraintDiscovery):
                 # check that a *-o v o-* c
                 condition_two = graph.has_circle_edge(a, v) and graph.has_circle_edge(c, v)
                 if condition_one and condition_two:
-                    logger.debug(f"Rule 3: Orienting {v} -> {u}.")
+                    logger.info(f"Rule 3: Orienting {v} -> {u}.")
                     graph.orient_circle_edge(v, u, "arrow")
                     added_arrows = True
         return added_arrows
@@ -352,16 +352,16 @@ class FCI(ConstraintDiscovery):
                     graph.remove_circle_edge(c, u)
                 if graph.has_circle_edge(u, c):
                     graph.orient_circle_edge(u, c, "arrow")
-                logger.debug(f"Rule 4: orienting {u} -> {c}.")
-                logger.debug(disc_path_str)
+                logger.info(f"Rule 4: orienting {u} -> {c}.")
+                logger.info(disc_path_str)
             else:
                 # orient u <-> c
                 if graph.has_circle_edge(u, c):
                     graph.orient_circle_edge(u, c, "arrow")
                 if graph.has_circle_edge(c, u):
                     graph.orient_circle_edge(c, u, "arrow")
-                logger.debug(f"Rule 4: orienting {u} <-> {c}.")
-                logger.debug(disc_path_str)
+                logger.info(f"Rule 4: orienting {u} <-> {c}.")
+                logger.info(disc_path_str)
             added_arrows = True
 
         return added_arrows, explored_nodes
@@ -402,7 +402,7 @@ class FCI(ConstraintDiscovery):
             condition_two = graph.has_edge(u, c) and not graph.has_circle_edge(c, u)
 
             if condition_one and condition_two:
-                logger.debug(f"Rule 8: Orienting {a} o-> {c} as {a} -> {c}.")
+                logger.info(f"Rule 8: Orienting {a} o-> {c} as {a} -> {c}.")
                 # now orient A o-> C as A -> C
                 graph.orient_circle_edge(c, a, "tail")
                 added_arrows = True
@@ -447,7 +447,7 @@ class FCI(ConstraintDiscovery):
 
                 # orient A o-> C to A -> C
                 if path_exists:
-                    logger.debug(f"Rule 9: Orienting edge {a} o-> {c} to {a} -> {c}.")
+                    logger.info(f"Rule 9: Orienting edge {a} o-> {c} to {a} -> {c}.")
                     graph.orient_circle_edge(c, a, "tail")
                     added_arrows = True
 
@@ -547,7 +547,7 @@ class FCI(ConstraintDiscovery):
                         # at this point, we have an uncovered path from a to u and a to v
                         # with a distinct second node on both paths
                         # orient A o-> C to A -> C
-                        logger.debug(f"Rule 10: Orienting edge {a} o-> {c} to {a} -> {c}.")
+                        logger.info(f"Rule 10: Orienting edge {a} o-> {c} to {a} -> {c}.")
                         graph.orient_circle_edge(c, a, "tail")
                         added_arrows = True
 
@@ -558,7 +558,7 @@ class FCI(ConstraintDiscovery):
         finished = False
         while idx < self.max_iter and not finished:
             change_flag = False
-            logger.debug(f"Running R1-10 for iteration {idx}")
+            logger.info(f"Running R1-10 for iteration {idx}")
 
             for u in graph.nodes:
                 for (a, c) in permutations(graph.adjacencies(u), 2):
@@ -584,15 +584,15 @@ class FCI(ConstraintDiscovery):
                         any([r1_add, r2_add, r3_add, r4_add, r8_add, r9_add, r10_add])
                         and not change_flag
                     ):
-                        logger.debug("Got here...")
-                        logger.debug([r1_add, r2_add, r3_add, r4_add, r8_add, r9_add, r10_add])
-                        logger.debug(change_flag)
+                        logger.info("Got here...")
+                        logger.info([r1_add, r2_add, r3_add, r4_add, r8_add, r9_add, r10_add])
+                        logger.info(change_flag)
                         change_flag = True
 
             # check if we should continue or not
             if not change_flag:
                 finished = True
-                logger.debug(f"Finished applying R1-4, and R8-10 with {idx} iterations")
+                logger.info(f"Finished applying R1-4, and R8-10 with {idx} iterations")
                 break
             idx += 1
 

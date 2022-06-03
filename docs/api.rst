@@ -69,6 +69,24 @@ variable and then ``sep_set`` is the conditioning set of variables.
    Oracle
    KernelCITest
 
+
+IO for reading/writing causal graphs
+====================================
+We advocate for using our implemented causal graph classes whenever
+utilizing various packages. However, we also support transformations
+to and from popular storage classes, such as ``numpy arrays``,
+``pandas dataframes``, ``pgmpy``, ``DOT`` and ``dagitty``. Note that
+not all these are supported for all types of graphs because of
+inherent limitations in supporting mixed-edge graphs in other formats.
+
+.. currentmodule:: causal_networkx.io
+
+.. autosummary::
+   :toctree: generated/
+
+   g_square_binary
+
+
 Utility Algorithms for Causal Graphs
 ====================================
 .. currentmodule:: causal_networkx.algorithms

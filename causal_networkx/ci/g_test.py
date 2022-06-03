@@ -202,7 +202,10 @@ def _calculate_g_statistic(contingency_tble):
 
 
 def g_square_binary(
-    data: Union[NDArray, pd.DataFrame], x: Union[int, str], y: Union[int, str], sep_set: Set
+    data: Union[NDArray, pd.DataFrame],
+    x: Union[int, str],
+    y: Union[int, str],
+    sep_set: Set,
 ) -> Tuple[float, float]:
     """G square test for a binary data.
 
@@ -244,6 +247,7 @@ def g_square_binary(
     ----------
     .. footbibliography::
     """
+    # rng = np.random.RandomState(random_state)
     if isinstance(data, np.ndarray):
         data = pd.DataFrame(data)
 

@@ -37,17 +37,97 @@ class EdgeType(Enum, metaclass=MetaEnum):
 
     arrow = "arrow"
     circle = "circle"
-    bidirected = "bidirected"
     tail = "tail"
-    undirected = "undirected"
+    circle_to_directed = 'circle_to_directed'       # o->
+    circle_to_circle = 'circle_to_circle'           # o-o
+    circle_to_undirected = 'circle_to_undirected'   # o--
+    directed = 'directed'                           # -->
+    undirected = "undirected"                       # ---
+    bidirected = "bidirected"                       # <->
 
 
-# amat[i,j] = 0 iff no edge btw i,j
-# amat[i,j] = 1 iff i *-o j
-# amat[i,j] = 2 iff i *-> j
-# amat[i,j] = 3 iff i *-- j
-PAG_EDGE_MAPPING = {
+class EndPoint(Enum, metaclass=MetaEnum):
+    """Enumeration of different causal edge endpoints.
+
+    Categories
+    ----------
+    arrow : str
+        Signifies arrowhead (">") endpoint. That is a normal
+        directed edge (``->``), bidirected arrow (``<->``),
+        or circle with directed edge (``o->``).
+    circle : str
+        Signifies a cirlce ("o") endpoint. That is an uncertain edge,
+        which is either circle with directed edge (``o->``),
+        circle with undirected edge (``o-``), or 
+        circle with circle edge (``o-o``).
+    tail : str
+        Signifies a tail ("-") endpoint. That is either 
+        a directed edge (``->``), or an undirected edge (``-``), or 
+        circle with circle edge (``-o``).
+
+    Notes
+    -----
+    The possible edges between two nodes thus are:
+
+    ->, <-, <->, o->, <-o, o-o
+
+    In general, among all possible causal graphs, arrowheads depict 
+    non-descendant relationships. In DAGs, arrowheads depict direct
+    causal relationships (i.e. parents/children). In ADMGs, arrowheads
+    can come from directed edges, or bidirected edges
+    """
+    arrow = "arrow"
+    circle = "circle"
+    tail = "tail"
+
+
+
+CPDAG_EDGE_TO_VALUE_MAPPING = {
     None: 0,
-    EdgeType.circle.value: 1,
-    EdgeType.arrow.value: 2,
+    EdgeType.arrow.value: 1,
+    EdgeType.undirected.value: 2,
 }
+CPDAG_VALUE_TO_EDGE_MAPPING = {val: key for key, val in CPDAG_EDGE_TO_VALUE_MAPPING.items()}
+
+ADMG_EDGE_TO_VALUE_MAPPING = {
+    None: 0,
+    EdgeType.arrow.value: 1,
+    EdgeType.bidirected.value: 2,
+}
+
+PAG_EDGE_TO_VALUE_MAPPING = {
+    None: 0,
+    EndPoint.arrow.value: 1,
+    EndPoint.tail.value: 2,
+    EndPoint.circle.value: 3,
+}
+
+# Say we are given an adjacency 2D matrix, then
+# we would have the following entries corresponding to different
+# endpoints. An edge is then fully defined by its two endpoints, which
+# are the ijth and jith component in the array.
+# 
+# For example, for a PAG with selection bias:
+# - adj[i,j] = 0 iff no edge btw i,j iff adj[j,i] = 0
+# - adj[i,j] = 1 iff i *-> j with possibly adj[j,i] = 1, 2, 3
+# - adj[i,j] = 2 iff i *-- j with possibly adj[j,i] = 1, 2, 3
+# - adj[i,j] = 3 iff i *-o j with possibly adj[j,i] = 1, 2, 3
+MIXED_EDGE_TO_VALUE_MAPPING = {
+    None: 0,
+    EndPoint.arrow.value: 1,
+    EndPoint.tail.value: 2,
+    EndPoint.circle.value: 3,
+}
+VALUE_TO_MIXED_EDGE_MAPPING = {val: key for key, val in MIXED_EDGE_TO_VALUE_MAPPING.items()}
+
+# map pairs of endpoints to their corresponding edges
+ENDPOINT_TO_EDGE_MAPPING = {
+    (EndPoint.arrow.value, EndPoint.arrow.value): EdgeType.bidirected.value,
+    (EndPoint.tail.value, EndPoint.arrow.value): EdgeType.directed.value,
+    (EndPoint.tail.value, EndPoint.tail.value): EdgeType.undirected.value,
+    (EndPoint.circle.value, EndPoint.arrow.value): EdgeType.circle_to_directed.value,
+    (EndPoint.circle.value, EndPoint.circle.value): EdgeType.circle_to_circle.value,
+    (EndPoint.circle.value, EndPoint.tail.value): EdgeType.circle_to_undirected.value,
+}
+
+# def endpoint_to_edge(endpoint_1, endpoint_2):
