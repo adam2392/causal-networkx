@@ -382,11 +382,11 @@ class RobustPC(PC):
                 # create a copy of the possible parents, since we will be removing
                 # certain keys in the nested dictionary
                 possible_parents = copy(list(test_stat_dict[node].keys()))
-                childrens = def_children_dict[node]
+                children = def_children_dict[node]
                 for adj_node in possible_parents:
                     # now remove any adjacent nodes from consideration if they
                     # are not part of parent set
-                    if adj_node not in parents and adj_node not in childrens:
+                    if adj_node not in parents and adj_node not in children:
                         test_stat_dict[node].pop(adj_node)
                         # pvalue_dict[node].pop(parent)
 

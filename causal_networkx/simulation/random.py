@@ -73,7 +73,7 @@ def simulate_random_graphs_manm_cs(
         If True defines that conditional gaussian model is assumed for a mixture of variables.
         Otherwise discrete variables can have continuous parents., by default True
     functions : str, optional
-        A list of probabilities and mathmatical functions for relationships between two
+        A list of probabilities and mathematical functions for relationships between two
         continuous nodes. Note, the input are tuples (probability, function), where the
         sum of all probabilities has to equal 1. Command line supported functions are:
         [linear, quadratic, cubic, tanh, sin, cos], by default 'linear'.

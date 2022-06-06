@@ -3,7 +3,6 @@ from typing import Any, List, Optional
 import networkx as nx
 
 from ..config import EdgeType
-from .cgm import ADMG
 from .mixins import AddingEdgeMixin, ExportMixin, GraphSampleMixin, NetworkXMixin
 
 
@@ -177,7 +176,7 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
                 return True
         return False
 
-    def set_nodes_as_latent_confounders(self, nodes) -> ADMG:
+    def set_nodes_as_latent_confounders(self, nodes):
         """Set nodes as latent unobserved confounders.
 
         Note that this only works if the original node is a common cause
@@ -194,6 +193,8 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
         graph : ADMG
             The mixed-edge causal graph that results.
         """
+        from causal_networkx.graphs.cgm import ADMG
+
         bidirected_edges = []
         new_graph = ADMG()
 
