@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from causal_networkx import ADMG, PAG
+from causal_networkx.config import EdgeType, EndPoint
 from causal_networkx.discovery.classes import ConstraintDiscovery
 
 from ..algorithms.pag import discriminating_path, uncovered_pd_path
@@ -130,10 +131,10 @@ class FCI(ConstraintDiscovery):
                         f"orienting collider: {v_i} -> {u} and {v_j} -> {u} to make {v_i} -> {u} <- {v_j}."
                     )
 
-                    if graph.has_circle_edge(v_i, u):
-                        graph.orient_circle_edge(v_i, u, "arrow")
-                    if graph.has_circle_edge(v_j, u):
-                        graph.orient_circle_edge(v_j, u, "arrow")
+                    if graph.has_circle_endpoint(v_i, u):
+                        graph.orient_circle_endpoint(v_i, u, EndPoint.arrow.value)
+                    if graph.has_circle_endpoint(v_j, u):
+                        graph.orient_circle_endpoint(v_j, u, EndPoint.arrow.value)
 
     def _apply_rule1(self, graph: PAG, u, a, c) -> bool:
         """Apply rule 1 of the FCI algorithm.
@@ -164,15 +165,15 @@ class FCI(ConstraintDiscovery):
         # check that a and c are not adjacent
         if not graph.has_adjacency(a, c):
             # check a *-> u o-* c
-            if (graph.has_edge(a, u) or graph.has_bidirected_edge(a, u)) and graph.has_circle_edge(
-                c, u
-            ):
+            if (
+                graph.has_edge(a, u) or graph.has_bidirected_edge(a, u)
+            ) and graph.has_circle_endpoint(c, u):
                 logger.info(f"Rule 1: Orienting edge {u} o-* {c} to {u} -> {c}.")
                 # orient the edge from u to c and delete
                 # the edge from c to u
-                if graph.has_circle_edge(u, c):
-                    graph.orient_circle_edge(u, c, "arrow")
-                graph.orient_circle_edge(c, u, "tail")
+                if graph.has_circle_endpoint(u, c):
+                    graph.orient_circle_endpoint(u, c, EndPoint.arrow.value)
+                graph.orient_circle_endpoint(c, u, EndPoint.tail.value)
                 added_arrows = True
 
         return added_arrows
@@ -205,29 +206,29 @@ class FCI(ConstraintDiscovery):
         """
         added_arrows = False
         # check that a *-o c edge exists
-        if graph.has_circle_edge(a, c):
+        if graph.has_circle_endpoint(a, c):
             # - A -> u *-> C, or A *-> u -> C, and
             # - A *-o C,
             # check for A -> u and check that u *-> c
             condition_one = (
                 graph.has_edge(a, u)
                 and not graph.has_edge(u, a)
-                and not graph.has_circle_edge(u, a)
-                and graph.edge_type(u, c) in ["arrow", "bidirected"]
+                and not graph.has_circle_endpoint(u, a)
+                and graph.edge_type(u, c) in [EdgeType.directed.value, EdgeType.bidirected.value]
             )
 
             # check that a *-> u -> c
             condition_two = (
-                graph.edge_type(a, u) in ["arrow", "bidirected"]
-                and graph.edge_type(u, c) == "arrow"
+                graph.edge_type(a, u) in [EdgeType.directed.value, EdgeType.bidirected.value]
+                and graph.edge_type(u, c) == EdgeType.directed.value
                 and not graph.has_edge(c, u)
-                and not graph.has_circle_edge(c, u)
+                and not graph.has_circle_endpoint(c, u)
             )
 
             if condition_one or condition_two:
                 logger.info(f"Rule 2: Orienting circle edge to {a} -> {c}")
                 # orient a *-> c
-                graph.orient_circle_edge(a, c, "arrow")
+                graph.orient_circle_endpoint(a, c, EndPoint.arrow.value)
                 added_arrows = True
         return added_arrows
 
@@ -273,14 +274,14 @@ class FCI(ConstraintDiscovery):
                     continue
 
                 # check that v *-o u
-                if not graph.has_circle_edge(v, u):
+                if not graph.has_circle_endpoint(v, u):
                     continue
 
                 # check that a *-o v o-* c
-                condition_two = graph.has_circle_edge(a, v) and graph.has_circle_edge(c, v)
+                condition_two = graph.has_circle_endpoint(a, v) and graph.has_circle_endpoint(c, v)
                 if condition_one and condition_two:
                     logger.info(f"Rule 3: Orienting {v} -> {u}.")
-                    graph.orient_circle_edge(v, u, "arrow")
+                    graph.orient_circle_endpoint(v, u, EndPoint.arrow.value)
                     added_arrows = True
         return added_arrows
 
@@ -324,7 +325,7 @@ class FCI(ConstraintDiscovery):
 
         # c must also point to u with a circle edge
         # check u o-* c
-        if not graph.has_circle_edge(c, u):
+        if not graph.has_circle_endpoint(c, u):
             return added_arrows, explored_nodes
 
         # 'a' cannot be a definite collider if there is no arrow pointing from
@@ -349,17 +350,19 @@ class FCI(ConstraintDiscovery):
             if last_node in sep_set:
                 if u in sep_set[last_node][c]:
                     # orient u -> c
-                    graph.remove_circle_edge(c, u)
-                if graph.has_circle_edge(u, c):
-                    graph.orient_circle_edge(u, c, "arrow")
+                    graph.remove_circle_endpoint(c, u)
+                if graph.has_circle_endpoint(u, c):
+                    print(f"Trying to orient {u} -o {c} to arrowhead")
+                    print(graph.all_edges())
+                    graph.orient_circle_endpoint(u, c, EndPoint.arrow.value)
                 logger.info(f"Rule 4: orienting {u} -> {c}.")
                 logger.info(disc_path_str)
             else:
                 # orient u <-> c
-                if graph.has_circle_edge(u, c):
-                    graph.orient_circle_edge(u, c, "arrow")
-                if graph.has_circle_edge(c, u):
-                    graph.orient_circle_edge(c, u, "arrow")
+                if graph.has_circle_endpoint(u, c):
+                    graph.orient_circle_endpoint(u, c, EndPoint.arrow.value)
+                if graph.has_circle_endpoint(c, u):
+                    graph.orient_circle_endpoint(c, u, EndPoint.arrow.value)
                 logger.info(f"Rule 4: orienting {u} <-> {c}.")
                 logger.info(disc_path_str)
             added_arrows = True
@@ -396,15 +399,15 @@ class FCI(ConstraintDiscovery):
         added_arrows = False
 
         # First check that A o-> C
-        if graph.has_circle_edge(c, a) and graph.has_edge(a, c):
+        if graph.has_circle_endpoint(c, a) and graph.has_edge(a, c):
             # check that A -> u -> C
-            condition_one = graph.has_edge(a, u) and not graph.has_circle_edge(u, a)
-            condition_two = graph.has_edge(u, c) and not graph.has_circle_edge(c, u)
+            condition_one = graph.has_edge(a, u) and not graph.has_circle_endpoint(u, a)
+            condition_two = graph.has_edge(u, c) and not graph.has_circle_endpoint(c, u)
 
             if condition_one and condition_two:
                 logger.info(f"Rule 8: Orienting {a} o-> {c} as {a} -> {c}.")
                 # now orient A o-> C as A -> C
-                graph.orient_circle_edge(c, a, "tail")
+                graph.orient_circle_endpoint(c, a, EndPoint.tail.value)
                 added_arrows = True
         return added_arrows
 
@@ -437,7 +440,9 @@ class FCI(ConstraintDiscovery):
         uncov_path: List[Any] = []
 
         # Check A o-> C and # check that u is not adjacent to c
-        if (graph.has_circle_edge(c, a) and graph.has_edge(a, c)) and not graph.has_adjacency(u, c):
+        if (graph.has_circle_endpoint(c, a) and graph.has_edge(a, c)) and not graph.has_adjacency(
+            u, c
+        ):
             # check that <a, u> is potentially directed
             if graph.has_edge(a, u):
                 # check that A - u - v, ..., c is an uncovered pd path
@@ -448,7 +453,7 @@ class FCI(ConstraintDiscovery):
                 # orient A o-> C to A -> C
                 if path_exists:
                     logger.info(f"Rule 9: Orienting edge {a} o-> {c} to {a} -> {c}.")
-                    graph.orient_circle_edge(c, a, "tail")
+                    graph.orient_circle_endpoint(c, a, EndPoint.tail.value)
                     added_arrows = True
 
         return added_arrows, uncov_path
@@ -488,9 +493,9 @@ class FCI(ConstraintDiscovery):
         a_to_v_path: List[Any] = []
 
         # Check A o-> C
-        if graph.has_circle_edge(c, a) and graph.has_edge(a, c):
+        if graph.has_circle_endpoint(c, a) and graph.has_edge(a, c):
             # check that u -> C
-            if graph.has_edge(u, c) and not graph.has_circle_edge(c, u):
+            if graph.has_edge(u, c) and not graph.has_circle_endpoint(c, u):
                 # loop through all adjacent neighbors of c now to get
                 # possible 'v' node
                 for v in graph.adjacencies(c):
@@ -498,7 +503,7 @@ class FCI(ConstraintDiscovery):
                         continue
 
                     # make sure v -> C and not v o-> C
-                    if not graph.has_edge(v, c) or graph.has_circle_edge(c, v):
+                    if not graph.has_edge(v, c) or graph.has_circle_endpoint(c, v):
                         continue
 
                     # At this point, we want the paths from A to u and A to v
@@ -548,7 +553,7 @@ class FCI(ConstraintDiscovery):
                         # with a distinct second node on both paths
                         # orient A o-> C to A -> C
                         logger.info(f"Rule 10: Orienting edge {a} o-> {c} to {a} -> {c}.")
-                        graph.orient_circle_edge(c, a, "tail")
+                        graph.orient_circle_endpoint(c, a, EndPoint.tail.value)
                         added_arrows = True
 
         return added_arrows, a_to_u_path, a_to_v_path

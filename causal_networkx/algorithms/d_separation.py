@@ -3,7 +3,7 @@ from typing import Union
 import numpy as np
 from networkx.algorithms import d_separated as nx_d_separated
 
-from causal_networkx.cgm import ADMG, PAG
+from causal_networkx.graphs.cgm import ADMG, PAG
 
 
 def d_separated(G: Union[ADMG, PAG], x, y, z):

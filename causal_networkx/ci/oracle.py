@@ -1,10 +1,9 @@
 from typing import Union
 
-import networkx as nx
 import numpy as np
 
 from causal_networkx.algorithms.d_separation import d_separated
-from causal_networkx.cgm import ADMG, DAG
+from causal_networkx.graphs.cgm import ADMG, DAG
 
 
 class Oracle:

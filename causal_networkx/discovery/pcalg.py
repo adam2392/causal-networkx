@@ -1,12 +1,11 @@
-from ast import Call
 import logging
 from collections import defaultdict
+from copy import copy
 from itertools import combinations, permutations
 from typing import Any, Callable, Dict, Set, Tuple, Union
-from copy import copy
 
-import numpy as np
 import networkx as nx
+import numpy as np
 import pandas as pd
 
 from causal_networkx import CPDAG, DAG
@@ -368,8 +367,8 @@ class RobustPC(PC):
             def_children_dict = dict()
             test_stat_dict = dict()
             for node in graph.nodes:
-                parents = self.partial_knowledge.get_parents(node)
-                children = self.partial_knowledge.get_children(node)
+                parents = self.partial_knowledge.get_parents(node)  # type: ignore
+                children = self.partial_knowledge.get_children(node)  # type: ignore
                 def_parent_dict[node] = parents
                 def_children_dict[node] = children
 

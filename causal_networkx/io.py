@@ -1,7 +1,16 @@
-from causal_networkx.cgm import DAG, CPDAG
 import networkx as nx
 
-from causal_networkx.config import VALUE_TO_MIXED_EDGE_MAPPING, EdgeType
+from causal_networkx.config import (
+    ENDPOINT_TO_EDGE_MAPPING,
+    GRAPH_TYPES,
+    VALUE_TO_MIXED_EDGE_MAPPING,
+    EdgeType,
+    EndPoint,
+)
+from causal_networkx.graphs.cgm import ADMG, CPDAG, DAG, PAG
+
+GRAPH_TYPE = {DAG: "DAG", ADMG: "ADMG", CPDAG: "CPDAG", PAG: "PAG"}
+GRAPH_TYPE_TO_FUNC = {val: key for key, val in GRAPH_TYPE.items()}
 
 
 def load_from_pgmpy(pgmpy_dag):
@@ -13,7 +22,7 @@ def load_from_pgmpy(pgmpy_dag):
     return dag
 
 
-def load_from_numpy(arr, type='dag'):
+def load_from_numpy(arr, type="dag"):
     """Load causal graph from a numpy array.
 
     # TODO: add sparse support.
@@ -28,43 +37,117 @@ def load_from_numpy(arr, type='dag'):
         ``('dag', ``cpdag``, ``admg``, ``pag``)``. For mixed-edge graphs, the
         `arr` specified will have specific values mapped to specific edges.
 
+    Returns
+    -------
+    G : instance of DAG | CPDAG
+        An instance of a causal graph.
+
     Notes
     -----
+    Numpy support for ADMGs are not supported yet, as nodes can have two edges
+    between any two nodes (i.e. a directed edge and a bidirected edge).
     """
     n, m = arr.shape
     if n != m:
         raise nx.NetworkXError(f"Adjacency matrix not square: nx,ny={arr.shape}")
+    if type not in GRAPH_TYPES:
+        raise ValueError(
+            f'"type" needs to be one of accepted graph types {GRAPH_TYPES}, not {type}.'
+        )
 
-    if type == 'dag':
+    if type == "dag":
         nx_graph = nx.from_numpy_array(arr, create_using=nx.DiGraph)
-        graph = DAG(nx_graph)
-    elif type == 'cpdag':
+        G = DAG(nx_graph)
+    elif type == "cpdag":
         G = CPDAG()
         # Make sure we get even the isolated nodes of the graph.
         G.add_nodes_from(range(n))
 
         # Get a list of all the entries in the array with nonzero entries. These
         # coordinates become edges in the graph. (convert to int from np.int64)
-        directed_edge_graph = []
-        undirected_edge_graph = []
         for e in zip(*arr.nonzero()):
-            edge = (int(e[0]), int(e[1]))
+            idx = e[0]
+            jdx = e[1]
 
-            endpoint = VALUE_TO_MIXED_EDGE_MAPPING.get(arr[e[0], e[1]])
-            # if edge_type == EdgeType.
+            # get the endpoint value for the ijth connection
+            endpoint_ij = VALUE_TO_MIXED_EDGE_MAPPING.get(arr[idx, jdx])
+
+            # check the other endpoint for jith
+            endpoint_ji = VALUE_TO_MIXED_EDGE_MAPPING.get(arr[jdx, idx])
+
+            # now map these endpoints to edges that are added to the graph
+            edge_type = ENDPOINT_TO_EDGE_MAPPING[(endpoint_ij, endpoint_ji)]
+
+            if edge_type == EdgeType.directed.value:
+                # just add directed edge from i to j
+                G.add_edge(idx, jdx)
+            elif edge_type == EdgeType.undirected.value:
+                G.add_undirected_edge(idx, jdx)
+
+    return G
 
 
-def load_from_dot(graph, dagitty:bool=False):
+def load_from_networkx(G: nx.Graph) -> DAG:
+    graph_func = GRAPH_TYPE_TO_FUNC[G.graph["graph_type"]]
+    name = G.name
+
+    graph = graph_func()
+    graph.name = name
+
+    # add all nodes to the causal graph
+    graph.add_nodes_from(G.nodes)
+
+    # now add all edges
+    for u, v, edge_attrs in G.edges.data():
+        edge_type = edge_attrs["type"]
+        # replace edge marks with their appropriate string representation
+        if edge_type == EdgeType.directed.value:
+            graph.add_edge(u, v)
+        elif edge_type == EdgeType.bidirected.value:
+            graph.add_bidirected_edge(u, v)
+        elif edge_type == EndPoint.circle.value:
+            graph.add_circle_endpoint(u, v)
+    return graph
+
+
+def to_networkx(causal_graph: DAG):
+    if len(causal_graph._graphs) == 1:
+        G = nx.DiGraph()
+    else:
+        G = nx.MultiDiGraph()
+
+    # preserve the name
+    G.name = causal_graph.name
+    graph_type = GRAPH_TYPE[type(causal_graph)]
+    G.graph["graph_type"] = graph_type
+
+    # add all nodes to the networkx graph
+    G.add_nodes_from(causal_graph.nodes)
+
+    # add all the edges
+    for name, graph in zip(causal_graph._graph_names, causal_graph._graphs):
+        # replace edge marks with their appropriate string representation
+        if name == EdgeType.directed.value:
+            attr = {"type": "directed"}
+        elif name == EdgeType.bidirected.value:
+            attr = {"type": "bidirected"}
+        elif name == EndPoint.circle.value:
+            attr = {"type": "circle"}
+        G.add_edges_from(graph.edges, **attr)
+    return G
+
+
+def load_from_dot(graph, dagitty: bool = False):
     # multiple edges are not allowed
     assert graph.get_strict(None)
     if dagitty:
-        assert graph.get_type() == 'dag'
+        assert graph.get_type() == "dag"
     else:
-        assert graph.get_type() == 'digraph'
+        assert graph.get_type() == "digraph"
 
     # now read the graph
     N = DAG()
-    
+
     # assign name of the graph
     name = graph.get_name().strip('"')
     if name != "":
@@ -73,7 +156,7 @@ def load_from_dot(graph, dagitty:bool=False):
     # add nodes and attributes
     for p in graph.get_node_list():
         n = p.get_name().strip('"')
-        if n in ('node', 'graph', 'edge'):
+        if n in ("node", "graph", "edge"):
             continue
         N.add_node(n, **p.get_attributes())
 
@@ -87,13 +170,13 @@ def load_from_dot(graph, dagitty:bool=False):
         if isinstance(u, str):
             s.append(u.strip('"'))
         else:
-            for unodes in u['nodes']:
+            for unodes in u["nodes"]:
                 s.append(unodes.strip('"'))
-            
+
         if isinstance(v, str):
             d.append(v.strip('"'))
         else:
-            for vnodes in v['nodes']:
+            for vnodes in v["nodes"]:
                 d.append(vnodes.strip('"'))
 
         for source_node in s:
@@ -103,34 +186,38 @@ def load_from_dot(graph, dagitty:bool=False):
     # add default attributes
     pattr = graph.get_attributes()
     if pattr:
-        N.graph['graph'] = pattr
+        N.dag["graph"] = pattr
     try:
-        N.graph["node"] = graph.get_node_defaults()[0]
+        N.dag["node"] = graph.get_node_defaults()[0]
     except (IndexError, TypeError):
         pass  # N.graph['node']={}
     try:
-        N.graph["edge"] = graph.get_edge_defaults()[0]
+        N.dag["edge"] = graph.get_edge_defaults()[0]
     except (IndexError, TypeError):
         pass  # N.graph['edge']={}
     return N
 
+
 def read_pgmpy(fname):
     pass
+
 
 def read_dagitty(fname):
     pass
 
+
 def read_dot(fname: str):
     import pydot
-    if fname.endswith('.dot'):
+
+    if fname.endswith(".dot"):
         graph = pydot.graph_from_dot_file(fname)
-    elif fname.endswith('.txt'):
+    elif fname.endswith(".txt"):
         # read txt file
         with open(fname, "r") as f:
             graph = f.readlines()
-        graph = ''.join(graph)
+        graph = "".join(graph)
         graph = pydot.graph_from_dot_data(graph)
-    
+
     assert len(graph) == 1
     graph = graph[0]
     nx_graph = nx.drawing.nx_pydot.from_pydot(graph)

@@ -1,14 +1,10 @@
-import itertools
-from collections import defaultdict
-from typing import Any, Callable, Dict, Optional, Set, Tuple, Union
+from typing import Any, Callable, Optional, Union
 
 import networkx as nx
-import numpy as np
 import pandas as pd
-from sklearn.covariance import log_likelihood
+from tqdm.auto import trange
 
 from causal_networkx import ADMG
-from tqdm.auto import trange
 
 
 class ScoreBasedDiscovery:
@@ -44,19 +40,19 @@ def bic_score(X: pd.DataFrame, node, parents):
     if any(parent not in X.columns for parent in parents):
         raise RuntimeError(f"Some of {parents} are not in dataset X.")
 
-    node_count = len(X.columns)
+    # node_count = len(X.columns)
 
-    counts = np.array()
+    # counts = np.array()
 
     # compute log likelihoods
-    log_likelihoods -= log_conditionals
-    log_likelihoods *= counts
+    # log_likelihoods -= log_conditionals
+    # log_likelihoods *= counts
 
-    # compute the final BIC score
-    penalty_factor = 0.5 * np.log(sample_size) * num_parents_states * (node_count - 1)
-    score = np.sum(log_likelihoods) - penalty_factor
+    # # compute the final BIC score
+    # penalty_factor = 0.5 * np.log(sample_size) * num_parents_states * (node_count - 1)
+    # score = np.sum(log_likelihoods) - penalty_factor
 
-    return score
+    # return score
 
 
 class HillClimbSearch(ScoreBasedDiscovery):
@@ -86,9 +82,13 @@ class HillClimbSearch(ScoreBasedDiscovery):
         pass
 
     def fit(self, X: pd.DataFrame):
-        score_func = self.scoring_method
+        # score_func = self.scoring_method
 
         nodes = X.columns
+
+        # stores previously visited solutions to prevent recomputing
+        tabu_list = []
+
         # initialize the starting graph, which is empty
         # as opposed to complete in the constraint-based case.
         graph = self.init_graph

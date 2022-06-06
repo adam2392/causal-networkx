@@ -1,14 +1,14 @@
 import logging
 from collections import defaultdict
 from itertools import combinations, permutations
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 
 from causal_networkx.algorithms.pag import possibly_d_sep_sets
-from causal_networkx.cgm import PAG
+from causal_networkx.graphs.cgm import PAG
 
 logger = logging.getLogger()
 
@@ -410,6 +410,8 @@ def learn_skeleton_graph_with_order(
         adjacency_mapping[node] = [
             other_node for other_node in adj_graph.neighbors(node) if other_node != node
         ]
+
+    mci_set: Union[Set[Any], str]
 
     # loop through every node
     for i in nodes:

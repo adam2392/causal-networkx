@@ -1,9 +1,12 @@
+from pathlib import Path
+
 import networkx as nx
 import numpy as np
 import pytest
 
 from causal_networkx.algorithms import d_separated
-from causal_networkx.cgm import ADMG, CPDAG, PAG
+from causal_networkx.graphs.cgm import ADMG, CPDAG, PAG
+from causal_networkx.io import load_from_networkx
 
 
 class TestGraph:
@@ -230,6 +233,19 @@ class TestNetworkxGraph(TestGraph):
         G.add_edge(2, 1, foo=ll)
 
 
+class TestExportGraph(TestGraph):
+    def test_to_networkx(self, tmp_path):
+        G = self.G
+        fname = Path(tmp_path) / "test.gml"
+        G.save(fname, format="networkx-gml")
+
+        read_G = nx.read_gml(fname)
+        read_G = load_from_networkx(read_G)
+        assert type(read_G) == type(G)
+        assert set(read_G.nodes) == set(map(str, G.nodes))
+        assert nx.is_isomorphic(read_G.to_networkx(), G.to_networkx())
+
+
 class TestCPDAG(TestNetworkxGraph):
     def setup_method(self):
         # start every graph with the confounded graph
@@ -396,7 +412,7 @@ class TestADMG(TestGraph):
         dot_graph = G.to_dot_graph()
 
         # make sure the output adheres to the DOT format
-        assert dot_graph.startswith("strict digraph {")
+        assert dot_graph.startswith("strict digraph\t{")
         assert dot_graph.endswith("}")
         for node in G.nodes:
             assert f"{node};\n" in dot_graph
@@ -415,7 +431,7 @@ class TestADMG(TestGraph):
         # 0 -> 1, 0 -> 2 with 1 <--> 0
         G = self.PAG.copy()
 
-        numpy_graph = G.to_numpy_array()
+        numpy_graph = G.to_numpy()
         expected_arr = np.zeros((3, 3))
         expected_arr[0, 1] = 2
         expected_arr[0, 2] = 2
@@ -458,7 +474,7 @@ class TestPAG(TestADMG):
         self.PAG.add_bidirected_edge(0, 1)
 
         # also setup a PAG with uncertain edges
-        self.PAG.add_circle_edge(1, 4, bidirected=True)
+        self.PAG.add_circle_endpoint(1, 4, bidirected=True)
 
     def test_str_unnamed(self):
         G = self.Graph()
@@ -503,11 +519,11 @@ class TestPAG(TestADMG):
         current_hash = hash(G)
         assert G._current_hash is None
 
-        G.add_circle_edge(2, 3, bidirected=True)
+        G.add_circle_endpoint(2, 3, bidirected=True)
         new_hash = hash(G)
         assert current_hash != new_hash
 
-        G.remove_circle_edge(2, 3, bidirected=True)
+        G.remove_circle_endpoint(2, 3, bidirected=True)
         assert current_hash == hash(G)
 
     def test_add_circle_edge(self):
@@ -518,10 +534,10 @@ class TestPAG(TestADMG):
         # where there is no arrow already without specifying
         # bidirected, then an error will be raised
         with pytest.raises(RuntimeError, match="There is no directed"):
-            G.add_circle_edge(1, 3)
-        G.add_circle_edge(1, 3, bidirected=True)
+            G.add_circle_endpoint(1, 3)
+        G.add_circle_endpoint(1, 3, bidirected=True)
         assert not G.has_edge(1, 3)
-        assert G.has_circle_edge(1, 3)
+        assert G.has_circle_endpoint(1, 3)
 
     def test_adding_edge_errors(self):
         """Test that adding edges in PAG result in certain errors."""
@@ -529,11 +545,11 @@ class TestPAG(TestADMG):
         G = self.PAG
 
         with pytest.raises(RuntimeError, match="There is already an existing edge between 0 and 2"):
-            G.add_circle_edge(0, 2)
+            G.add_circle_endpoint(0, 2)
         with pytest.raises(RuntimeError, match="There is already an existing edge between 0 and 1"):
-            G.add_circle_edge(0, 1)
+            G.add_circle_endpoint(0, 1)
         with pytest.raises(RuntimeError, match="There is already an existing edge between 0 and 1"):
-            G.add_circle_edges_from([(0, 1)])
+            G.add_circle_endpoints_from([(0, 1)])
         with pytest.raises(RuntimeError, match="There is already an existing edge between 1 and 4"):
             G.add_edge(1, 4)
         with pytest.raises(RuntimeError, match="There is already an existing edge between 0 and 1"):
@@ -549,24 +565,24 @@ class TestPAG(TestADMG):
             G.add_edge(2, 0)
 
         # adding a single circle edge is fine
-        G.add_circle_edge(2, 0)
+        G.add_circle_endpoint(2, 0)
 
     def test_remove_circle_edge(self):
         G = self.PAG
-        assert G.has_circle_edge(1, 4)
-        G.remove_circle_edge(1, 4)
-        assert not G.has_circle_edge(1, 4)
+        assert G.has_circle_endpoint(1, 4)
+        G.remove_circle_endpoint(1, 4)
+        assert not G.has_circle_endpoint(1, 4)
 
     def test_orient_circle_edge(self):
         G = self.PAG
-        G.orient_circle_edge(1, 4, "arrow")
+        G.orient_circle_endpoint(1, 4, "arrow")
         assert G.has_edge(1, 4)
-        assert not G.has_circle_edge(1, 4)
+        assert not G.has_circle_endpoint(1, 4)
 
-        with pytest.raises(ValueError, match="edge_type must be"):
-            G.orient_circle_edge(1, 4, "circl")
+        with pytest.raises(ValueError, match="endpoint must be"):
+            G.orient_circle_endpoint(1, 4, "circl")
         assert G.has_edge(1, 4)
-        assert not G.has_circle_edge(1, 4)
+        assert not G.has_circle_endpoint(1, 4)
 
     def test_m_separation(self):
         G = self.PAG
@@ -603,7 +619,7 @@ class TestPAG(TestADMG):
 
         # when the parental relationship between 2 and 0
         # is made uncertain, the parents/children sets reflect
-        G.add_circle_edge(2, 0)
+        G.add_circle_endpoint(2, 0)
         assert [] == list(G.children(0))
         assert [] == list(G.parents(2))
 
