@@ -2,7 +2,6 @@ import typing
 from typing import Protocol
 
 import networkx as nx
-import numpy as np
 import pandas as pd
 from networkx import NetworkXError
 from numpy.typing import NDArray
