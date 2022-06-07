@@ -215,6 +215,11 @@
    causal_networkx.discovery.FCI
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.discovery.RobustPC.html">
+   causal_networkx.discovery.RobustPC
+  </a>
+ </li>
 </ul>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
@@ -238,8 +243,45 @@
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.ci.ParentOracle.html">
+   causal_networkx.ci.ParentOracle
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="generated/causal_networkx.ci.KernelCITest.html">
    causal_networkx.ci.KernelCITest
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.load_from_networkx.html">
+   causal_networkx.io.load_from_networkx
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.load_from_numpy.html">
+   causal_networkx.io.load_from_numpy
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.load_from_pgmpy.html">
+   causal_networkx.io.load_from_pgmpy
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.to_networkx.html">
+   causal_networkx.io.to_networkx
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.to_numpy.html">
+   causal_networkx.io.to_numpy
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.to_pgmpy.html">
+   causal_networkx.io.to_pgmpy
   </a>
  </li>
 </ul>
@@ -318,6 +360,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#io-for-reading-writing-causal-graphs">
+   IO for reading/writing causal graphs
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#utility-algorithms-for-causal-graphs">
    Utility Algorithms for Causal Graphs
   </a>
@@ -367,7 +414,7 @@ graphs encountered in the literature.</p>
 <td><p>Completed partially directed acyclic graphs (CPDAG).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.ADMG.html#causal_networkx.ADMG" title="causal_networkx.ADMG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADMG</span></code></a>([incoming_graph_data, ...])</p></td>
-<td><p>Initialize a causal graphical model.</p></td>
+<td><p>Acyclic directed mixed graph (ADMG).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.PAG.html#causal_networkx.PAG" title="causal_networkx.PAG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PAG</span></code></a>([incoming_graph_data, ...])</p></td>
 <td><p>Partial ancestral graph (PAG).</p></td>
@@ -388,6 +435,10 @@ also should work on numpy array inputs.</p>
 </p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI" title="causal_networkx.discovery.FCI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FCI</span></code></a>(ci_estimator[, alpha, init_graph, ...])</p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.discovery.RobustPC.html#causal_networkx.discovery.RobustPC" title="causal_networkx.discovery.RobustPC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RobustPC</span></code></a>(ci_estimator[, alpha, init_graph, ...])</p></td>
 <td><p><p class="rubric">Methods</p>
 </p></td>
 </tr>
@@ -415,12 +466,45 @@ variable and then <code class="docutils literal notranslate"><span class="pre">s
 <td><p>Perform an independence test using Fisher-Z's test.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.ci.Oracle.html#causal_networkx.ci.Oracle" title="causal_networkx.ci.Oracle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Oracle</span></code></a>(graph)</p></td>
+<td><p>Oracle conditional independence testing.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.ci.ParentOracle.html#causal_networkx.ci.ParentOracle" title="causal_networkx.ci.ParentOracle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParentOracle</span></code></a>(graph)</p></td>
+<td><p>Parent oracle for conditional independence testing.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.ci.KernelCITest.html#causal_networkx.ci.KernelCITest" title="causal_networkx.ci.KernelCITest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KernelCITest</span></code></a>([kernel_x, kernel_y, kernel_z, ...])</p></td>
 <td><p><p class="rubric">Methods</p>
 </p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.ci.KernelCITest.html#causal_networkx.ci.KernelCITest" title="causal_networkx.ci.KernelCITest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KernelCITest</span></code></a>([kernel_x, kernel_y, kernel_z, ...])</p></td>
-<td><p><p class="rubric">Methods</p>
-</p></td>
+</tbody>
+</table>
+</section>
+<section id="io-for-reading-writing-causal-graphs">
+<h2>IO for reading/writing causal graphs<a class="headerlink" href="#io-for-reading-writing-causal-graphs" title="Permalink to this heading">#</a></h2>
+<p>We advocate for using our implemented causal graph classes whenever
+utilizing various packages. However, we also support transformations
+to and from popular storage classes, such as <code class="docutils literal notranslate"><span class="pre">numpy</span> <span class="pre">arrays</span></code>,
+<code class="docutils literal notranslate"><span class="pre">pandas</span> <span class="pre">dataframes</span></code>, <code class="docutils literal notranslate"><span class="pre">pgmpy</span></code>, <code class="docutils literal notranslate"><span class="pre">DOT</span></code> and <code class="docutils literal notranslate"><span class="pre">dagitty</span></code>. Note that
+not all these are supported for all types of graphs because of
+inherent limitations in supporting mixed-edge graphs in other formats.</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.io.load_from_networkx.html#causal_networkx.io.load_from_networkx" title="causal_networkx.io.load_from_networkx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_from_networkx</span></code></a>(G)</p></td>
+<td><p>Load causal graph from networkx.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.io.load_from_numpy.html#causal_networkx.io.load_from_numpy" title="causal_networkx.io.load_from_numpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_from_numpy</span></code></a>(arr[, type])</p></td>
+<td><p>Load causal graph from a numpy array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.io.load_from_pgmpy.html#causal_networkx.io.load_from_pgmpy" title="causal_networkx.io.load_from_pgmpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_from_pgmpy</span></code></a>(pgmpy_dag)</p></td>
+<td><p>Load causal graph from pgmpy.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.io.to_networkx.html#causal_networkx.io.to_networkx" title="causal_networkx.io.to_networkx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_networkx</span></code></a>(causal_graph)</p></td>
+<td><p>Convert causal graph to networkx class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.io.to_numpy.html#causal_networkx.io.to_numpy" title="causal_networkx.io.to_numpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_numpy</span></code></a>(causal_graph)</p></td>
+<td><p>Convert causal graph to a numpy adjacency array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.io.to_pgmpy.html#causal_networkx.io.to_pgmpy" title="causal_networkx.io.to_pgmpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pgmpy</span></code></a>(causal_graph)</p></td>
+<td><p>Convert causal graph to pgmpy BayesianNetwork.</p></td>
 </tr>
 </tbody>
 </table>

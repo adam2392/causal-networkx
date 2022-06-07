@@ -208,7 +208,7 @@
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">causal_networkx.cgm</span> <span class="kn">import</span> <span class="n">PAG</span>
+<span class="kn">from</span> <span class="nn">causal_networkx.graphs.cgm</span> <span class="kn">import</span> <span class="n">PAG</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
 
@@ -272,7 +272,7 @@
     <span class="c1"># get a list of all neighbors of node_x that is not y</span>
     <span class="c1"># and add these as candidates to explore a path</span>
     <span class="c1"># and also add them to the possibly d-separating set</span>
-    <span class="k">for</span> <span class="n">node_v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node_x</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">node_v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">adjacencies</span><span class="p">(</span><span class="n">node_x</span><span class="p">):</span>
         <span class="c1"># ngbhr cannot be endpoint</span>
         <span class="k">if</span> <span class="n">node_v</span> <span class="o">==</span> <span class="n">node_y</span><span class="p">:</span>
             <span class="k">continue</span>
@@ -321,7 +321,7 @@
 
         <span class="c1"># now we want to check the subpath that is created</span>
         <span class="c1"># using the previous node, the current node and the next node</span>
-        <span class="k">for</span> <span class="n">next_node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">this_node</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">next_node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">adjacencies</span><span class="p">(</span><span class="n">this_node</span><span class="p">):</span>
             <span class="c1"># check if &#39;node_c&#39; in (X, Y, prev_node)</span>
             <span class="k">if</span> <span class="n">next_node</span> <span class="ow">in</span> <span class="p">(</span><span class="n">prev_node</span><span class="p">,</span> <span class="n">node_x</span><span class="p">,</span> <span class="n">node_y</span><span class="p">):</span>
                 <span class="k">continue</span>
@@ -467,7 +467,7 @@
             <span class="c1"># Check if &#39;next_node&#39; is now the end of the discriminating path.</span>
             <span class="c1"># Note we now have 3 edges in the path by construction.</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_adjacency</span><span class="p">(</span><span class="n">next_node</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">and</span> <span class="n">next_node</span> <span class="o">!=</span> <span class="n">c</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reached the end of the discriminating path with </span><span class="si">{</span><span class="n">next_node</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reached the end of the discriminating path with </span><span class="si">{</span><span class="n">next_node</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
                 <span class="n">explored_nodes</span><span class="p">[</span><span class="n">next_node</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">descendant_nodes</span><span class="p">[</span><span class="n">next_node</span><span class="p">]</span> <span class="o">=</span> <span class="n">this_node</span>
                 <span class="n">found_discriminating_path</span> <span class="o">=</span> <span class="kc">True</span>
@@ -597,7 +597,7 @@
             <span class="k">return</span> <span class="n">uncov_pd_path</span><span class="p">,</span> <span class="n">found_uncovered_pd_path</span>
 
         <span class="c1"># get all adjacent nodes to &#39;this_node&#39;</span>
-        <span class="k">for</span> <span class="n">next_node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">this_node</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">next_node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">adjacencies</span><span class="p">(</span><span class="n">this_node</span><span class="p">):</span>
             <span class="c1"># if we have already explored this neighbor, then ignore</span>
             <span class="k">if</span> <span class="n">next_node</span> <span class="ow">in</span> <span class="n">explored_nodes</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -621,7 +621,7 @@
             <span class="c1"># if we have reached our end node, then we have found an</span>
             <span class="c1"># uncovered possibly-directed path</span>
             <span class="k">if</span> <span class="n">next_node</span> <span class="o">==</span> <span class="n">c</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reached the end of the uncovered pd path with </span><span class="si">{</span><span class="n">next_node</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reached the end of the uncovered pd path with </span><span class="si">{</span><span class="n">next_node</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
                 <span class="n">found_uncovered_pd_path</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="k">break</span>
 

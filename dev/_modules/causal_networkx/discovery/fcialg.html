@@ -201,15 +201,17 @@
   <h1>Source code for causal_networkx.discovery.fcialg</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span><span class="p">,</span> <span class="n">permutations</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="kn">from</span> <span class="nn">causal_networkx</span> <span class="kn">import</span> <span class="n">ADMG</span><span class="p">,</span> <span class="n">PAG</span>
-<span class="kn">from</span> <span class="nn">causal_networkx.algorithms.pag</span> <span class="kn">import</span> <span class="n">discriminating_path</span><span class="p">,</span> <span class="n">uncovered_pd_path</span>
+<span class="kn">from</span> <span class="nn">causal_networkx.config</span> <span class="kn">import</span> <span class="n">EdgeType</span><span class="p">,</span> <span class="n">EndPoint</span>
 <span class="kn">from</span> <span class="nn">causal_networkx.discovery.classes</span> <span class="kn">import</span> <span class="n">ConstraintDiscovery</span>
+
+<span class="kn">from</span> <span class="nn">..algorithms.pag</span> <span class="kn">import</span> <span class="n">discriminating_path</span><span class="p">,</span> <span class="n">uncovered_pd_path</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
 
@@ -221,11 +223,14 @@
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
         <span class="n">init_graph</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">ADMG</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">fixed_edges</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">min_cond_set_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">max_cond_set_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">max_path_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">selection_bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">augmented</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">max_combinations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">apply_orientations</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">selection_bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">max_path_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">augmented</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">ci_estimator_kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;The Fast Causal Inference (FCI) algorithm for causal discovery.</span>
@@ -236,22 +241,45 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        ci_estimator : Callable</span>
-<span class="sd">            _description_</span>
+<span class="sd">            The conditional independence test function. The arguments of the estimator should</span>
+<span class="sd">            be data, node, node to compare, conditioning set of nodes, and any additional</span>
+<span class="sd">            keyword arguments.</span>
 <span class="sd">        alpha : float, optional</span>
-<span class="sd">            _description_, by default 0.05</span>
-<span class="sd">        init_graph : Union[nx.Graph, ADMG], optional</span>
-<span class="sd">            _description_, by default None</span>
+<span class="sd">            The significance level for the conditional independence test, by default 0.05.</span>
+<span class="sd">        init_graph : nx.Graph</span>
+<span class="sd">            An initialized graph. If ``None``, then will initialize PC using a</span>
+<span class="sd">            complete graph. By default None.</span>
 <span class="sd">        fixed_edges : nx.Graph, optional</span>
-<span class="sd">            _description_, by default None</span>
+<span class="sd">            An undirected graph with fixed edges. If ``None``, then will initialize PC using a</span>
+<span class="sd">            complete graph. By default None.</span>
+<span class="sd">        min_cond_set_size : int, optional</span>
+<span class="sd">            Minimum size of the conditioning set, by default None, which will be set to &#39;0&#39;.</span>
+<span class="sd">            Used to constrain the computation spent on the algorithm.</span>
 <span class="sd">        max_cond_set_size : int, optional</span>
-<span class="sd">            _description_, by default None</span>
-<span class="sd">        max_path_length : int, optional</span>
-<span class="sd">            The maximum length of any discriminating path, or None if unlimited.</span>
+<span class="sd">            Maximum size of the conditioning set, by default None. Used to limit</span>
+<span class="sd">            the computation spent on the algorithm.</span>
+<span class="sd">        max_iter : int</span>
+<span class="sd">            The maximum number of iterations through the graph to apply</span>
+<span class="sd">            orientation rules.</span>
+<span class="sd">        max_combinations : int, optional</span>
+<span class="sd">            Maximum number of tries with a conditioning set chosen from the set of possible</span>
+<span class="sd">            parents still, by default None. If None, then will not be used. If set, then</span>
+<span class="sd">            the conditioning set will be chosen lexographically based on the sorted</span>
+<span class="sd">            test statistic values of &#39;ith Pa(X) -&gt; X&#39;, for each possible parent node of &#39;X&#39;.</span>
+<span class="sd">        apply_orientations : bool</span>
+<span class="sd">            Whether or not to apply orientation rules given the learned skeleton graph</span>
+<span class="sd">            and separating set per pair of variables. If ``True`` (default), will</span>
+<span class="sd">            apply Zhang&#39;s orientation rules R0-10, orienting colliders and certain</span>
+<span class="sd">            arrowheads and tails :footcite:`Zhang2008`.</span>
 <span class="sd">        selection_bias : bool</span>
 <span class="sd">            Whether or not to account for selection bias within the causal PAG.</span>
-<span class="sd">            See [1].</span>
+<span class="sd">            See :footcite:`Zhang2008`.</span>
+<span class="sd">        max_path_length : int, optional</span>
+<span class="sd">            The maximum length of any discriminating path, or None if unlimited.</span>
 <span class="sd">        augmented : bool</span>
-<span class="sd">            Whether or not to run the augmented version of FCI. See [1].</span>
+<span class="sd">            Whether or not to run the augmented version of FCI. See :footcite:`Zhang2008`.</span>
+<span class="sd">        ci_estimator_kwargs : dict</span>
+<span class="sd">            Keyword arguments for the ``ci_estimator`` function.</span>
 
 <span class="sd">        References</span>
 <span class="sd">        ----------</span>
@@ -264,7 +292,15 @@
 <span class="sd">        independence tests it must run.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">ci_estimator</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">init_graph</span><span class="p">,</span> <span class="n">fixed_edges</span><span class="p">,</span> <span class="n">max_cond_set_size</span><span class="p">,</span> <span class="o">**</span><span class="n">ci_estimator_kwargs</span>
+            <span class="n">ci_estimator</span><span class="o">=</span><span class="n">ci_estimator</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">init_graph</span><span class="o">=</span><span class="n">init_graph</span><span class="p">,</span>
+            <span class="n">fixed_edges</span><span class="o">=</span><span class="n">fixed_edges</span><span class="p">,</span>
+            <span class="n">min_cond_set_size</span><span class="o">=</span><span class="n">min_cond_set_size</span><span class="p">,</span>
+            <span class="n">max_cond_set_size</span><span class="o">=</span><span class="n">max_cond_set_size</span><span class="p">,</span>
+            <span class="n">max_combinations</span><span class="o">=</span><span class="n">max_combinations</span><span class="p">,</span>
+            <span class="n">apply_orientations</span><span class="o">=</span><span class="n">apply_orientations</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">ci_estimator_kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">max_path_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -286,23 +322,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># for every node in the PAG, evaluate neighbors that have any edge</span>
         <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">v_i</span><span class="p">,</span> <span class="n">v_j</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">v_i</span><span class="p">,</span> <span class="n">v_j</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">adjacencies</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
                 <span class="c1"># Check that there is no edge of any type between</span>
                 <span class="c1"># v_i and v_j, else this is a &quot;shielded&quot; collider.</span>
                 <span class="c1"># Then check to see if &#39;u&#39; is in the separating</span>
                 <span class="c1"># set. If it is not, then there is a collider.</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_adjacency</span><span class="p">(</span><span class="n">v_i</span><span class="p">,</span> <span class="n">v_j</span><span class="p">)</span> <span class="ow">and</span> <span class="n">u</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sep_set</span><span class="p">[</span><span class="n">v_i</span><span class="p">][</span><span class="n">v_j</span><span class="p">]:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;orienting collider: </span><span class="si">{</span><span class="n">v_i</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">v_j</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> to make </span><span class="si">{</span><span class="n">v_i</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> &lt;- </span><span class="si">{</span><span class="n">v_j</span><span class="si">}</span><span class="s2">.&quot;</span>
                     <span class="p">)</span>
 
-                    <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">v_i</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
-                        <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">v_i</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="s2">&quot;arrow&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">v_j</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
-                        <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">v_j</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="s2">&quot;arrow&quot;</span><span class="p">)</span>
-                <span class="c1"># else:</span>
-                <span class="c1"># definite non-collider</span>
-                <span class="c1"># test = 1</span>
+                    <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">v_i</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+                        <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">v_i</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">v_j</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+                        <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">v_j</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_apply_rule1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">PAG</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Apply rule 1 of the FCI algorithm.</span>
@@ -333,15 +366,15 @@
         <span class="c1"># check that a and c are not adjacent</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_adjacency</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
             <span class="c1"># check a *-&gt; u o-* c</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span> <span class="ow">or</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_bidirected_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">))</span> <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span>
-                <span class="n">c</span><span class="p">,</span> <span class="n">u</span>
-            <span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 1: Orienting edge </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> o-* </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span> <span class="ow">or</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_bidirected_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+            <span class="p">)</span> <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 1: Orienting edge </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> o-* </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
                 <span class="c1"># orient the edge from u to c and delete</span>
                 <span class="c1"># the edge from c to u</span>
-                <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
-                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="s2">&quot;arrow&quot;</span><span class="p">)</span>
-                <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="s2">&quot;tail&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">tail</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
                 <span class="n">added_arrows</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">return</span> <span class="n">added_arrows</span>
@@ -374,29 +407,29 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">added_arrows</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="c1"># check that a *-o c edge exists</span>
-        <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
             <span class="c1"># - A -&gt; u *-&gt; C, or A *-&gt; u -&gt; C, and</span>
             <span class="c1"># - A *-o C,</span>
             <span class="c1"># check for A -&gt; u and check that u *-&gt; c</span>
             <span class="n">condition_one</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
                 <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
-                <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
-                <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_type</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;arrow&quot;</span><span class="p">,</span> <span class="s2">&quot;bidirected&quot;</span><span class="p">]</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_type</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EdgeType</span><span class="o">.</span><span class="n">directed</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">bidirected</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
             <span class="p">)</span>
 
             <span class="c1"># check that a *-&gt; u -&gt; c</span>
             <span class="n">condition_two</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">graph</span><span class="o">.</span><span class="n">edge_type</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;arrow&quot;</span><span class="p">,</span> <span class="s2">&quot;bidirected&quot;</span><span class="p">]</span>
-                <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_type</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;arrow&quot;</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">edge_type</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EdgeType</span><span class="o">.</span><span class="n">directed</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">bidirected</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+                <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_type</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">directed</span><span class="o">.</span><span class="n">value</span>
                 <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
-                <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">condition_one</span> <span class="ow">or</span> <span class="n">condition_two</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 2: Orienting circle edge to </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 2: Orienting circle edge to </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="c1"># orient a *-&gt; c</span>
-                <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="s2">&quot;arrow&quot;</span><span class="p">)</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
                 <span class="n">added_arrows</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">added_arrows</span>
 
@@ -436,20 +469,20 @@
 
             <span class="c1"># check for all other neighbors to find a &#39;v&#39; node</span>
             <span class="c1"># with the structure A *-o v o-* C</span>
-            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">adjacencies</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
                 <span class="c1"># check that v is not a, or c</span>
                 <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
                     <span class="k">continue</span>
 
                 <span class="c1"># check that v *-o u</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
                     <span class="k">continue</span>
 
                 <span class="c1"># check that a *-o v o-* c</span>
-                <span class="n">condition_two</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+                <span class="n">condition_two</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">condition_one</span> <span class="ow">and</span> <span class="n">condition_two</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 3: Orienting </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="s2">&quot;arrow&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 3: Orienting </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
                     <span class="n">added_arrows</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">added_arrows</span>
 
@@ -493,7 +526,7 @@
 
         <span class="c1"># c must also point to u with a circle edge</span>
         <span class="c1"># check u o-* c</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">added_arrows</span><span class="p">,</span> <span class="n">explored_nodes</span>
 
         <span class="c1"># &#39;a&#39; cannot be a definite collider if there is no arrow pointing from</span>
@@ -518,19 +551,21 @@
             <span class="k">if</span> <span class="n">last_node</span> <span class="ow">in</span> <span class="n">sep_set</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">sep_set</span><span class="p">[</span><span class="n">last_node</span><span class="p">][</span><span class="n">c</span><span class="p">]:</span>
                     <span class="c1"># orient u -&gt; c</span>
-                    <span class="n">graph</span><span class="o">.</span><span class="n">remove_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
-                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="s2">&quot;arrow&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 4: orienting </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">disc_path_str</span><span class="p">)</span>
+                    <span class="n">graph</span><span class="o">.</span><span class="n">remove_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trying to orient </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> -o </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> to arrowhead&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">all_edges</span><span class="p">())</span>
+                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 4: orienting </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">disc_path_str</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># orient u &lt;-&gt; c</span>
-                <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
-                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="s2">&quot;arrow&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
-                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="s2">&quot;arrow&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 4: orienting </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> &lt;-&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">disc_path_str</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">arrow</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 4: orienting </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2"> &lt;-&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">disc_path_str</span><span class="p">)</span>
             <span class="n">added_arrows</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">return</span> <span class="n">added_arrows</span><span class="p">,</span> <span class="n">explored_nodes</span>
@@ -565,15 +600,15 @@
         <span class="n">added_arrows</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1"># First check that A o-&gt; C</span>
-        <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
             <span class="c1"># check that A -&gt; u -&gt; C</span>
-            <span class="n">condition_one</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
-            <span class="n">condition_two</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+            <span class="n">condition_one</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+            <span class="n">condition_two</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">condition_one</span> <span class="ow">and</span> <span class="n">condition_two</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 8: Orienting </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> o-&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> as </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 8: Orienting </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> o-&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> as </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
                 <span class="c1"># now orient A o-&gt; C as A -&gt; C</span>
-                <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="s2">&quot;tail&quot;</span><span class="p">)</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">tail</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
                 <span class="n">added_arrows</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">added_arrows</span>
 
@@ -606,7 +641,9 @@
         <span class="n">uncov_path</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># Check A o-&gt; C and # check that u is not adjacent to c</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_adjacency</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_adjacency</span><span class="p">(</span>
+            <span class="n">u</span><span class="p">,</span> <span class="n">c</span>
+        <span class="p">):</span>
             <span class="c1"># check that &lt;a, u&gt; is potentially directed</span>
             <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
                 <span class="c1"># check that A - u - v, ..., c is an uncovered pd path</span>
@@ -616,8 +653,8 @@
 
                 <span class="c1"># orient A o-&gt; C to A -&gt; C</span>
                 <span class="k">if</span> <span class="n">path_exists</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 9: Orienting edge </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> o-&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="s2">&quot;tail&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 9: Orienting edge </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> o-&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                    <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">tail</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
                     <span class="n">added_arrows</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">return</span> <span class="n">added_arrows</span><span class="p">,</span> <span class="n">uncov_path</span>
@@ -657,17 +694,17 @@
         <span class="n">a_to_v_path</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># Check A o-&gt; C</span>
-        <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="ow">and</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
             <span class="c1"># check that u -&gt; C</span>
-            <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
                 <span class="c1"># loop through all adjacent neighbors of c now to get</span>
                 <span class="c1"># possible &#39;v&#39; node</span>
-                <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">adjacencies</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
                         <span class="k">continue</span>
 
                     <span class="c1"># make sure v -&gt; C and not v o-&gt; C</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">or</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">or</span> <span class="n">graph</span><span class="o">.</span><span class="n">has_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
                         <span class="k">continue</span>
 
                     <span class="c1"># At this point, we want the paths from A to u and A to v</span>
@@ -676,7 +713,7 @@
                     <span class="c1"># that:</span>
                     <span class="c1"># i) begin the uncovered pd path and</span>
                     <span class="c1"># ii) are distinct (done by construction) here</span>
-                    <span class="k">for</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+                    <span class="k">for</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">adjacencies</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
                         <span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="n">c</span> <span class="ow">or</span> <span class="n">w</span> <span class="o">==</span> <span class="n">c</span><span class="p">:</span>
                             <span class="k">continue</span>
 
@@ -716,8 +753,8 @@
                         <span class="c1"># at this point, we have an uncovered path from a to u and a to v</span>
                         <span class="c1"># with a distinct second node on both paths</span>
                         <span class="c1"># orient A o-&gt; C to A -&gt; C</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 10: Orienting edge </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> o-&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-                        <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_edge</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="s2">&quot;tail&quot;</span><span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rule 10: Orienting edge </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> o-&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                        <span class="n">graph</span><span class="o">.</span><span class="n">orient_circle_endpoint</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">tail</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
                         <span class="n">added_arrows</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">return</span> <span class="n">added_arrows</span><span class="p">,</span> <span class="n">a_to_u_path</span><span class="p">,</span> <span class="n">a_to_v_path</span>
@@ -727,10 +764,10 @@
         <span class="n">finished</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">while</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">finished</span><span class="p">:</span>
             <span class="n">change_flag</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running R1-10 for iteration </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running R1-10 for iteration </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
-                <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="n">permutations</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="n">permutations</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">adjacencies</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
                     <span class="c1"># apply R1-3 to orient triples and arrowheads</span>
                     <span class="n">r1_add</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_rule1</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
                     <span class="n">r2_add</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_rule2</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
@@ -753,15 +790,15 @@
                         <span class="nb">any</span><span class="p">([</span><span class="n">r1_add</span><span class="p">,</span> <span class="n">r2_add</span><span class="p">,</span> <span class="n">r3_add</span><span class="p">,</span> <span class="n">r4_add</span><span class="p">,</span> <span class="n">r8_add</span><span class="p">,</span> <span class="n">r9_add</span><span class="p">,</span> <span class="n">r10_add</span><span class="p">])</span>
                         <span class="ow">and</span> <span class="ow">not</span> <span class="n">change_flag</span>
                     <span class="p">):</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got here...&quot;</span><span class="p">)</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">([</span><span class="n">r1_add</span><span class="p">,</span> <span class="n">r2_add</span><span class="p">,</span> <span class="n">r3_add</span><span class="p">,</span> <span class="n">r4_add</span><span class="p">,</span> <span class="n">r8_add</span><span class="p">,</span> <span class="n">r9_add</span><span class="p">,</span> <span class="n">r10_add</span><span class="p">])</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">change_flag</span><span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got here...&quot;</span><span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">([</span><span class="n">r1_add</span><span class="p">,</span> <span class="n">r2_add</span><span class="p">,</span> <span class="n">r3_add</span><span class="p">,</span> <span class="n">r4_add</span><span class="p">,</span> <span class="n">r8_add</span><span class="p">,</span> <span class="n">r9_add</span><span class="p">,</span> <span class="n">r10_add</span><span class="p">])</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">change_flag</span><span class="p">)</span>
                         <span class="n">change_flag</span> <span class="o">=</span> <span class="kc">True</span>
 
             <span class="c1"># check if we should continue or not</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">change_flag</span><span class="p">:</span>
                 <span class="n">finished</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished applying R1-4, and R8-10 with </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> iterations&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished applying R1-4, and R8-10 with </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> iterations&quot;</span><span class="p">)</span>
                 <span class="k">break</span>
             <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -770,7 +807,7 @@
         <span class="n">X</span><span class="p">,</span>
         <span class="n">pag</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
         <span class="n">sep_set</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">Any</span><span class="p">]]],</span>
-        <span class="n">fixed_edges</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span>
+        <span class="n">fixed_edges</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Set</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span>
     <span class="p">):</span>
         <span class="kn">from</span> <span class="nn">causal_networkx.discovery.skeleton</span> <span class="kn">import</span> <span class="n">learn_skeleton_graph_with_pdsep</span>
 
@@ -792,17 +829,35 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span>
 
-<div class="viewcode-block" id="FCI.learn_skeleton"><a class="viewcode-back" href="../../../generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI.learn_skeleton">[docs]</a>    <span class="k">def</span> <span class="nf">learn_skeleton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">]]]:</span>
+<div class="viewcode-block" id="FCI.learn_skeleton"><a class="viewcode-back" href="../../../generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI.learn_skeleton">[docs]</a>    <span class="k">def</span> <span class="nf">learn_skeleton</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sep_set</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fixed_edges</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Set</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
+        <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">Any</span><span class="p">]]],</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+    <span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Learn skeleton from data.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X : pd.DataFrame</span>
 <span class="sd">            Dataset.</span>
+<span class="sd">        graph : nx.Graph</span>
+<span class="sd">            The undirected graph containing initialized skeleton of the causal</span>
+<span class="sd">            relationships.</span>
+<span class="sd">        sep_set : set</span>
+<span class="sd">            The separating set.</span>
+<span class="sd">        fixed_edges : set, optional</span>
+<span class="sd">            The set of fixed edges. By default, is the empty set.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        skel_graph : nx.Graph</span>
+<span class="sd">        pag : PAG</span>
 <span class="sd">            The skeleton graph.</span>
 <span class="sd">        sep_set : Dict[str, Dict[str, Set]]</span>
 <span class="sd">            The separating set.</span>
@@ -810,8 +865,10 @@
         <span class="c1"># initialize the graph</span>
         <span class="n">graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">,</span> <span class="n">fixed_edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_graph</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
-        <span class="c1"># learn the skeleton of the graph</span>
-        <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_learn_skeleton_from_neighbors</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">,</span> <span class="n">fixed_edges</span><span class="p">)</span>
+        <span class="c1"># learn the initial skeleton of the graph</span>
+        <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">,</span> <span class="n">test_stat_dict</span><span class="p">,</span> <span class="n">pvalue_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">learn_skeleton</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">,</span> <span class="n">fixed_edges</span>
+        <span class="p">)</span>
 
         <span class="c1"># convert the undirected skeleton graph to a PAG, where</span>
         <span class="c1"># all left-over edges have a &quot;circle&quot; endpoint</span>
@@ -822,39 +879,25 @@
 
         <span class="c1"># # now compute all possibly d-separating sets and learn a better skeleton</span>
         <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_learn_better_skeleton</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pag</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">,</span> <span class="n">fixed_edges</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span></div>
 
-<div class="viewcode-block" id="FCI.fit"><a class="viewcode-back" href="../../../generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Perform causal discovery algorithm.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skel_graph</span> <span class="o">=</span> <span class="n">skel_graph</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">,</span> <span class="n">test_stat_dict</span><span class="p">,</span> <span class="n">pvalue_dict</span></div>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        X : pd.DataFrame</span>
-<span class="sd">            The dataset.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        self : instance of FCI</span>
-<span class="sd">            FCI instance with fitted attributes.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># learn skeleton</span>
-        <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learn_skeleton</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-
-        <span class="c1"># convert the undirected skeleton graph to a PAG, where</span>
-        <span class="c1"># all left-over edges have a &quot;circle&quot; endpoint</span>
-        <span class="n">pag</span> <span class="o">=</span> <span class="n">PAG</span><span class="p">(</span><span class="n">incoming_uncertain_data</span><span class="o">=</span><span class="n">skel_graph</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PAG derived with FCI&quot;</span><span class="p">)</span>
-
+    <span class="k">def</span> <span class="nf">orient_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">):</span>
         <span class="c1"># orient colliders again</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_orient_colliders</span><span class="p">(</span><span class="n">pag</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">orient_coll_graph</span> <span class="o">=</span> <span class="n">pag</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_orient_colliders</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orient_coll_graph</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="c1"># run the rest of the rules to orient as many edges</span>
         <span class="c1"># as possible</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_rules_1to10</span><span class="p">(</span><span class="n">pag</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_rules_1to10</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">graph</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">skel_graph</span> <span class="o">=</span> <span class="n">skel_graph</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">graph_</span> <span class="o">=</span> <span class="n">pag</span>
-        <span class="k">return</span> <span class="bp">self</span></div></div>
+    <span class="k">def</span> <span class="nf">convert_skeleton_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PAG</span><span class="p">:</span>
+        <span class="c1"># convert the undirected skeleton graph to a PAG, where</span>
+        <span class="c1"># all left-over edges have a &quot;circle&quot; endpoint</span>
+        <span class="n">pag</span> <span class="o">=</span> <span class="n">PAG</span><span class="p">(</span><span class="n">incoming_uncertain_data</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PAG derived with FCI&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pag</span></div>
 </pre></div>
 
               </div>
