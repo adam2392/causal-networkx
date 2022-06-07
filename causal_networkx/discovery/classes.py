@@ -185,7 +185,7 @@ class ConstraintDiscovery:
     ]:
         """Learns the skeleton of a causal DAG using pairwise independence testing.
 
-        Encodes the skeleton via an undirected graph, `nx.Graph`. Only
+        Encodes the skeleton via an undirected graph, `networkx.Graph`. Only
         tests with adjacent nodes in the conditioning set.
 
         Parameters

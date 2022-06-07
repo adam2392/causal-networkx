@@ -67,6 +67,7 @@ variable and then ``sep_set`` is the conditioning set of variables.
    g_square_discrete
    fisherz
    Oracle
+   ParentOracle
    KernelCITest
 
 
@@ -84,7 +85,12 @@ inherent limitations in supporting mixed-edge graphs in other formats.
 .. autosummary::
    :toctree: generated/
 
-   g_square_binary
+   load_from_networkx
+   load_from_numpy
+   load_from_pgmpy
+   to_networkx
+   to_numpy
+   to_pgmpy
 
 
 Utility Algorithms for Causal Graphs

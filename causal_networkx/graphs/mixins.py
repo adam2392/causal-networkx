@@ -449,31 +449,9 @@ class ExportMixin:
         ----------
         https://rdrr.io/cran/pcalg/man/fci.html
         """
-        # master list of nodes is in the internal dag
-        node_list = self.nodes
-        n_nodes = len(node_list)
+        from causal_networkx.io import to_numpy
 
-        numpy_graph = np.zeros((n_nodes, n_nodes))
-        bidirected_graph_arr = None
-        for name, graph in zip(self._graph_names, self._graphs):
-            # make sure all nodes are in the internal graph
-            if any(node not in graph for node in node_list):
-                graph.add_nodes_from(node_list)
-
-            # handle bidirected edge separately
-            if name == EdgeType.bidirected.value:
-                bidirected_graph_arr = nx.to_numpy_array(graph, nodelist=node_list)
-                continue
-
-            # convert internal graph to a numpy array
-            # graph_arr = nx.to_numpy_array(graph, nodelist=node_list)
-            # TODO: fix to use EndPoints
-            # graph_arr[graph_arr != 0] = PAG_EDGE_MAPPING[name]
-            # numpy_graph += graph_arr
-
-        if bidirected_graph_arr is not None:
-            # bidirected_graph_arr[bidirected_graph_arr != 0] = PAG_EDGE_MAPPING[EdgeType.directed.value]
-            numpy_graph += bidirected_graph_arr
+        numpy_graph = to_numpy(self)
         return numpy_graph
 
     def save(self, fname, format="dot"):

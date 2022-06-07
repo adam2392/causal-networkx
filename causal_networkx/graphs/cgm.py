@@ -707,7 +707,7 @@ class PAG(ADMG):
     either a circle, or tail on the other end: e.g. 'x' o-> 'y'. This now introduces
     "possible" parents/children denoted with a circle edge on the other end of the
     arrow and definite parents/children with only an arrow edge. See `possible_parents`,
-    `possible_children` and their counterparts `definite_parents`, `definite_children`.
+    `possible_children` and their counterparts `parents`, `children`.
 
     Since PAGs only allow "one edge" between any two nodes, adding edges and removing
     edges have different semantics. See more in `add_edge`, `remove_edge`.

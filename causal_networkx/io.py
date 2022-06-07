@@ -1,4 +1,7 @@
+from typing import Union
+
 import networkx as nx
+import numpy as np
 
 from causal_networkx.config import (
     ENDPOINT_TO_EDGE_MAPPING,
@@ -32,8 +35,9 @@ def load_from_networkx(G: nx.Graph):
     -----
     Networkx does not support mixed edge graphs implicitly. However,
     they do support edge attributes. A `networkx.DiGraph` encodes
-    a normal causal `DAG`, while a `networkx.MultiDiGraph` encodes
-    all other causal graphs, such as `CPDAG`, `PAG`, `ADMG` by storing
+    a normal causal :class:`causal_networkx.DAG`, while a `networkx.MultiDiGraph` encodes
+    all other causal graphs, such as :class:`causal_networkx.CPDAG`,
+    :class:`causal_networkx.PAG`, :class:`causal_networkx.ADMG` by storing
     the different edges as edge attributes in the keyword "type".
 
     Moreover, the graph type is stored in the "graph_type" networkx graph
@@ -198,6 +202,36 @@ def load_from_pgmpy(pgmpy_dag) -> DAG:
     return dag
 
 
+def to_pgmpy(causal_graph: Union[DAG, ADMG]):
+    """Convert causal graph to pgmpy BayesianNetwork.
+
+    Parameters
+    ----------
+    causal_graph : DAG | ADMG
+        The causal graph with possibly latents.
+
+    Returns
+    -------
+    dag : pgmpy.models.BayesianNetwork
+        The pgmpy Bayesian network.
+    """
+    from pgmpy.models import BayesianNetwork
+
+    latents = set()
+    if isinstance(causal_graph, ADMG):
+        causal_dag = causal_graph.compute_full_graph()
+
+        # get the latent nodes
+        for (node, node_dict) in causal_dag.nodes.data():
+            if node_dict.get("observed") == "no":
+                latents.add(node)
+    else:
+        causal_dag = causal_graph.dag
+    # create the pgmpy Bayesian Network
+    dag = BayesianNetwork(causal_dag, latents=latents)
+    return dag
+
+
 def load_from_numpy(arr, type="dag"):
     """Load causal graph from a numpy array.
 
@@ -211,7 +245,7 @@ def load_from_numpy(arr, type="dag"):
     type : str, optional
         The type of causal graph, by default 'dag'. Must be one of
         ``('dag', ``cpdag``, ``admg``, ``pag``)``. For mixed-edge graphs, the
-        `arr` specified will have specific values mapped to specific edges.
+        ``arr`` specified will have specific values mapped to specific edges.
 
     Returns
     -------
@@ -261,6 +295,47 @@ def load_from_numpy(arr, type="dag"):
                 G.add_undirected_edge(idx, jdx)
 
     return G
+
+
+def to_numpy(causal_graph):
+    """Convert causal graph to a numpy adjacency array.
+
+    Parameters
+    ----------
+    causal_graph : DAG
+        The causal graph.
+
+    Returns
+    -------
+    numpy_graph : np.ndarray of shape (n_nodes, n_nodes)
+        The numpy array that represents the graph.
+    """
+    # master list of nodes is in the internal dag
+    node_list = causal_graph.nodes
+    n_nodes = len(node_list)
+
+    numpy_graph = np.zeros((n_nodes, n_nodes))
+    bidirected_graph_arr = None
+    for name, graph in zip(causal_graph._graph_names, causal_graph._graphs):
+        # make sure all nodes are in the internal graph
+        if any(node not in graph for node in node_list):
+            graph.add_nodes_from(node_list)
+
+        # handle bidirected edge separately
+        if name == EdgeType.bidirected.value:
+            bidirected_graph_arr = nx.to_numpy_array(graph, nodelist=node_list)
+            continue
+
+        # convert internal graph to a numpy array
+        # graph_arr = nx.to_numpy_array(graph, nodelist=node_list)
+        # TODO: fix to use EndPoints
+        # graph_arr[graph_arr != 0] = PAG_EDGE_MAPPING[name]
+        # numpy_graph += graph_arr
+
+    if bidirected_graph_arr is not None:
+        # bidirected_graph_arr[bidirected_graph_arr != 0] = PAG_EDGE_MAPPING[EdgeType.directed.value]
+        numpy_graph += bidirected_graph_arr
+    return numpy_graph
 
 
 def read_dot(fname: str):

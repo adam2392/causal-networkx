@@ -407,8 +407,7 @@ class TestADMG(TestGraph):
         G = self.G.copy()
 
         # make sure output handles a string for a node
-        G.add_edge(0, "1-0")
-
+        # G.add_edge(0, "1-0")
         dot_graph = G.to_dot_graph()
 
         # make sure the output adheres to the DOT format
