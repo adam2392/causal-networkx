@@ -7,9 +7,9 @@ from causal_networkx.algorithms import (
     possibly_d_sep_sets,
     uncovered_pd_path,
 )
-from causal_networkx.cgm import ADMG, PAG
 from causal_networkx.ci import Oracle
 from causal_networkx.discovery import FCI
+from causal_networkx.graphs.cgm import ADMG, PAG
 
 
 def test_possibly_d_separated():
@@ -52,7 +52,7 @@ def test_possibly_d_separated():
     graph = ADMG(edge_list, latent_edge_list)
     alg = FCI(ci_estimator=Oracle(graph).ci_test)
     sample = graph.dummy_sample()
-    skel_graph, sep_set = alg.learn_skeleton(sample)
+    skel_graph, sep_set, _, _ = alg.learn_skeleton(sample)
     fci_pag = PAG(incoming_uncertain_data=skel_graph)
     alg._orient_colliders(fci_pag, sep_set)
 
@@ -91,7 +91,7 @@ def test_discriminating_path():
     pag = PAG(edges, bidirected_edges, circle_edges)
 
     for u in pag.nodes:
-        for (a, c) in permutations(pag.neighbors(u), 2):
+        for (a, c) in permutations(pag.adjacencies(u), 2):
             _, found_discriminating_path, disc_path = discriminating_path(
                 pag, u, a, c, max_path_length=100
             )
@@ -104,7 +104,7 @@ def test_discriminating_path():
     pag.remove_edge("x2", "x5")
     pag.add_bidirected_edge("x5", "x2")
     for u in pag.nodes:
-        for (a, c) in permutations(pag.neighbors(u), 2):
+        for (a, c) in permutations(pag.adjacencies(u), 2):
             _, found_discriminating_path, disc_path = discriminating_path(
                 pag, u, a, c, max_path_length=100
             )
@@ -140,9 +140,9 @@ def test_uncovered_pd_path():
 
     # create an uncovered pd path from A to C through u
     G.add_edge("A", "C")
-    G.add_circle_edge("C", "A")
+    G.add_circle_endpoint("C", "A")
     G.add_chain(["A", "u", "x", "y", "z", "C"])
-    G.add_circle_edge("y", "x")
+    G.add_circle_endpoint("y", "x")
 
     # create a pd path from A to C through v
     G.add_chain(["A", "v", "x", "y", "z", "C"])
@@ -160,7 +160,7 @@ def test_uncovered_pd_path():
     assert uncov_pd_path == []
 
     # when there is a circle edge it should still work
-    G.add_circle_edge("C", "z")
+    G.add_circle_endpoint("C", "z")
     uncov_pd_path, found_uncovered_pd_path = uncovered_pd_path(G, "u", "C", 100, "A")
     assert found_uncovered_pd_path
     assert uncov_pd_path == ["A", "u", "x", "y", "z", "C"]
@@ -177,10 +177,10 @@ def test_uncovered_pd_path_intersecting():
 
     # make A o-> C
     G.add_edge("A", "C")
-    G.add_circle_edge("C", "A")
+    G.add_circle_endpoint("C", "A")
     # create an uncovered pd path from A to u that ends at C
     G.add_chain(["A", "x", "y", "z", "u", "C"])
-    G.add_circle_edge("y", "x")
+    G.add_circle_endpoint("y", "x")
 
     # create an uncovered pd path from A to v so now C is a collider for <u, C, v>
     G.add_chain(["z", "v", "C"])

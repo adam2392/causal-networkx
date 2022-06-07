@@ -108,6 +108,7 @@ numpydoc_xref_ignore = {
     "arguments",
     "no",
     "attributes",
+    "DAG", "causal", "CPDAG", "PAG", "ADMG",
     # networkx
     "node",
     "nodes",
@@ -127,9 +128,13 @@ numpydoc_xref_aliases = {
     # Networkx
     "nx.Graph": "networkx.Graph",
     "nx.DiGraph": "networkx.DiGraph",
+    "nx.MultiDiGraph": "networkx.MultiDiGraph",
+    "pgmpy.models.BayesianNetwork": "pgmpy.models.BayesianNetwork",
     # Causal-Networkx
     "ADMG": "causal_networkx.ADMG",
     "PAG": "causal_networkx.PAG",
+    "CPDAG": "causal_networkx.CPDAG",
+    "DAG": "causal_networkx.DAG",
     # joblib
     "joblib.Parallel": "joblib.Parallel",
     # pandas
@@ -159,6 +164,7 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/devdocs", None),
     "scipy": ("https://scipy.github.io/devdocs", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/dev", None),
+    "pgmpy": ("https://pgmpy.org", None),
     "sklearn": ("https://scikit-learn.org/stable", None),
     "joblib": ("https://joblib.readthedocs.io/en/latest", None),
     "networkx": ("https://networkx.org/documentation/latest/", None),

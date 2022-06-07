@@ -7,7 +7,7 @@ from warnings import warn
 import networkx as nx
 import numpy as np
 
-from causal_networkx.cgm import PAG
+from causal_networkx.graphs.cgm import PAG
 
 logger = logging.getLogger()
 
@@ -71,7 +71,7 @@ def possibly_d_sep_sets(graph: PAG, node_x, node_y=None, max_path_length: int = 
     # get a list of all neighbors of node_x that is not y
     # and add these as candidates to explore a path
     # and also add them to the possibly d-separating set
-    for node_v in graph.neighbors(node_x):
+    for node_v in graph.adjacencies(node_x):
         # ngbhr cannot be endpoint
         if node_v == node_y:
             continue
@@ -120,7 +120,7 @@ def possibly_d_sep_sets(graph: PAG, node_x, node_y=None, max_path_length: int = 
 
         # now we want to check the subpath that is created
         # using the previous node, the current node and the next node
-        for next_node in graph.neighbors(this_node):
+        for next_node in graph.adjacencies(this_node):
             # check if 'node_c' in (X, Y, prev_node)
             if next_node in (prev_node, node_x, node_y):
                 continue
@@ -266,7 +266,7 @@ def discriminating_path(graph: PAG, u, a, c, max_path_length: int):
             # Check if 'next_node' is now the end of the discriminating path.
             # Note we now have 3 edges in the path by construction.
             if not graph.has_adjacency(next_node, c) and next_node != c:
-                logger.debug(f"Reached the end of the discriminating path with {next_node}.")
+                logger.info(f"Reached the end of the discriminating path with {next_node}.")
                 explored_nodes[next_node] = None
                 descendant_nodes[next_node] = this_node
                 found_discriminating_path = True
@@ -396,7 +396,7 @@ def uncovered_pd_path(
             return uncov_pd_path, found_uncovered_pd_path
 
         # get all adjacent nodes to 'this_node'
-        for next_node in graph.neighbors(this_node):
+        for next_node in graph.adjacencies(this_node):
             # if we have already explored this neighbor, then ignore
             if next_node in explored_nodes:
                 continue
@@ -420,7 +420,7 @@ def uncovered_pd_path(
             # if we have reached our end node, then we have found an
             # uncovered possibly-directed path
             if next_node == c:
-                logger.debug(f"Reached the end of the uncovered pd path with {next_node}.")
+                logger.info(f"Reached the end of the uncovered pd path with {next_node}.")
                 found_uncovered_pd_path = True
                 break
 

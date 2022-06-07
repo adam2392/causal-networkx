@@ -11,3 +11,6 @@ dowhy
 
 # for plotting
 matplotlib
+
+# for exporting to DOT format
+pydot

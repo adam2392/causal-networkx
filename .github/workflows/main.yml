@@ -121,7 +121,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [checks]
+    needs: [checks, unit-test]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v1
@@ -163,3 +163,80 @@ jobs:
           prerelease: ${{ contains(env.TAG, 'rc') }}
           files: |
             dist/*
+
+  unit-test:
+    name: Unit tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python-version: '3.10'
+            networkx-version: networkx-main
+          - os: ubuntu-latest
+            python-version: 3.9
+            networkx-version: networkx-main
+          - os: ubuntu-latest
+            python-version: 3.8
+            networkx-version: networkx-main
+          - os: macos-latest
+            python-version: 3.9
+            networkx-version: networkx-main
+
+    env:
+      TZ: Europe/Berlin
+      FORCE_COLOR: true
+      DISPLAY: ':99.0'
+      MNE_LOGGING_LEVEL: 'info'
+      OPENBLAS_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions/checkout@v2
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade --upgrade-strategy eager -r requirements.txt
+          pip install --upgrade --upgrade-strategy eager -r dev-requirements.txt
+          pip install --upgrade --upgrade-strategy eager -r extra-requirements.txt
+
+      - name: Install Networkx (stable)
+        if: "matrix.networkx-version == 'networkx-stable'"
+        run: |
+          git clone --depth 1 https://github.com/networkx/networkx.git@networkx-2.7.1
+          pip install -e ./networkx
+
+      - name: Install Networkx (main)
+        if: "matrix.networkx-version == 'networkx-main'"
+        run: |
+          git clone --depth 1 https://github.com/networkx/networkx.git -b main
+          pip install -e ./networkx
+
+      - name: Display versions and environment information
+        run: |
+          echo $TZ
+          date
+          python --version
+          which python
+
+      - name: Install causal-networkx
+        run: |
+          pip install --no-deps .
+
+      - name: Run pytest unit tests
+        run: |
+          python -m pytest . --cov=causal_networkx --cov-report=xml --cov-config=pytest.ini --verbose --ignore networkx
+        shell: bash
+
+      - name: Upload coverage stats to codecov
+        if: "matrix.os == 'ubuntu-latest'"
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          # curl -Os https://uploader.codecov.io/latest/linux/codecov chmod +x codecov ./codecov

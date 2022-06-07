@@ -30,6 +30,10 @@ Changelog
 - |Feature| Implement :class:`causal_networkx.ci.KernelCITest` for kernel-based conditional independence testing, by `Adam Li`_ (:gh:`14`)
 - |Feature| Implement and test the :class:`causal_networkx.DAG` for fully observed causal DAGs, by `Adam Li`_ (:gh:`15`)
 - |Feature| Implement and test the :class:`causal_networkx.CPDAG` for CPDAGs, by `Adam Li`_ (:gh:`16`)
+- |Feature| Implement and test the ``causal_networkx.discovery.learn_skeleton_graph_with_order`` for learning skeleton graph and keeping track of dependencies, by `Adam Li`_ (:gh:`17`)
+- |Feature| Implement and test the :class:`causal_networkx.discovery.RobustPC` for learning PC algorithm robustly with MCI condition, by `Adam Li`_ (:gh:`17`)
+- |Feature| Implement and test the :class:`causal_networkx.ci.ParentOracle` for running CI-discovery algorithms with the known parents, by `Adam Li`_ (:gh:`17`)
+- |Feature| Add ability to export/load causal graphs to networkx, by `Adam Li`_ (:gh:`17`)
 
 Code and Documentation Contributors
 -----------------------------------

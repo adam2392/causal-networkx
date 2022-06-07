@@ -42,3 +42,20 @@ if __name__ == "__main__":
             print(" => WRONG")
             print("p =", fr_p)
             print("a =", fr_a)
+
+    # note that 2 and 3 are only dependent at alpha level >= 0.1
+    x = 2
+    y = 3
+    sets = [[], [1], [0], [4], [0, 4]]
+    for idx in range(len(sets)):
+        print("x =", x, ", y =", y, ", s =", sets[idx], end="")
+        _, p = g_square_discrete(dm, x, y, set(sets[idx]), [3, 2, 3, 4, 2])
+        print(", p =", p, end="")
+        fr_p = frexp(p)
+        fr_a = frexp(testdata.dis_answer[idx])
+        if round(fr_p[0] - fr_a[0], 7) == 0 and fr_p[1] == fr_a[1]:
+            print(" => GOOD")
+        else:
+            print(" => WRONG")
+            print("p =", fr_p)
+            print("a =", fr_a)
