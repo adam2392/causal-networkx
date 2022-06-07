@@ -3,7 +3,7 @@ from typing import Callable
 
 import networkx as nx
 
-from causal_networkx.cgm import ADMG, PAG
+from causal_networkx.graphs.cgm import ADMG, PAG
 
 
 def _check_ci_estimator(ci_estimator: Callable):
@@ -107,10 +107,10 @@ def convert_latent_to_unobserved_confounders(G: ADMG) -> ADMG:
     return G_copy
 
 
-def _integrate_circle_edges_to_graph(G: PAG):
-    """Add circle edges into a graph.
+def _integrate_circle_endpoints_to_graph(G: PAG):
+    """Add circle endpoints/edges into a graph.
 
-    Represents circle edges using additional nodes that are added
+    Represents circle endpoints using additional nodes that are added
     into the graph, to "preserve" m-separation properties. Since
     a circle edges represents uncertainty about the edge type, we
     will add all edges possible regarding the uncertainty.
@@ -148,9 +148,9 @@ def _integrate_circle_edges_to_graph(G: PAG):
     required_conditioning_set = set()
 
     # for every bidirected edge, add a new node
-    for idx, circle_edge in enumerate(G.circle_edge_graph.edges):
+    for idx, circle_edge in enumerate(G.circle_endpoint_graph.edges):
         # check if there is a bidirected circle edge
-        if G.has_circle_edge(circle_edge[1], circle_edge[0]):
+        if G.has_circle_endpoint(circle_edge[1], circle_edge[0]):
             # create unobserved confounder
             G_copy.add_edge(f"U{idx}", circle_edge[0])
             G_copy.add_edge(f"U{idx}", circle_edge[1])
@@ -171,7 +171,7 @@ def _integrate_circle_edges_to_graph(G: PAG):
             G_copy.add_edge(f"umb{idx}", circle_edge[0])
             G_copy.add_edge(f"umb{idx}", circle_edge[1])
 
-        G_copy.remove_circle_edge(*circle_edge)
+        G_copy.remove_circle_endpoint(*circle_edge)
 
     return G_copy, required_conditioning_set
 

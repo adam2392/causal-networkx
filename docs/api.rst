@@ -44,6 +44,7 @@ also should work on numpy array inputs.
 
    PC
    FCI
+   RobustPC
 
 Conditional independence testing functions
 ==========================================
@@ -66,7 +67,31 @@ variable and then ``sep_set`` is the conditioning set of variables.
    g_square_discrete
    fisherz
    Oracle
+   ParentOracle
    KernelCITest
+
+
+IO for reading/writing causal graphs
+====================================
+We advocate for using our implemented causal graph classes whenever
+utilizing various packages. However, we also support transformations
+to and from popular storage classes, such as ``numpy arrays``,
+``pandas dataframes``, ``pgmpy``, ``DOT`` and ``dagitty``. Note that
+not all these are supported for all types of graphs because of
+inherent limitations in supporting mixed-edge graphs in other formats.
+
+.. currentmodule:: causal_networkx.io
+
+.. autosummary::
+   :toctree: generated/
+
+   load_from_networkx
+   load_from_numpy
+   load_from_pgmpy
+   to_networkx
+   to_numpy
+   to_pgmpy
+
 
 Utility Algorithms for Causal Graphs
 ====================================
@@ -82,3 +107,4 @@ Utility Algorithms for Causal Graphs
    discriminating_path
    possibly_d_sep_sets
    uncovered_pd_path
+   

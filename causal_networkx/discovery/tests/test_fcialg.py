@@ -4,9 +4,9 @@ import pandas as pd
 import pytest
 
 from causal_networkx.algorithms import d_separated, possibly_d_sep_sets
-from causal_networkx.cgm import ADMG, PAG
 from causal_networkx.ci import Oracle
 from causal_networkx.discovery import FCI
+from causal_networkx.graphs.cgm import ADMG, PAG
 from causal_networkx.scm import StructuralCausalModel
 
 
@@ -43,21 +43,21 @@ class Test_FCI:
 
     def test_fci_skel_graph(self):
         sample = self.scm.sample(n=1, include_latents=False)
-        skel_graph, _ = self.alg.learn_skeleton(sample)
+        skel_graph, _, _, _ = self.alg.learn_skeleton(sample)
         assert list(skel_graph.edges) == [("x", "y"), ("z", "y")]
 
     def test_fci_basic_collider(self):
         sample = self.scm.sample(n=1, include_latents=False)
-        skel_graph, sep_set = self.alg.learn_skeleton(sample)
+        skel_graph, sep_set, _, _ = self.alg.learn_skeleton(sample)
         graph = PAG(incoming_uncertain_data=skel_graph)
         self.alg._orient_colliders(graph, sep_set)
 
         # the PAG learned
         expected_graph = PAG()
         expected_graph.add_edges_from([("x", "y"), ("z", "y")])
-        expected_graph.add_circle_edges_from([("y", "x"), ("y", "z")])
+        expected_graph.add_circle_endpoints_from([("y", "x"), ("y", "z")])
         assert set(expected_graph.edges) == set(graph.edges)
-        assert set(expected_graph.circle_edges) == set(graph.circle_edges)
+        assert set(expected_graph.circle_endpoints) == set(graph.circle_endpoints)
 
     def test_fci_rule1(self):
         # If A *-> u o-* C, A and C are not adjacent,
@@ -67,12 +67,12 @@ class Test_FCI:
         # A -> u o-o C
         G = PAG()
         G.add_edge("A", "u")
-        G.add_circle_edge("u", "C", bidirected=True)
+        G.add_circle_endpoint("u", "C", bidirected=True)
         G_copy = G.copy()
 
         self.alg._apply_rule1(G, "u", "A", "C")
         assert G.has_edge("u", "C")
-        assert not G.has_circle_edge("C", "u")
+        assert not G.has_circle_endpoint("C", "u")
         assert not G.has_edge("C", "u")
         assert not G.has_edge("u", "A")
 
@@ -80,10 +80,10 @@ class Test_FCI:
         # Second test:
         # A -> u o-> C
         G = G_copy.copy()
-        G.orient_circle_edge("u", "C", "arrow")
+        G.orient_circle_endpoint("u", "C", "arrow")
         self.alg._apply_rule1(G, "u", "A", "C")
         assert G.has_edge("u", "C")
-        assert not G.has_circle_edge("C", "u")
+        assert not G.has_circle_endpoint("C", "u")
         assert not G.has_edge("C", "u")
         assert not G.has_edge("u", "A")
 
@@ -95,7 +95,7 @@ class Test_FCI:
         G.add_bidirected_edge("u", "A")
         self.alg._apply_rule1(G, "u", "A", "C")
         assert G.has_edge("u", "C")
-        assert not G.has_circle_edge("C", "u")
+        assert not G.has_circle_endpoint("C", "u")
         assert not G.has_edge("C", "u")
         assert G.has_bidirected_edge("u", "A")
 
@@ -103,13 +103,13 @@ class Test_FCI:
         # Fourth test:
         # A o-> u o-o C
         G = G_copy.copy()
-        G.add_circle_edge("u", "A")
-        G.orient_circle_edge("u", "C", "arrow")
+        G.add_circle_endpoint("u", "A")
+        G.orient_circle_endpoint("u", "C", "arrow")
         self.alg._apply_rule1(G, "u", "A", "C")
         assert G.has_edge("u", "C")
-        assert not G.has_circle_edge("C", "u")
+        assert not G.has_circle_endpoint("C", "u")
         assert not G.has_edge("C", "u")
-        assert G.has_circle_edge("u", "A")
+        assert G.has_circle_endpoint("u", "A")
 
     def test_fci_rule2(self):
         # If A -> u *-> C, or A *-> u -> C, and A *-o C, then
@@ -118,20 +118,20 @@ class Test_FCI:
         G = PAG()
         G.add_edge("A", "u")
         G.add_bidirected_edge("u", "C")
-        G.add_circle_edge("A", "C", bidirected=True)
+        G.add_circle_endpoint("A", "C", bidirected=True)
         G_copy = G.copy()
 
         self.alg._apply_rule2(G, "u", "A", "C")
         assert G.has_edge("A", "C")
-        assert G.has_circle_edge("C", "A")
+        assert G.has_circle_endpoint("C", "A")
 
         # if A o-> u, then it should not work
         G = G_copy.copy()
-        G.add_circle_edge("u", "A")
+        G.add_circle_endpoint("u", "A")
         added_arrows = self.alg._apply_rule2(G, "u", "A", "C")
         assert not added_arrows
-        assert G.has_circle_edge("A", "C")
-        assert G.has_circle_edge("C", "A")
+        assert G.has_circle_endpoint("A", "C")
+        assert G.has_circle_endpoint("C", "A")
 
         # 2. Test not-added case
         # first test that can't be A <-> u <-> C
@@ -139,7 +139,7 @@ class Test_FCI:
         G.remove_edge("A", "u")
         G.add_bidirected_edge("u", "A")
         added_arrows = self.alg._apply_rule2(G, "u", "A", "C")
-        assert G.has_circle_edge("A", "C")
+        assert G.has_circle_endpoint("A", "C")
         assert not added_arrows
 
         # 3. then test that A <-> u -> C with A o-o C
@@ -147,7 +147,7 @@ class Test_FCI:
         G.add_edge("u", "C")
         added_arrows = self.alg._apply_rule2(G, "u", "A", "C")
         assert G.has_edge("A", "C")
-        assert G.has_circle_edge("C", "A")
+        assert G.has_circle_endpoint("C", "A")
         assert added_arrows
 
     def test_fci_rule3(self):
@@ -160,19 +160,19 @@ class Test_FCI:
         G.add_edge("C", "u")
 
         # then consider all circles as bidirected
-        G.add_circle_edge("A", "v", bidirected=True)
-        G.add_circle_edge("C", "v", bidirected=True)
-        G.add_circle_edge("v", "u", bidirected=True)
+        G.add_circle_endpoint("A", "v", bidirected=True)
+        G.add_circle_endpoint("C", "v", bidirected=True)
+        G.add_circle_endpoint("v", "u", bidirected=True)
         G_copy = G.copy()
 
         self.alg._apply_rule3(G, "u", "A", "C")
         for edge in G_copy.edges:
             assert G.has_edge(*edge)
-        for edge in G_copy.circle_edges:
+        for edge in G_copy.circle_endpoints:
             if edge != ("v", "u"):
-                assert G.has_circle_edge(*edge)
+                assert G.has_circle_endpoint(*edge)
             else:
-                assert not G.has_circle_edge(*edge)
+                assert not G.has_circle_endpoint(*edge)
         assert G.has_edge("v", "u")
 
         # if A -> u is A <-> u, then it should still work
@@ -184,7 +184,7 @@ class Test_FCI:
 
         # adding a circle edge should make it not work
         G = G_copy.copy()
-        G.add_circle_edge("A", "C", bidirected=True)
+        G.add_circle_endpoint("A", "C", bidirected=True)
         added_arrows = self.alg._apply_rule3(G, "u", "A", "C")
         assert not added_arrows
 
@@ -202,7 +202,7 @@ class Test_FCI:
         G = PAG()
 
         # setup graph with a <-> u o-o c
-        G.add_circle_edge("u", "c", bidirected=True)
+        G.add_circle_endpoint("u", "c", bidirected=True)
         G.add_bidirected_edge("a", "u")
         sep_set = set()
 
@@ -227,23 +227,23 @@ class Test_FCI:
         assert list(explored_nodes.keys()) == ["c", "u", "a", "b"]
 
         # since separating set is empty
-        assert not G.has_circle_edge("c", "u")
+        assert not G.has_circle_endpoint("c", "u")
         assert G.has_bidirected_edge("c", "u")
 
         # change 'u' o-o 'c' to 'u' o-> 'c', which should now orient
         # the same way
         G = G_copy.copy()
-        G.orient_circle_edge("u", "c", "arrow")
+        G.orient_circle_endpoint("u", "c", "arrow")
         added_arrows, explored_nodes = self.alg._apply_rule4(G, "u", "a", "c", sep_set)
         assert added_arrows
         assert list(explored_nodes.keys()) == ["c", "u", "a", "b"]
-        assert not G.has_circle_edge("c", "u")
+        assert not G.has_circle_endpoint("c", "u")
         assert G.has_bidirected_edge("c", "u")
 
     def test_fci_rule4_early_exit(self):
         G = PAG()
 
-        G.add_circle_edge("u", "c", bidirected=True)
+        G.add_circle_endpoint("u", "c", bidirected=True)
         G.add_bidirected_edge("a", "u")
         sep_set = set()
 
@@ -272,7 +272,7 @@ class Test_FCI:
         """
         G = PAG()
 
-        G.add_circle_edge("u", "c", bidirected=True)
+        G.add_circle_endpoint("u", "c", bidirected=True)
         G.add_bidirected_edge("a", "u")
         sep_set = {"b": {"c": set("u")}}
 
@@ -294,18 +294,18 @@ class Test_FCI:
         added_arrows, explored_nodes = self.alg._apply_rule4(G, "u", "a", "c", sep_set)
         assert added_arrows
         assert list(explored_nodes.keys()) == ["c", "u", "a", "b"]
-        assert not G.has_circle_edge("c", "u")
+        assert not G.has_circle_endpoint("c", "u")
         assert not G.has_edge("c", "u")
         assert G.has_edge("u", "c")
 
         # change 'u' o-o 'c' to 'u' o-> 'c', which should now orient
         # the same way
         G = G_copy.copy()
-        G.orient_circle_edge("u", "c", "arrow")
+        G.orient_circle_endpoint("u", "c", "arrow")
         added_arrows, explored_nodes = self.alg._apply_rule4(G, "u", "a", "c", sep_set)
         assert added_arrows
         assert list(explored_nodes.keys()) == ["c", "u", "a", "b"]
-        assert not G.has_circle_edge("c", "u")
+        assert not G.has_circle_endpoint("c", "u")
         assert not G.has_edge("c", "u")
         assert G.has_edge("u", "c")
 
@@ -317,11 +317,11 @@ class Test_FCI:
         # create a chain for A, u, C
         G.add_chain(["A", "u", "C"])
         G.add_edge("A", "C")
-        G.add_circle_edge("C", "A")
+        G.add_circle_endpoint("C", "A")
         self.alg._apply_rule8(G, "u", "A", "C")
 
         assert G.has_edge("A", "C")
-        assert not G.has_circle_edge("C", "A")
+        assert not G.has_circle_endpoint("C", "A")
 
     def test_fci_rule9(self):
         # If A o-> C and there is an undirected pd path
@@ -331,9 +331,9 @@ class Test_FCI:
 
         # create an uncovered pd path from A to C through u
         G.add_edge("A", "C")
-        G.add_circle_edge("C", "A")
+        G.add_circle_endpoint("C", "A")
         G.add_chain(["A", "u", "x", "y", "z", "C"])
-        G.add_circle_edge("y", "x")
+        G.add_circle_endpoint("y", "x")
 
         # create a pd path from A to C through v
         G.add_chain(["A", "v", "x", "y", "z", "C"])
@@ -345,22 +345,22 @@ class Test_FCI:
         added_arrows, uncov_pd_path = self.alg._apply_rule9(G, "u", "A", "C")
         assert added_arrows
         assert uncov_pd_path == ["A", "u", "x", "y", "z", "C"]
-        assert not G.has_circle_edge("C", "A")
+        assert not G.has_circle_endpoint("C", "A")
 
         # the shielded triple should not result in an uncovered pd path
         G = G_copy.copy()
         added_arrows, uncov_pd_path = self.alg._apply_rule9(G, "v", "A", "C")
         assert not added_arrows
         assert uncov_pd_path == []
-        assert G.has_circle_edge("C", "A")
+        assert G.has_circle_endpoint("C", "A")
 
         # when there is a circle edge it should still work
         G = G_copy.copy()
-        G.add_circle_edge("C", "z")
+        G.add_circle_endpoint("C", "z")
         added_arrows, uncov_pd_path = self.alg._apply_rule9(G, "u", "A", "C")
         assert added_arrows
         assert uncov_pd_path == ["A", "u", "x", "y", "z", "C"]
-        assert not G.has_circle_edge("C", "A")
+        assert not G.has_circle_endpoint("C", "A")
 
     def test_fci_rule10(self):
         # If A o-> C and u -> C <- v and:
@@ -372,10 +372,10 @@ class Test_FCI:
 
         # make A o-> C
         G.add_edge("A", "C")
-        G.add_circle_edge("C", "A")
+        G.add_circle_endpoint("C", "A")
         # create an uncovered pd path from A to u that ends at C
         G.add_chain(["A", "x", "y", "z", "u", "C"])
-        G.add_circle_edge("y", "x")
+        G.add_circle_endpoint("y", "x")
 
         # create an uncovered pd path from A to v so now C is a collider for <u, C, v>
         G.add_edge("z", "v")
@@ -387,7 +387,7 @@ class Test_FCI:
         assert not added_arrows
         assert a_to_u_path == []
         assert a_to_v_path == []
-        assert G.has_circle_edge("C", "A")
+        assert G.has_circle_endpoint("C", "A")
 
         # if we create an edge from A -> y, there is now a distinction
         G = G_copy.copy()
@@ -404,7 +404,7 @@ class Test_FCI:
         assert not added_arrows
         assert a_to_u_path == []
         assert a_to_v_path == []
-        G.add_circle_edge("z", "u")
+        G.add_circle_endpoint("z", "u")
         added_arrows, a_to_u_path, a_to_v_path = self.alg._apply_rule10(G, "u", "A", "C")
         assert not added_arrows
         assert a_to_u_path == []
@@ -431,8 +431,6 @@ class Test_FCI:
         fci.fit(sample)
         pag = fci.graph_
 
-        print(fci.skel_graph.edges)
-
         expected_pag = PAG()
         expected_pag.add_edges_from(
             [
@@ -441,13 +439,13 @@ class Test_FCI:
                 ("x3", "x2"),
             ]
         )
-        expected_pag.add_circle_edges_from(
+        expected_pag.add_circle_endpoints_from(
             [("x2", "x4"), ("x2", "x3"), ("x2", "x1"), ("x1", "x3"), ("x3", "x1")]
         )
 
         assert set(pag.edges) == set(expected_pag.edges)
         assert set(pag.bidirected_edges) == set(expected_pag.bidirected_edges)
-        assert set(pag.circle_edges) == set(expected_pag.circle_edges)
+        assert set(pag.circle_endpoints) == set(expected_pag.circle_endpoints)
 
         expected_pag_digraph = expected_pag.compute_full_graph(to_networkx=True)
         pag_digraph = pag.compute_full_graph(to_networkx=True)
@@ -490,7 +488,7 @@ class Test_FCI:
 
         assert set(expected_pag.bidirected_edges) == set(pag.bidirected_edges)
         assert set(expected_pag.edges) == set(pag.edges)
-        assert set(expected_pag.circle_edges) == set(pag.circle_edges)
+        assert set(expected_pag.circle_endpoints) == set(pag.circle_endpoints)
 
     def test_fci_complex(self):
         """
@@ -529,7 +527,9 @@ class Test_FCI:
         assert "x2" in pdsep
 
         expected_pag = PAG()
-        expected_pag.add_circle_edges_from([("x6", "x5"), ("x2", "x3"), ("x4", "x3"), ("x6", "x4")])
+        expected_pag.add_circle_endpoints_from(
+            [("x6", "x5"), ("x2", "x3"), ("x4", "x3"), ("x6", "x4")]
+        )
         expected_pag.add_edges_from(
             [
                 ("x4", "x1"),
@@ -547,4 +547,4 @@ class Test_FCI:
 
         assert set(pag.bidirected_edges) == set(expected_pag.bidirected_edges)
         assert set(pag.edges) == set(expected_pag.edges)
-        assert set(pag.circle_edges) == set(expected_pag.circle_edges)
+        assert set(pag.circle_endpoints) == set(expected_pag.circle_endpoints)

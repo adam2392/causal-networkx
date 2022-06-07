@@ -1,7 +1,7 @@
 """Time-series causal graphs."""
 
 
-from causal_networkx.cgm import ADMG
+from causal_networkx.graphs.cgm import ADMG
 
 
 class TimeSeriesADMG(ADMG):

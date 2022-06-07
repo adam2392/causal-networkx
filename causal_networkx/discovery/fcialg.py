@@ -1,14 +1,16 @@
 import logging
 from itertools import combinations, permutations
-from typing import Any, Callable, Dict, List, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 
 from causal_networkx import ADMG, PAG
-from causal_networkx.algorithms.pag import discriminating_path, uncovered_pd_path
+from causal_networkx.config import EdgeType, EndPoint
 from causal_networkx.discovery.classes import ConstraintDiscovery
+
+from ..algorithms.pag import discriminating_path, uncovered_pd_path
 
 logger = logging.getLogger()
 
@@ -20,11 +22,14 @@ class FCI(ConstraintDiscovery):
         alpha: float = 0.05,
         init_graph: Union[nx.Graph, ADMG] = None,
         fixed_edges: nx.Graph = None,
+        min_cond_set_size: int = None,
         max_cond_set_size: int = None,
-        max_path_length: int = None,
-        selection_bias: bool = False,
-        augmented: bool = False,
         max_iter: int = 1000,
+        max_combinations: int = None,
+        apply_orientations: bool = True,
+        selection_bias: bool = False,
+        max_path_length: int = None,
+        augmented: bool = False,
         **ci_estimator_kwargs,
     ):
         """The Fast Causal Inference (FCI) algorithm for causal discovery.
@@ -35,22 +40,45 @@ class FCI(ConstraintDiscovery):
         Parameters
         ----------
         ci_estimator : Callable
-            _description_
+            The conditional independence test function. The arguments of the estimator should
+            be data, node, node to compare, conditioning set of nodes, and any additional
+            keyword arguments.
         alpha : float, optional
-            _description_, by default 0.05
-        init_graph : Union[nx.Graph, ADMG], optional
-            _description_, by default None
+            The significance level for the conditional independence test, by default 0.05.
+        init_graph : nx.Graph
+            An initialized graph. If ``None``, then will initialize PC using a
+            complete graph. By default None.
         fixed_edges : nx.Graph, optional
-            _description_, by default None
+            An undirected graph with fixed edges. If ``None``, then will initialize PC using a
+            complete graph. By default None.
+        min_cond_set_size : int, optional
+            Minimum size of the conditioning set, by default None, which will be set to '0'.
+            Used to constrain the computation spent on the algorithm.
         max_cond_set_size : int, optional
-            _description_, by default None
-        max_path_length : int, optional
-            The maximum length of any discriminating path, or None if unlimited.
+            Maximum size of the conditioning set, by default None. Used to limit
+            the computation spent on the algorithm.
+        max_iter : int
+            The maximum number of iterations through the graph to apply
+            orientation rules.
+        max_combinations : int, optional
+            Maximum number of tries with a conditioning set chosen from the set of possible
+            parents still, by default None. If None, then will not be used. If set, then
+            the conditioning set will be chosen lexographically based on the sorted
+            test statistic values of 'ith Pa(X) -> X', for each possible parent node of 'X'.
+        apply_orientations : bool
+            Whether or not to apply orientation rules given the learned skeleton graph
+            and separating set per pair of variables. If ``True`` (default), will
+            apply Zhang's orientation rules R0-10, orienting colliders and certain
+            arrowheads and tails :footcite:`Zhang2008`.
         selection_bias : bool
             Whether or not to account for selection bias within the causal PAG.
-            See [1].
+            See :footcite:`Zhang2008`.
+        max_path_length : int, optional
+            The maximum length of any discriminating path, or None if unlimited.
         augmented : bool
-            Whether or not to run the augmented version of FCI. See [1].
+            Whether or not to run the augmented version of FCI. See :footcite:`Zhang2008`.
+        ci_estimator_kwargs : dict
+            Keyword arguments for the ``ci_estimator`` function.
 
         References
         ----------
@@ -63,7 +91,15 @@ class FCI(ConstraintDiscovery):
         independence tests it must run.
         """
         super().__init__(
-            ci_estimator, alpha, init_graph, fixed_edges, max_cond_set_size, **ci_estimator_kwargs
+            ci_estimator=ci_estimator,
+            alpha=alpha,
+            init_graph=init_graph,
+            fixed_edges=fixed_edges,
+            min_cond_set_size=min_cond_set_size,
+            max_cond_set_size=max_cond_set_size,
+            max_combinations=max_combinations,
+            apply_orientations=apply_orientations,
+            **ci_estimator_kwargs,
         )
 
         if max_path_length is None:
@@ -85,23 +121,20 @@ class FCI(ConstraintDiscovery):
         """
         # for every node in the PAG, evaluate neighbors that have any edge
         for u in graph.nodes:
-            for v_i, v_j in combinations(graph.neighbors(u), 2):
+            for v_i, v_j in combinations(graph.adjacencies(u), 2):
                 # Check that there is no edge of any type between
                 # v_i and v_j, else this is a "shielded" collider.
                 # Then check to see if 'u' is in the separating
                 # set. If it is not, then there is a collider.
                 if not graph.has_adjacency(v_i, v_j) and u not in sep_set[v_i][v_j]:
-                    logger.debug(
+                    logger.info(
                         f"orienting collider: {v_i} -> {u} and {v_j} -> {u} to make {v_i} -> {u} <- {v_j}."
                     )
 
-                    if graph.has_circle_edge(v_i, u):
-                        graph.orient_circle_edge(v_i, u, "arrow")
-                    if graph.has_circle_edge(v_j, u):
-                        graph.orient_circle_edge(v_j, u, "arrow")
-                # else:
-                # definite non-collider
-                # test = 1
+                    if graph.has_circle_endpoint(v_i, u):
+                        graph.orient_circle_endpoint(v_i, u, EndPoint.arrow.value)
+                    if graph.has_circle_endpoint(v_j, u):
+                        graph.orient_circle_endpoint(v_j, u, EndPoint.arrow.value)
 
     def _apply_rule1(self, graph: PAG, u, a, c) -> bool:
         """Apply rule 1 of the FCI algorithm.
@@ -132,15 +165,15 @@ class FCI(ConstraintDiscovery):
         # check that a and c are not adjacent
         if not graph.has_adjacency(a, c):
             # check a *-> u o-* c
-            if (graph.has_edge(a, u) or graph.has_bidirected_edge(a, u)) and graph.has_circle_edge(
-                c, u
-            ):
-                logger.debug(f"Rule 1: Orienting edge {u} o-* {c} to {u} -> {c}.")
+            if (
+                graph.has_edge(a, u) or graph.has_bidirected_edge(a, u)
+            ) and graph.has_circle_endpoint(c, u):
+                logger.info(f"Rule 1: Orienting edge {u} o-* {c} to {u} -> {c}.")
                 # orient the edge from u to c and delete
                 # the edge from c to u
-                if graph.has_circle_edge(u, c):
-                    graph.orient_circle_edge(u, c, "arrow")
-                graph.orient_circle_edge(c, u, "tail")
+                if graph.has_circle_endpoint(u, c):
+                    graph.orient_circle_endpoint(u, c, EndPoint.arrow.value)
+                graph.orient_circle_endpoint(c, u, EndPoint.tail.value)
                 added_arrows = True
 
         return added_arrows
@@ -173,29 +206,29 @@ class FCI(ConstraintDiscovery):
         """
         added_arrows = False
         # check that a *-o c edge exists
-        if graph.has_circle_edge(a, c):
+        if graph.has_circle_endpoint(a, c):
             # - A -> u *-> C, or A *-> u -> C, and
             # - A *-o C,
             # check for A -> u and check that u *-> c
             condition_one = (
                 graph.has_edge(a, u)
                 and not graph.has_edge(u, a)
-                and not graph.has_circle_edge(u, a)
-                and graph.edge_type(u, c) in ["arrow", "bidirected"]
+                and not graph.has_circle_endpoint(u, a)
+                and graph.edge_type(u, c) in [EdgeType.directed.value, EdgeType.bidirected.value]
             )
 
             # check that a *-> u -> c
             condition_two = (
-                graph.edge_type(a, u) in ["arrow", "bidirected"]
-                and graph.edge_type(u, c) == "arrow"
+                graph.edge_type(a, u) in [EdgeType.directed.value, EdgeType.bidirected.value]
+                and graph.edge_type(u, c) == EdgeType.directed.value
                 and not graph.has_edge(c, u)
-                and not graph.has_circle_edge(c, u)
+                and not graph.has_circle_endpoint(c, u)
             )
 
             if condition_one or condition_two:
-                logger.debug(f"Rule 2: Orienting circle edge to {a} -> {c}")
+                logger.info(f"Rule 2: Orienting circle edge to {a} -> {c}")
                 # orient a *-> c
-                graph.orient_circle_edge(a, c, "arrow")
+                graph.orient_circle_endpoint(a, c, EndPoint.arrow.value)
                 added_arrows = True
         return added_arrows
 
@@ -235,20 +268,20 @@ class FCI(ConstraintDiscovery):
 
             # check for all other neighbors to find a 'v' node
             # with the structure A *-o v o-* C
-            for v in graph.neighbors(u):
+            for v in graph.adjacencies(u):
                 # check that v is not a, or c
                 if v in (a, c):
                     continue
 
                 # check that v *-o u
-                if not graph.has_circle_edge(v, u):
+                if not graph.has_circle_endpoint(v, u):
                     continue
 
                 # check that a *-o v o-* c
-                condition_two = graph.has_circle_edge(a, v) and graph.has_circle_edge(c, v)
+                condition_two = graph.has_circle_endpoint(a, v) and graph.has_circle_endpoint(c, v)
                 if condition_one and condition_two:
-                    logger.debug(f"Rule 3: Orienting {v} -> {u}.")
-                    graph.orient_circle_edge(v, u, "arrow")
+                    logger.info(f"Rule 3: Orienting {v} -> {u}.")
+                    graph.orient_circle_endpoint(v, u, EndPoint.arrow.value)
                     added_arrows = True
         return added_arrows
 
@@ -292,7 +325,7 @@ class FCI(ConstraintDiscovery):
 
         # c must also point to u with a circle edge
         # check u o-* c
-        if not graph.has_circle_edge(c, u):
+        if not graph.has_circle_endpoint(c, u):
             return added_arrows, explored_nodes
 
         # 'a' cannot be a definite collider if there is no arrow pointing from
@@ -317,19 +350,21 @@ class FCI(ConstraintDiscovery):
             if last_node in sep_set:
                 if u in sep_set[last_node][c]:
                     # orient u -> c
-                    graph.remove_circle_edge(c, u)
-                if graph.has_circle_edge(u, c):
-                    graph.orient_circle_edge(u, c, "arrow")
-                logger.debug(f"Rule 4: orienting {u} -> {c}.")
-                logger.debug(disc_path_str)
+                    graph.remove_circle_endpoint(c, u)
+                if graph.has_circle_endpoint(u, c):
+                    print(f"Trying to orient {u} -o {c} to arrowhead")
+                    print(graph.all_edges())
+                    graph.orient_circle_endpoint(u, c, EndPoint.arrow.value)
+                logger.info(f"Rule 4: orienting {u} -> {c}.")
+                logger.info(disc_path_str)
             else:
                 # orient u <-> c
-                if graph.has_circle_edge(u, c):
-                    graph.orient_circle_edge(u, c, "arrow")
-                if graph.has_circle_edge(c, u):
-                    graph.orient_circle_edge(c, u, "arrow")
-                logger.debug(f"Rule 4: orienting {u} <-> {c}.")
-                logger.debug(disc_path_str)
+                if graph.has_circle_endpoint(u, c):
+                    graph.orient_circle_endpoint(u, c, EndPoint.arrow.value)
+                if graph.has_circle_endpoint(c, u):
+                    graph.orient_circle_endpoint(c, u, EndPoint.arrow.value)
+                logger.info(f"Rule 4: orienting {u} <-> {c}.")
+                logger.info(disc_path_str)
             added_arrows = True
 
         return added_arrows, explored_nodes
@@ -364,15 +399,15 @@ class FCI(ConstraintDiscovery):
         added_arrows = False
 
         # First check that A o-> C
-        if graph.has_circle_edge(c, a) and graph.has_edge(a, c):
+        if graph.has_circle_endpoint(c, a) and graph.has_edge(a, c):
             # check that A -> u -> C
-            condition_one = graph.has_edge(a, u) and not graph.has_circle_edge(u, a)
-            condition_two = graph.has_edge(u, c) and not graph.has_circle_edge(c, u)
+            condition_one = graph.has_edge(a, u) and not graph.has_circle_endpoint(u, a)
+            condition_two = graph.has_edge(u, c) and not graph.has_circle_endpoint(c, u)
 
             if condition_one and condition_two:
-                logger.debug(f"Rule 8: Orienting {a} o-> {c} as {a} -> {c}.")
+                logger.info(f"Rule 8: Orienting {a} o-> {c} as {a} -> {c}.")
                 # now orient A o-> C as A -> C
-                graph.orient_circle_edge(c, a, "tail")
+                graph.orient_circle_endpoint(c, a, EndPoint.tail.value)
                 added_arrows = True
         return added_arrows
 
@@ -405,7 +440,9 @@ class FCI(ConstraintDiscovery):
         uncov_path: List[Any] = []
 
         # Check A o-> C and # check that u is not adjacent to c
-        if (graph.has_circle_edge(c, a) and graph.has_edge(a, c)) and not graph.has_adjacency(u, c):
+        if (graph.has_circle_endpoint(c, a) and graph.has_edge(a, c)) and not graph.has_adjacency(
+            u, c
+        ):
             # check that <a, u> is potentially directed
             if graph.has_edge(a, u):
                 # check that A - u - v, ..., c is an uncovered pd path
@@ -415,8 +452,8 @@ class FCI(ConstraintDiscovery):
 
                 # orient A o-> C to A -> C
                 if path_exists:
-                    logger.debug(f"Rule 9: Orienting edge {a} o-> {c} to {a} -> {c}.")
-                    graph.orient_circle_edge(c, a, "tail")
+                    logger.info(f"Rule 9: Orienting edge {a} o-> {c} to {a} -> {c}.")
+                    graph.orient_circle_endpoint(c, a, EndPoint.tail.value)
                     added_arrows = True
 
         return added_arrows, uncov_path
@@ -456,17 +493,17 @@ class FCI(ConstraintDiscovery):
         a_to_v_path: List[Any] = []
 
         # Check A o-> C
-        if graph.has_circle_edge(c, a) and graph.has_edge(a, c):
+        if graph.has_circle_endpoint(c, a) and graph.has_edge(a, c):
             # check that u -> C
-            if graph.has_edge(u, c) and not graph.has_circle_edge(c, u):
+            if graph.has_edge(u, c) and not graph.has_circle_endpoint(c, u):
                 # loop through all adjacent neighbors of c now to get
                 # possible 'v' node
-                for v in graph.neighbors(c):
+                for v in graph.adjacencies(c):
                     if v in (a, u):
                         continue
 
                     # make sure v -> C and not v o-> C
-                    if not graph.has_edge(v, c) or graph.has_circle_edge(c, v):
+                    if not graph.has_edge(v, c) or graph.has_circle_endpoint(c, v):
                         continue
 
                     # At this point, we want the paths from A to u and A to v
@@ -475,7 +512,7 @@ class FCI(ConstraintDiscovery):
                     # that:
                     # i) begin the uncovered pd path and
                     # ii) are distinct (done by construction) here
-                    for (m, w) in combinations(graph.neighbors(a), 2):  # type: ignore
+                    for (m, w) in combinations(graph.adjacencies(a), 2):  # type: ignore
                         if m == c or w == c:
                             continue
 
@@ -515,8 +552,8 @@ class FCI(ConstraintDiscovery):
                         # at this point, we have an uncovered path from a to u and a to v
                         # with a distinct second node on both paths
                         # orient A o-> C to A -> C
-                        logger.debug(f"Rule 10: Orienting edge {a} o-> {c} to {a} -> {c}.")
-                        graph.orient_circle_edge(c, a, "tail")
+                        logger.info(f"Rule 10: Orienting edge {a} o-> {c} to {a} -> {c}.")
+                        graph.orient_circle_endpoint(c, a, EndPoint.tail.value)
                         added_arrows = True
 
         return added_arrows, a_to_u_path, a_to_v_path
@@ -526,10 +563,10 @@ class FCI(ConstraintDiscovery):
         finished = False
         while idx < self.max_iter and not finished:
             change_flag = False
-            logger.debug(f"Running R1-10 for iteration {idx}")
+            logger.info(f"Running R1-10 for iteration {idx}")
 
             for u in graph.nodes:
-                for (a, c) in permutations(graph.neighbors(u), 2):
+                for (a, c) in permutations(graph.adjacencies(u), 2):
                     # apply R1-3 to orient triples and arrowheads
                     r1_add = self._apply_rule1(graph, u, a, c)
                     r2_add = self._apply_rule2(graph, u, a, c)
@@ -552,15 +589,15 @@ class FCI(ConstraintDiscovery):
                         any([r1_add, r2_add, r3_add, r4_add, r8_add, r9_add, r10_add])
                         and not change_flag
                     ):
-                        logger.debug("Got here...")
-                        logger.debug([r1_add, r2_add, r3_add, r4_add, r8_add, r9_add, r10_add])
-                        logger.debug(change_flag)
+                        logger.info("Got here...")
+                        logger.info([r1_add, r2_add, r3_add, r4_add, r8_add, r9_add, r10_add])
+                        logger.info(change_flag)
                         change_flag = True
 
             # check if we should continue or not
             if not change_flag:
                 finished = True
-                logger.debug(f"Finished applying R1-4, and R8-10 with {idx} iterations")
+                logger.info(f"Finished applying R1-4, and R8-10 with {idx} iterations")
                 break
             idx += 1
 
@@ -569,7 +606,7 @@ class FCI(ConstraintDiscovery):
         X,
         pag: nx.Graph,
         sep_set: Dict[str, Dict[str, Set[Any]]],
-        fixed_edges: Set[Tuple[Any, Any]] = set(),
+        fixed_edges: Optional[Set] = set(),
     ):
         from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_pdsep
 
@@ -591,17 +628,35 @@ class FCI(ConstraintDiscovery):
         )
         return skel_graph, sep_set
 
-    def learn_skeleton(self, X: pd.DataFrame) -> Tuple[nx.Graph, Dict[str, Dict[str, Set]]]:
+    def learn_skeleton(
+        self,
+        X: pd.DataFrame,
+        graph: nx.Graph = None,
+        sep_set: Optional[Dict[str, Dict[str, Set[Any]]]] = None,
+        fixed_edges: Optional[Set] = None,
+    ) -> Tuple[
+        nx.Graph,
+        Dict[str, Dict[str, Set[Any]]],
+        Dict[Any, Dict[Any, float]],
+        Dict[Any, Dict[Any, float]],
+    ]:
         """Learn skeleton from data.
 
         Parameters
         ----------
         X : pd.DataFrame
             Dataset.
+        graph : nx.Graph
+            The undirected graph containing initialized skeleton of the causal
+            relationships.
+        sep_set : set
+            The separating set.
+        fixed_edges : set, optional
+            The set of fixed edges. By default, is the empty set.
 
         Returns
         -------
-        skel_graph : nx.Graph
+        pag : PAG
             The skeleton graph.
         sep_set : Dict[str, Dict[str, Set]]
             The separating set.
@@ -609,8 +664,10 @@ class FCI(ConstraintDiscovery):
         # initialize the graph
         graph, sep_set, fixed_edges = self._initialize_graph(X)
 
-        # learn the skeleton of the graph
-        skel_graph, sep_set = self._learn_skeleton_from_neighbors(X, graph, sep_set, fixed_edges)
+        # learn the initial skeleton of the graph
+        skel_graph, sep_set, test_stat_dict, pvalue_dict = super().learn_skeleton(
+            X, graph, sep_set, fixed_edges
+        )
 
         # convert the undirected skeleton graph to a PAG, where
         # all left-over edges have a "circle" endpoint
@@ -621,36 +678,22 @@ class FCI(ConstraintDiscovery):
 
         # # now compute all possibly d-separating sets and learn a better skeleton
         skel_graph, sep_set = self._learn_better_skeleton(X, pag, sep_set, fixed_edges)
-        return skel_graph, sep_set
 
-    def fit(self, X: pd.DataFrame):
-        """Perform causal discovery algorithm.
+        self.skel_graph = skel_graph.copy()
+        return skel_graph, sep_set, test_stat_dict, pvalue_dict
 
-        Parameters
-        ----------
-        X : pd.DataFrame
-            The dataset.
-
-        Returns
-        -------
-        self : instance of FCI
-            FCI instance with fitted attributes.
-        """
-        # learn skeleton
-        skel_graph, sep_set = self.learn_skeleton(X)
-
-        # convert the undirected skeleton graph to a PAG, where
-        # all left-over edges have a "circle" endpoint
-        pag = PAG(incoming_uncertain_data=skel_graph, name="PAG derived with FCI")
-
+    def orient_edges(self, graph, sep_set):
         # orient colliders again
-        self._orient_colliders(pag, sep_set)
-        self.orient_coll_graph = pag.copy()
+        self._orient_colliders(graph, sep_set)
+        self.orient_coll_graph = graph.copy()
 
         # run the rest of the rules to orient as many edges
         # as possible
-        self._apply_rules_1to10(pag, sep_set)
+        self._apply_rules_1to10(graph, sep_set)
+        return graph
 
-        self.skel_graph = skel_graph
-        self.graph_ = pag
-        return self
+    def convert_skeleton_graph(self, graph: nx.Graph) -> PAG:
+        # convert the undirected skeleton graph to a PAG, where
+        # all left-over edges have a "circle" endpoint
+        pag = PAG(incoming_uncertain_data=graph, name="PAG derived with FCI")
+        return pag

@@ -1,22 +1,23 @@
 from typing import Union
 
-import networkx as nx
+import numpy as np
 
 from causal_networkx.algorithms.d_separation import d_separated
-from causal_networkx.cgm import ADMG
+from causal_networkx.graphs.cgm import ADMG, DAG
 
 
 class Oracle:
-    def __init__(self, graph: Union[ADMG, nx.DiGraph]) -> None:
-        """Oracle conditional independence testing.
+    """Oracle conditional independence testing.
 
-        Used for unit testing and checking intuition.
+    Used for unit testing and checking intuition.
 
-        Parameters
-        ----------
-        graph : nx.DiGraph | ADMG
+    Parameters
+    ----------
+    graph : DAG | ADMG
+        The ground-truth causal graph.
+    """
 
-        """
+    def __init__(self, graph: Union[ADMG, DAG]) -> None:
         self.graph = graph
 
     def ci_test(self, data, x, y, sep_set):
@@ -52,6 +53,26 @@ class Oracle:
 
         if is_sep:
             pvalue = 1
+            test_stat = 0
         else:
             pvalue = 0
-        return None, pvalue
+            test_stat = np.inf
+        return test_stat, pvalue
+
+
+class ParentOracle(Oracle):
+    """Parent oracle for conditional independence testing.
+
+    An oracle that knows the definite parents of every node.
+    """
+
+    def __init__(self, graph: Union[ADMG, DAG]) -> None:
+        super().__init__(graph)
+
+    def get_parents(self, x):
+        """Return the definite parents of node 'x'."""
+        return self.graph.predecessors(x)
+
+    def get_children(self, x):
+        """Return the definite children of node 'x'."""
+        return self.graph.successors(x)

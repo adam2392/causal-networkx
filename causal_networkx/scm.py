@@ -4,7 +4,7 @@ from typing import Callable, Dict
 
 import pandas as pd
 
-from causal_networkx.cgm import ADMG
+from causal_networkx.graphs.cgm import ADMG
 
 
 class StructuralCausalModel:
@@ -117,7 +117,6 @@ class StructuralCausalModel:
         -------
         result_df : pd.DataFrame
             The sampled dataset.
-
         """
         df_values = []
 
