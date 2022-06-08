@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Causal Graphical Models &#8212; causal-networkx v0.1.0</title>
     
@@ -34,6 +34,7 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
@@ -50,7 +51,7 @@
     <script type="text/javascript" src="../_static/scrollfix.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
+    <meta name="docsearch:language" content="en">
     
 
     <!-- Google Analytics -->
@@ -448,6 +449,7 @@ div.nboutput.container div.output_area > div[class^='highlight']{
 }
 
 /* Some additional styling taken form the Jupyter notebook CSS */
+.jp-RenderedHTMLCommon table,
 div.rendered_html table {
   border: none;
   border-collapse: collapse;
@@ -456,10 +458,14 @@ div.rendered_html table {
   font-size: 12px;
   table-layout: fixed;
 }
+.jp-RenderedHTMLCommon thead,
 div.rendered_html thead {
   border-bottom: 1px solid black;
   vertical-align: bottom;
 }
+.jp-RenderedHTMLCommon tr,
+.jp-RenderedHTMLCommon th,
+.jp-RenderedHTMLCommon td,
 div.rendered_html tr,
 div.rendered_html th,
 div.rendered_html td {
@@ -471,18 +477,21 @@ div.rendered_html td {
   max-width: none;
   border: none;
 }
+.jp-RenderedHTMLCommon th,
 div.rendered_html th {
   font-weight: bold;
 }
+.jp-RenderedHTMLCommon tbody tr:nth-child(odd),
 div.rendered_html tbody tr:nth-child(odd) {
   background: #f5f5f5;
 }
+.jp-RenderedHTMLCommon tbody tr:hover,
 div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
 <section id="Causal-Graphical-Models">
-<h1>Causal Graphical Models<a class="headerlink" href="#Causal-Graphical-Models" title="Permalink to this headline">#</a></h1>
+<h1>Causal Graphical Models<a class="headerlink" href="#Causal-Graphical-Models" title="Permalink to this heading">#</a></h1>
 <p>In this section, we explore what are known as causal graphical models (CGM), which are essentially Bayesian networks where edges imply causal influence rather then just probabilistic dependence.</p>
 <p>CGMs are assumed to be acyclic, meaning they do not have cycles among their variables.</p>
 <div class="nbinput nblast docutils container">
@@ -490,14 +499,14 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
-<span class="kn">from</span> <span class="nn">causal_networkx</span> <span class="kn">import</span> <span class="n">CausalGraph</span>
+<span class="kn">from</span> <span class="nn">causal_networkx</span> <span class="kn">import</span> <span class="n">ADMG</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 </pre></div>
 </div>
 </div>
 <section id="Causally-Sufficient-Models">
-<h2>Causally Sufficient Models<a class="headerlink" href="#Causally-Sufficient-Models" title="Permalink to this headline">#</a></h2>
+<h2>Causally Sufficient Models<a class="headerlink" href="#Causally-Sufficient-Models" title="Permalink to this heading">#</a></h2>
 <p>Here, we don’t have any latent variables. We demonstrate how a CGM works in code and what we can do with it.</p>
 <p>We also demonstrate Clustered DAGs (CDAGs), which form from a cluster of variables, which is represented underneath the hood with two graphs. One consisting of all the variables denoting the cluster ID in the metadata, and another consisting of the graph between clusters. The first graph may be incompletely specified, since we do not require the edges within a cluster be fully specified.</p>
 <p>Based on knowledge of CDAGs, we know that d-separation is complete.</p>
@@ -667,7 +676,7 @@ File <span class="ansi-green-fg">~/miniforge3/envs/causal3.8m1/lib/python3.8/sit
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span>
 <span class="p">]</span>
-<span class="n">cgm</span> <span class="o">=</span> <span class="n">CausalGraph</span><span class="p">(</span><span class="n">ebunch</span><span class="o">=</span><span class="n">nodes</span><span class="p">)</span>
+<span class="n">cgm</span> <span class="o">=</span> <span class="n">ADMG</span><span class="p">(</span><span class="n">ebunch</span><span class="o">=</span><span class="n">nodes</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -682,9 +691,9 @@ File <span class="ansi-green-fg">~/miniforge3/envs/causal3.8m1/lib/python3.8/sit
 <span class="ansi-green-intense-fg ansi-bold">      &lt;a href=&#39;vscode-notebook-cell:/Users/adam2392/Documents/causalscm/examples/cgm.ipynb#ch0000001?line=0&#39;&gt;1&lt;/a&gt;</span> nodes = [
 <span class="ansi-green-intense-fg ansi-bold">      &lt;a href=&#39;vscode-notebook-cell:/Users/adam2392/Documents/causalscm/examples/cgm.ipynb#ch0000001?line=1&#39;&gt;2&lt;/a&gt;</span>     &#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;
 <span class="ansi-green-intense-fg ansi-bold">      &lt;a href=&#39;vscode-notebook-cell:/Users/adam2392/Documents/causalscm/examples/cgm.ipynb#ch0000001?line=2&#39;&gt;3&lt;/a&gt;</span> ]
-<span class="ansi-green-fg">----&gt; &lt;a href=&#39;vscode-notebook-cell:/Users/adam2392/Documents/causalscm/examples/cgm.ipynb#ch0000001?line=3&#39;&gt;4&lt;/a&gt;</span> cgm = CausalGraphicalModel(ebunch=nodes)
+<span class="ansi-green-fg">----&gt; &lt;a href=&#39;vscode-notebook-cell:/Users/adam2392/Documents/causalscm/examples/cgm.ipynb#ch0000001?line=3&#39;&gt;4&lt;/a&gt;</span> cgm = ADMGicalModel(ebunch=nodes)
 
-<span class="ansi-red-fg">NameError</span>: name &#39;CausalGraphicalModel&#39; is not defined
+<span class="ansi-red-fg">NameError</span>: name &#39;ADMGicalModel&#39; is not defined
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -755,7 +764,7 @@ File <span class="ansi-green-fg">~/miniforge3/envs/causal3.8m1/lib/python3.8/sit
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
 </p>
     </div>
     

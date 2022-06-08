@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>API &#8212; causal-networkx v0.1.0</title>
     
@@ -34,6 +34,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
@@ -48,7 +49,7 @@
     <script type="text/javascript" src="_static/scrollfix.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
+    <meta name="docsearch:language" content="en">
     
 
     <!-- Google Analytics -->
@@ -183,8 +184,18 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="generated/causal_networkx.CausalGraph.html">
-   causal_networkx.CausalGraph
+  <a class="reference internal" href="generated/causal_networkx.DAG.html">
+   causal_networkx.DAG
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.CPDAG.html">
+   causal_networkx.CPDAG
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.ADMG.html">
+   causal_networkx.ADMG
   </a>
  </li>
  <li class="toctree-l1">
@@ -202,6 +213,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="generated/causal_networkx.discovery.FCI.html">
    causal_networkx.discovery.FCI
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.discovery.RobustPC.html">
+   causal_networkx.discovery.RobustPC
   </a>
  </li>
 </ul>
@@ -224,6 +240,48 @@
  <li class="toctree-l1">
   <a class="reference internal" href="generated/causal_networkx.ci.Oracle.html">
    causal_networkx.ci.Oracle
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.ci.ParentOracle.html">
+   causal_networkx.ci.ParentOracle
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.ci.KernelCITest.html">
+   causal_networkx.ci.KernelCITest
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.load_from_networkx.html">
+   causal_networkx.io.load_from_networkx
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.load_from_numpy.html">
+   causal_networkx.io.load_from_numpy
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.load_from_pgmpy.html">
+   causal_networkx.io.load_from_pgmpy
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.to_networkx.html">
+   causal_networkx.io.to_networkx
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.to_numpy.html">
+   causal_networkx.io.to_numpy
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="generated/causal_networkx.io.to_pgmpy.html">
+   causal_networkx.io.to_pgmpy
   </a>
  </li>
 </ul>
@@ -302,6 +360,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#io-for-reading-writing-causal-graphs">
+   IO for reading/writing causal graphs
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#utility-algorithms-for-causal-graphs">
    Utility Algorithms for Causal Graphs
   </a>
@@ -328,7 +391,7 @@
               <div>
                 
   <section id="api">
-<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">#</a></h1>
+<h1>API<a class="headerlink" href="#api" title="Permalink to this heading">#</a></h1>
 <p><a class="reference internal" href="#module-causal_networkx" title="causal_networkx"><code class="xref py py-mod docutils literal notranslate"><span class="pre">causal_networkx</span></code></a>:</p>
 <span class="target" id="module-causal_networkx"></span><p>Causal modeling with structural causal models and causal graphs.</p>
 <p>This is the application programming interface (API) reference
@@ -336,18 +399,22 @@ for classes (<code class="docutils literal notranslate"><span class="pre">CamelC
 (<code class="docutils literal notranslate"><span class="pre">underscore_case</span></code> names) of Causal-Networkx, grouped thematically by analysis
 stage.</p>
 <section id="most-used-classes">
-<h2>Most-used classes<a class="headerlink" href="#most-used-classes" title="Permalink to this headline">#</a></h2>
+<h2>Most-used classes<a class="headerlink" href="#most-used-classes" title="Permalink to this heading">#</a></h2>
+<p>These are the causal classes for Structural Causal Models (SCMs), or various causal
+graphs encountered in the literature.</p>
 <table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel" title="causal_networkx.StructuralCausalModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StructuralCausalModel</span></code></a>(exogenous, endogenous)</p></td>
 <td><p>Structural Causal Model (SCM) class.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.CausalGraph.html#causal_networkx.CausalGraph" title="causal_networkx.CausalGraph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CausalGraph</span></code></a>([incoming_graph_data, ...])</p></td>
-<td><p>Initialize a causal graphical model.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.DAG.html#causal_networkx.DAG" title="causal_networkx.DAG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DAG</span></code></a>([incoming_graph_data])</p></td>
+<td><p>Causal directed acyclic graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG" title="causal_networkx.CPDAG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CPDAG</span></code></a>([incoming_graph_data, ...])</p></td>
+<td><p>Completed partially directed acyclic graphs (CPDAG).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.ADMG.html#causal_networkx.ADMG" title="causal_networkx.ADMG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADMG</span></code></a>([incoming_graph_data, ...])</p></td>
+<td><p>Acyclic directed mixed graph (ADMG).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.PAG.html#causal_networkx.PAG" title="causal_networkx.PAG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PAG</span></code></a>([incoming_graph_data, ...])</p></td>
 <td><p>Partial ancestral graph (PAG).</p></td>
@@ -356,16 +423,12 @@ stage.</p>
 </table>
 </section>
 <section id="discovery-functions">
-<h2>Discovery functions<a class="headerlink" href="#discovery-functions" title="Permalink to this headline">#</a></h2>
+<h2>Discovery functions<a class="headerlink" href="#discovery-functions" title="Permalink to this heading">#</a></h2>
 <p>These functions compute try to learn the causal graph from data.
 All these functions work with a Pandas <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> object,
 which is the recommended input to these functions. However, they
 also should work on numpy array inputs.</p>
 <table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.discovery.PC.html#causal_networkx.discovery.PC" title="causal_networkx.discovery.PC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PC</span></code></a>(ci_estimator[, alpha, init_graph, ...])</p></td>
 <td><p><p class="rubric">Methods</p>
@@ -375,11 +438,15 @@ also should work on numpy array inputs.</p>
 <td><p><p class="rubric">Methods</p>
 </p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.discovery.RobustPC.html#causal_networkx.discovery.RobustPC" title="causal_networkx.discovery.RobustPC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RobustPC</span></code></a>(ci_estimator[, alpha, init_graph, ...])</p></td>
+<td><p><p class="rubric">Methods</p>
+</p></td>
+</tr>
 </tbody>
 </table>
 </section>
 <section id="conditional-independence-testing-functions">
-<h2>Conditional independence testing functions<a class="headerlink" href="#conditional-independence-testing-functions" title="Permalink to this headline">#</a></h2>
+<h2>Conditional independence testing functions<a class="headerlink" href="#conditional-independence-testing-functions" title="Permalink to this heading">#</a></h2>
 <p>These functions are implementations of common conditional independence (CI) testing
 functions. These will eventually be ported out of this repository as they are of
 independent interest.</p>
@@ -388,10 +455,6 @@ input, where <code class="docutils literal notranslate"><span class="pre">data</
 <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> are single columns of the DataFrame corresponding to a single
 variable and then <code class="docutils literal notranslate"><span class="pre">sep_set</span></code> is the conditioning set of variables.</p>
 <table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.ci.g_square_binary.html#causal_networkx.ci.g_square_binary" title="causal_networkx.ci.g_square_binary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">g_square_binary</span></code></a>(data, x, y, sep_set)</p></td>
 <td><p>G square test for a binary data.</p></td>
@@ -403,19 +466,52 @@ variable and then <code class="docutils literal notranslate"><span class="pre">s
 <td><p>Perform an independence test using Fisher-Z's test.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.ci.Oracle.html#causal_networkx.ci.Oracle" title="causal_networkx.ci.Oracle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Oracle</span></code></a>(graph)</p></td>
+<td><p>Oracle conditional independence testing.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.ci.ParentOracle.html#causal_networkx.ci.ParentOracle" title="causal_networkx.ci.ParentOracle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParentOracle</span></code></a>(graph)</p></td>
+<td><p>Parent oracle for conditional independence testing.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.ci.KernelCITest.html#causal_networkx.ci.KernelCITest" title="causal_networkx.ci.KernelCITest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KernelCITest</span></code></a>([kernel_x, kernel_y, kernel_z, ...])</p></td>
 <td><p><p class="rubric">Methods</p>
 </p></td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="utility-algorithms-for-causal-graphs">
-<h2>Utility Algorithms for Causal Graphs<a class="headerlink" href="#utility-algorithms-for-causal-graphs" title="Permalink to this headline">#</a></h2>
+<section id="io-for-reading-writing-causal-graphs">
+<h2>IO for reading/writing causal graphs<a class="headerlink" href="#io-for-reading-writing-causal-graphs" title="Permalink to this heading">#</a></h2>
+<p>We advocate for using our implemented causal graph classes whenever
+utilizing various packages. However, we also support transformations
+to and from popular storage classes, such as <code class="docutils literal notranslate"><span class="pre">numpy</span> <span class="pre">arrays</span></code>,
+<code class="docutils literal notranslate"><span class="pre">pandas</span> <span class="pre">dataframes</span></code>, <code class="docutils literal notranslate"><span class="pre">pgmpy</span></code>, <code class="docutils literal notranslate"><span class="pre">DOT</span></code> and <code class="docutils literal notranslate"><span class="pre">dagitty</span></code>. Note that
+not all these are supported for all types of graphs because of
+inherent limitations in supporting mixed-edge graphs in other formats.</p>
 <table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.io.load_from_networkx.html#causal_networkx.io.load_from_networkx" title="causal_networkx.io.load_from_networkx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_from_networkx</span></code></a>(G)</p></td>
+<td><p>Load causal graph from networkx.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.io.load_from_numpy.html#causal_networkx.io.load_from_numpy" title="causal_networkx.io.load_from_numpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_from_numpy</span></code></a>(arr[, type])</p></td>
+<td><p>Load causal graph from a numpy array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.io.load_from_pgmpy.html#causal_networkx.io.load_from_pgmpy" title="causal_networkx.io.load_from_pgmpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_from_pgmpy</span></code></a>(pgmpy_dag)</p></td>
+<td><p>Load causal graph from pgmpy.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.io.to_networkx.html#causal_networkx.io.to_networkx" title="causal_networkx.io.to_networkx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_networkx</span></code></a>(causal_graph)</p></td>
+<td><p>Convert causal graph to networkx class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.io.to_numpy.html#causal_networkx.io.to_numpy" title="causal_networkx.io.to_numpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_numpy</span></code></a>(causal_graph)</p></td>
+<td><p>Convert causal graph to a numpy adjacency array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/causal_networkx.io.to_pgmpy.html#causal_networkx.io.to_pgmpy" title="causal_networkx.io.to_pgmpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pgmpy</span></code></a>(causal_graph)</p></td>
+<td><p>Convert causal graph to pgmpy BayesianNetwork.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="utility-algorithms-for-causal-graphs">
+<h2>Utility Algorithms for Causal Graphs<a class="headerlink" href="#utility-algorithms-for-causal-graphs" title="Permalink to this heading">#</a></h2>
+<table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/causal_networkx.algorithms.d_separated.html#causal_networkx.algorithms.d_separated" title="causal_networkx.algorithms.d_separated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">d_separated</span></code></a>(G, x, y, z)</p></td>
 <td><p>Check d-separation among 'x' and 'y' given 'z' in graph G.</p></td>
@@ -484,7 +580,7 @@ variable and then <code class="docutils literal notranslate"><span class="pre">s
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
 </p>
     </div>
     

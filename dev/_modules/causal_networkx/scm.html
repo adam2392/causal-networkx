@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,6 +33,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
@@ -45,7 +46,7 @@
     <script type="text/javascript" src="../../_static/scrollfix.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
+    <meta name="docsearch:language" content="en">
     
 
     <!-- Google Analytics -->
@@ -204,7 +205,7 @@
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="kn">from</span> <span class="nn">causal_networkx.cgm</span> <span class="kn">import</span> <span class="n">CausalGraph</span>
+<span class="kn">from</span> <span class="nn">causal_networkx.graphs.cgm</span> <span class="kn">import</span> <span class="n">ADMG</span>
 
 
 <div class="viewcode-block" id="StructuralCausalModel"><a class="viewcode-back" href="../../generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel">[docs]</a><span class="k">class</span> <span class="nc">StructuralCausalModel</span><span class="p">:</span>
@@ -317,7 +318,6 @@
 <span class="sd">        -------</span>
 <span class="sd">        result_df : pd.DataFrame</span>
 <span class="sd">            The sampled dataset.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df_values</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -369,12 +369,12 @@
             <span class="n">result_table</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endogenous</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">result_table</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">result_table</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">input_vars</span><span class="p">])</span>
 
-<div class="viewcode-block" id="StructuralCausalModel.get_causal_graph"><a class="viewcode-back" href="../../generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel.get_causal_graph">[docs]</a>    <span class="k">def</span> <span class="nf">get_causal_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CausalGraph</span><span class="p">:</span>
+<div class="viewcode-block" id="StructuralCausalModel.get_causal_graph"><a class="viewcode-back" href="../../generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel.get_causal_graph">[docs]</a>    <span class="k">def</span> <span class="nf">get_causal_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ADMG</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Compute the induced causal diagram.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        G : instance of CausalGraph</span>
+<span class="sd">        G : instance of ADMG</span>
 <span class="sd">            The causal graphical model corresponding to</span>
 <span class="sd">            the SCM.</span>
 
@@ -397,7 +397,7 @@
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pc_comps</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">latent_edge_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pc_comps</span><span class="p">)</span>
 
-        <span class="n">G</span> <span class="o">=</span> <span class="n">CausalGraph</span><span class="p">(</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">ADMG</span><span class="p">(</span>
             <span class="n">incoming_graph_data</span><span class="o">=</span><span class="n">edge_list</span><span class="p">,</span>
             <span class="n">incoming_latent_data</span><span class="o">=</span><span class="n">latent_edge_list</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Induced Causal Graph from SCM&quot;</span><span class="p">,</span>
@@ -434,7 +434,7 @@
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
 </p>
     </div>
     

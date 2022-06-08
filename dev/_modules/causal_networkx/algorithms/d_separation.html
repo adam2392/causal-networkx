@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,6 +33,7 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
@@ -45,7 +46,7 @@
     <script type="text/javascript" src="../../../_static/scrollfix.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
+    <meta name="docsearch:language" content="en">
     
 
     <!-- Google Analytics -->
@@ -203,14 +204,14 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">networkx.algorithms</span> <span class="kn">import</span> <span class="n">d_separated</span> <span class="k">as</span> <span class="n">nx_d_separated</span>
 
-<span class="kn">from</span> <span class="nn">causal_networkx.cgm</span> <span class="kn">import</span> <span class="n">PAG</span><span class="p">,</span> <span class="n">CausalGraph</span>
+<span class="kn">from</span> <span class="nn">causal_networkx.graphs.cgm</span> <span class="kn">import</span> <span class="n">ADMG</span><span class="p">,</span> <span class="n">PAG</span>
 
 
-<div class="viewcode-block" id="d_separated"><a class="viewcode-back" href="../../../generated/causal_networkx.algorithms.d_separated.html#causal_networkx.algorithms.d_separated">[docs]</a><span class="k">def</span> <span class="nf">d_separated</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CausalGraph</span><span class="p">,</span> <span class="n">PAG</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+<div class="viewcode-block" id="d_separated"><a class="viewcode-back" href="../../../generated/causal_networkx.algorithms.d_separated.html#causal_networkx.algorithms.d_separated">[docs]</a><span class="k">def</span> <span class="nf">d_separated</span><span class="p">(</span><span class="n">G</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ADMG</span><span class="p">,</span> <span class="n">PAG</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Check d-separation among &#39;x&#39; and &#39;y&#39; given &#39;z&#39; in graph G.</span>
 
 <span class="sd">    This algorithm wraps ``networkx.algorithms.d_separated``, but</span>
-<span class="sd">    allows one to pass in a ``CausalGraph`` instance instead.</span>
+<span class="sd">    allows one to pass in a ``ADMG`` instance instead.</span>
 
 <span class="sd">    It first converts all bidirected edges into explicit unobserved</span>
 <span class="sd">    confounding nodes in an explicit ``networkx.DiGraph``, which then</span>
@@ -220,7 +221,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    G : CausalGraph</span>
+<span class="sd">    G : ADMG</span>
 <span class="sd">        Causal graph.</span>
 <span class="sd">    x : set</span>
 <span class="sd">        First set of nodes in ``G``.</span>
@@ -231,13 +232,13 @@
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    causal_networkx.CausalGraph</span>
+<span class="sd">    causal_networkx.ADMG</span>
 <span class="sd">    networkx.algorithms.d_separation.d_separated</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    This wraps the networkx implementation, which only allows DAGs. Since</span>
-<span class="sd">    ``CausalGraph`` is not represented.</span>
+<span class="sd">    ``ADMG`` is not represented.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># get the full graph by converting bidirected edges into latent confounders</span>
@@ -296,7 +297,7 @@
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
 </p>
     </div>
     

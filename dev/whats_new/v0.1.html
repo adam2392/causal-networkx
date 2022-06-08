@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>What’s new? &#8212; causal-networkx v0.1.0</title>
     
@@ -34,6 +34,7 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
@@ -47,7 +48,7 @@
     <script type="text/javascript" src="../_static/scrollfix.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
+    <meta name="docsearch:language" content="en">
     
 
     <!-- Google Analytics -->
@@ -248,20 +249,27 @@
               <div>
                 
   <section id="what-s-new">
-<span id="changes-0-1"></span><h1>What’s new?<a class="headerlink" href="#what-s-new" title="Permalink to this headline">#</a></h1>
+<span id="changes-0-1"></span><h1>What’s new?<a class="headerlink" href="#what-s-new" title="Permalink to this heading">#</a></h1>
 <p>Here we list a changelog of Causal-Networkx.</p>
 </section>
 <section id="version-0-1">
-<span id="current"></span><h1>Version 0.1<a class="headerlink" href="#version-0-1" title="Permalink to this headline">#</a></h1>
+<span id="current"></span><h1>Version 0.1<a class="headerlink" href="#version-0-1" title="Permalink to this heading">#</a></h1>
 <p><strong>In Development</strong></p>
 <section id="changelog">
-<h2>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">#</a></h2>
+<h2>Changelog<a class="headerlink" href="#changelog" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p><span class="raw-html"><span class="badge badge-success">Feature</span></span>  Implement and test the <a class="reference internal" href="../generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI" title="causal_networkx.discovery.FCI"><code class="xref py py-class docutils literal notranslate"><span class="pre">causal_networkx.discovery.FCI</span></code></a> algorithm, by <a class="reference external" href="https://adam2392.github.io">Adam Li</a> (<a class="reference external" href="https://github.com/mne-tools/mne-connectivity/issues/1">#1</a>)</p></li>
+<li><p><span class="raw-html"><span class="badge badge-success">Feature</span></span>  Implement <a class="reference internal" href="../generated/causal_networkx.ci.KernelCITest.html#causal_networkx.ci.KernelCITest" title="causal_networkx.ci.KernelCITest"><code class="xref py py-class docutils literal notranslate"><span class="pre">causal_networkx.ci.KernelCITest</span></code></a> for kernel-based conditional independence testing, by <a class="reference external" href="https://adam2392.github.io">Adam Li</a> (<a class="reference external" href="https://github.com/mne-tools/mne-connectivity/issues/14">#14</a>)</p></li>
+<li><p><span class="raw-html"><span class="badge badge-success">Feature</span></span>  Implement and test the <a class="reference internal" href="../generated/causal_networkx.DAG.html#causal_networkx.DAG" title="causal_networkx.DAG"><code class="xref py py-class docutils literal notranslate"><span class="pre">causal_networkx.DAG</span></code></a> for fully observed causal DAGs, by <a class="reference external" href="https://adam2392.github.io">Adam Li</a> (<a class="reference external" href="https://github.com/mne-tools/mne-connectivity/issues/15">#15</a>)</p></li>
+<li><p><span class="raw-html"><span class="badge badge-success">Feature</span></span>  Implement and test the <a class="reference internal" href="../generated/causal_networkx.CPDAG.html#causal_networkx.CPDAG" title="causal_networkx.CPDAG"><code class="xref py py-class docutils literal notranslate"><span class="pre">causal_networkx.CPDAG</span></code></a> for CPDAGs, by <a class="reference external" href="https://adam2392.github.io">Adam Li</a> (<a class="reference external" href="https://github.com/mne-tools/mne-connectivity/issues/16">#16</a>)</p></li>
+<li><p><span class="raw-html"><span class="badge badge-success">Feature</span></span>  Implement and test the <code class="docutils literal notranslate"><span class="pre">causal_networkx.discovery.learn_skeleton_graph_with_order</span></code> for learning skeleton graph and keeping track of dependencies, by <a class="reference external" href="https://adam2392.github.io">Adam Li</a> (<a class="reference external" href="https://github.com/mne-tools/mne-connectivity/issues/17">#17</a>)</p></li>
+<li><p><span class="raw-html"><span class="badge badge-success">Feature</span></span>  Implement and test the <a class="reference internal" href="../generated/causal_networkx.discovery.RobustPC.html#causal_networkx.discovery.RobustPC" title="causal_networkx.discovery.RobustPC"><code class="xref py py-class docutils literal notranslate"><span class="pre">causal_networkx.discovery.RobustPC</span></code></a> for learning PC algorithm robustly with MCI condition, by <a class="reference external" href="https://adam2392.github.io">Adam Li</a> (<a class="reference external" href="https://github.com/mne-tools/mne-connectivity/issues/17">#17</a>)</p></li>
+<li><p><span class="raw-html"><span class="badge badge-success">Feature</span></span>  Implement and test the <a class="reference internal" href="../generated/causal_networkx.ci.ParentOracle.html#causal_networkx.ci.ParentOracle" title="causal_networkx.ci.ParentOracle"><code class="xref py py-class docutils literal notranslate"><span class="pre">causal_networkx.ci.ParentOracle</span></code></a> for running CI-discovery algorithms with the known parents, by <a class="reference external" href="https://adam2392.github.io">Adam Li</a> (<a class="reference external" href="https://github.com/mne-tools/mne-connectivity/issues/17">#17</a>)</p></li>
+<li><p><span class="raw-html"><span class="badge badge-success">Feature</span></span>  Add ability to export/load causal graphs to networkx, by <a class="reference external" href="https://adam2392.github.io">Adam Li</a> (<a class="reference external" href="https://github.com/mne-tools/mne-connectivity/issues/17">#17</a>)</p></li>
 </ul>
 </section>
 <section id="code-and-documentation-contributors">
-<h2>Code and Documentation Contributors<a class="headerlink" href="#code-and-documentation-contributors" title="Permalink to this headline">#</a></h2>
+<h2>Code and Documentation Contributors<a class="headerlink" href="#code-and-documentation-contributors" title="Permalink to this heading">#</a></h2>
 <p>Thanks to everyone who has contributed to the maintenance and improvement of
 the project since version inception, including:</p>
 <ul class="simple">
@@ -304,7 +312,7 @@ the project since version inception, including:</p>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
 </p>
     </div>
     
