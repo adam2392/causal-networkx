@@ -11,7 +11,7 @@ different types of edges.
 
 Overview
 ********
-.. currentmodule:: causal_networkx.DAG
+.. currentmodule:: causal_networkx.graphs.dag
 .. autoclass:: DAG
 
 Copying
@@ -41,7 +41,6 @@ Information about nodes and edges
    DAG.number_of_nodes
    DAG.size
    DAG.degree
-   DAG.c_components
    DAG.markov_blanket_of
 
 Graph modification

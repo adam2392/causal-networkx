@@ -16,8 +16,7 @@ stage.
 Most-used classes
 =================
 These are the causal classes for Structural Causal Models (SCMs), or various causal
-graphs encountered in the literature. To see a breakdown of different inner
-graph functionalities, see the :ref:`Graph API <graph_api>` page.
+graphs encountered in the literature. 
 
 .. currentmodule:: causal_networkx
 
@@ -29,6 +28,14 @@ graph functionalities, see the :ref:`Graph API <graph_api>` page.
    CPDAG
    ADMG
    PAG
+
+To see a breakdown of different inner graph functionalities,
+see the :ref:`Graph API <graph_api>` page. See 
+
+.. toctree::
+   :maxdepth: 1
+
+   graph_api
 
 Discovery functions
 ===================
