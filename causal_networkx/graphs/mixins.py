@@ -277,8 +277,6 @@ class NetworkXMixin(Protocol):
 
     def all_edges(self):
         """Get dictionary of all the edges by edge type."""
-        print(self)
-        print(self._graph_names)
         return {name: graph.edges for name, graph in zip(self._graph_names, self._graphs)}
 
 

@@ -62,7 +62,7 @@ def is_markov_equivalent(graph, other_graph) -> bool:
 
     For DAGs, two graphs are Markov equivalent iff. they have the same skeleton
     and same v-structures.
-    
+
     For ADMGs, two graphs are Markov equivalent iff. they are MEC in the DAG-sense
     and if whenever there is the same discriminating path for some node in both
     graphs, the node is a collider on that path in one graph iff. it is a collider

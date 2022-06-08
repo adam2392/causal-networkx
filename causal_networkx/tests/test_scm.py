@@ -3,7 +3,7 @@ import pytest
 from numpy.testing import assert_array_equal
 from scipy.stats import multiscale_graphcorr
 
-from causal_networkx.graphs.cgm import ADMG
+from causal_networkx import ADMG
 from causal_networkx.scm import StructuralCausalModel
 
 seed = 12345

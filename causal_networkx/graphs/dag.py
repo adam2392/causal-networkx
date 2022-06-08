@@ -1,12 +1,13 @@
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Set
 
 import networkx as nx
 
 from ..config import EdgeType
+from .base import MarkovianGraph
 from .mixins import AddingEdgeMixin, ExportMixin, GraphSampleMixin, NetworkXMixin
 
 
-class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
+class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, MarkovianGraph):
     """Causal directed acyclic graph.
 
     This is a causal Bayesian network, or a Bayesian network
@@ -40,6 +41,7 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
     _graph_names: List[str]
     _current_hash: Optional[int]
     _full_graph: Optional[nx.DiGraph]
+    _cond_set: Set
 
     def __init__(self, incoming_graph_data=None, **attr) -> None:
         # create the DAG of observed variables
@@ -62,6 +64,10 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
             for node in graph.nodes:
                 if node not in self:
                     self.dag.add_node(node)
+
+        # the conditioning set used in d-separation
+        # keep track of variables that are always conditioned on
+        self._cond_set = set()
 
     def _init_graphs(self):
         """Private function to initialize graphs.
@@ -193,7 +199,7 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
         graph : ADMG
             The mixed-edge causal graph that results.
         """
-        from causal_networkx.graphs.cgm import ADMG
+        from causal_networkx import ADMG
 
         bidirected_edges = []
         new_graph = ADMG()
@@ -237,3 +243,8 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
         children = set(self.children(node))
         spouses = {self.parents(child) for child in children}
         return parents.union(children).union(spouses)
+
+    def compute_full_graph(self, to_networkx: bool = False):
+        if to_networkx:
+            return nx.DiGraph(self.dag)  # type: ignore
+        return self.dag

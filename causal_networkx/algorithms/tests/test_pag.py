@@ -2,6 +2,7 @@ from itertools import permutations
 
 import pytest
 
+from causal_networkx import ADMG, PAG
 from causal_networkx.algorithms import (
     discriminating_path,
     possibly_d_sep_sets,
@@ -9,7 +10,6 @@ from causal_networkx.algorithms import (
 )
 from causal_networkx.ci import Oracle
 from causal_networkx.discovery import FCI
-from causal_networkx.graphs.cgm import ADMG, PAG
 
 
 def test_possibly_d_separated():

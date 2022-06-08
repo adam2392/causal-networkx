@@ -7,8 +7,8 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
+from causal_networkx import PAG
 from causal_networkx.algorithms.pag import possibly_d_sep_sets
-from causal_networkx.graphs.cgm import PAG
 
 logger = logging.getLogger()
 

@@ -3,7 +3,7 @@ from networkx.algorithms import (
 )
 from networkx.algorithms import topological_sort as nx_topological_sort
 
-from causal_networkx.graphs.cgm import ADMG
+from causal_networkx import ADMG
 
 
 def is_directed_acyclic_graph(G):

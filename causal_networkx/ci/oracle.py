@@ -2,8 +2,8 @@ from typing import Union
 
 import numpy as np
 
+from causal_networkx import ADMG, DAG
 from causal_networkx.algorithms.d_separation import d_separated
-from causal_networkx.graphs.cgm import ADMG, DAG
 
 
 class Oracle:

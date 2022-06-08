@@ -4,7 +4,7 @@ from typing import Callable
 
 import networkx as nx
 
-from causal_networkx.graphs.cgm import ADMG, PAG
+from causal_networkx import ADMG, PAG
 
 
 def requires_module(function, name, call=None):

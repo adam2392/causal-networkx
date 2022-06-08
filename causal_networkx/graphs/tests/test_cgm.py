@@ -24,6 +24,20 @@ class TestGraph:
         incoming_graph_data = {0: {1: ed1, 2: ed2}}
         self.G = self.Graph(incoming_graph_data)
 
+    def test_d_separation(self):
+        G = self.G.copy()
+        # add collider on 2
+        G.add_edge(3, 2)
+
+        # normal d-separation statements should hold
+        assert not d_separated(G, 1, 2, set())
+        assert d_separated(G, 1, 2, 0)
+
+        # when we add an edge from 3 -> 2
+        # there is no d-separation statement
+        assert d_separated(G, 3, 1, set())
+        assert not d_separated(G, 3, 1, 2)
+
 
 class TestNetworkxGraph(TestGraph):
     """Test ADMG relevant networkx properties."""
@@ -475,10 +489,6 @@ class TestADMG(TestGraph, TestExportGraph):
         G.remove_edge(0, 1)
         assert d_separated(G, 3, 1, set())
         assert not d_separated(G, 3, 1, 0)
-
-    # def test_add_multiple_edges(self):
-    #     G = self.G
-    # since there is a directed edge from
 
     def test_children_and_parents(self):
         """Test working with children and parents."""

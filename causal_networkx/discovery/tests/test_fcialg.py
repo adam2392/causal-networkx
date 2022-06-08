@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from causal_networkx import ADMG, PAG
 from causal_networkx.algorithms import d_separated, possibly_d_sep_sets
 from causal_networkx.ci import Oracle
 from causal_networkx.discovery import FCI
-from causal_networkx.graphs.cgm import ADMG, PAG
 from causal_networkx.scm import StructuralCausalModel
 
 

@@ -7,7 +7,7 @@ from warnings import warn
 import networkx as nx
 import numpy as np
 
-from causal_networkx.graphs.cgm import PAG
+from causal_networkx import PAG
 
 logger = logging.getLogger()
 

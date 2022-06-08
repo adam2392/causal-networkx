@@ -3,6 +3,7 @@ from typing import Union
 import networkx as nx
 import numpy as np
 
+from causal_networkx import ADMG, CPDAG, DAG, PAG
 from causal_networkx.config import (
     EDGE_TO_VALUE_MAPPING,
     ENDPOINT_TO_EDGE_MAPPING,
@@ -11,7 +12,6 @@ from causal_networkx.config import (
     EdgeType,
     EndPoint,
 )
-from causal_networkx.graphs.cgm import ADMG, CPDAG, DAG, PAG
 
 GRAPH_TYPE = {DAG: "DAG", ADMG: "ADMG", CPDAG: "CPDAG", PAG: "PAG"}
 GRAPH_TYPE_TO_FUNC = {val: key for key, val in GRAPH_TYPE.items()}
