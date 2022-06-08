@@ -275,6 +275,12 @@ class NetworkXMixin(Protocol):
     def is_multigraph(self):
         return False
 
+    def all_edges(self):
+        """Get dictionary of all the edges by edge type."""
+        print(self)
+        print(self._graph_names)
+        return {name: graph.edges for name, graph in zip(self._graph_names, self._graphs)}
+
 
 class GraphSampleMixin:
     def dummy_sample(self):
@@ -424,6 +430,13 @@ class ExportMixin:
         G = to_networkx(self)
         return G
 
+    def to_pgmpy(self):
+        """Convert causal graph to pgmpy."""
+        from causal_networkx.io import to_pgmpy
+
+        G = to_pgmpy(self)
+        return G
+
     @typing.no_type_check
     def to_numpy(self) -> NDArray:
         """Convert to a matrix representation.
@@ -463,6 +476,9 @@ class ExportMixin:
         elif format == "networkx-gml":
             G = self.to_networkx()
             nx.write_gml(G, fname)
+        elif format == "pgmpy-bif":
+            G = self.to_pgmpy()
+            G.save(str(fname), filetype="bif")
         elif format == "txt":
             str_dot_graph = self.to_dot_graph()
             with open(fname, "w") as fout:

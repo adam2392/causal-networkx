@@ -208,13 +208,6 @@ class CPDAG(DAG):
         self.remove_undirected_edge(v, u)
         self.add_edge(u, v)
 
-    def all_edges(self):
-        """Get dictionary of all the edges by edge type."""
-        return {
-            "edges": self.edges,
-            "undirected": self.undirected_edges,
-        }
-
     def to_directed(self):
         """Convert CPDAG to a networkx DiGraph.
 
@@ -733,14 +726,6 @@ class PAG(ADMG):
 
         # check the PAG
         self._check_pag()
-
-    def all_edges(self):
-        """Get dictionary of all the edges by edge type."""
-        return {
-            "edges": self.edges,
-            "bidirected": self.bidirected_edges,
-            "circle": self.circle_endpoints,
-        }
 
     def _init_graphs(self):
         self._graphs = [

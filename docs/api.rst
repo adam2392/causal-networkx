@@ -16,7 +16,8 @@ stage.
 Most-used classes
 =================
 These are the causal classes for Structural Causal Models (SCMs), or various causal
-graphs encountered in the literature.
+graphs encountered in the literature. To see a breakdown of different inner
+graph functionalities, see the :ref:`Graph API <graph_api>` page.
 
 .. currentmodule:: causal_networkx
 
@@ -107,4 +108,5 @@ Utility Algorithms for Causal Graphs
    discriminating_path
    possibly_d_sep_sets
    uncovered_pd_path
-   
+   dag2cpdag
+   admg2pag

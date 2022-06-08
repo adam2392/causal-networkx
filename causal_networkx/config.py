@@ -99,6 +99,17 @@ MIXED_EDGE_TO_VALUE_MAPPING = {
 }
 VALUE_TO_MIXED_EDGE_MAPPING = {val: key for key, val in MIXED_EDGE_TO_VALUE_MAPPING.items()}
 
+# for mapping causal graphs with only 1 edge between any two nodes
+# to specific values.
+# Note: ADMGs are not supported in this mapping.
+EDGE_TO_VALUE_MAPPING = {
+    None: 0,
+    EdgeType.directed.value: 1,
+    EdgeType.undirected.value: 2,
+    EdgeType.bidirected.value: 3,
+    EndPoint.circle.value: 4,
+}
+
 # map pairs of endpoints to their corresponding edges
 ENDPOINT_TO_EDGE_MAPPING = {
     (EndPoint.arrow.value, EndPoint.arrow.value): EdgeType.bidirected.value,
@@ -111,5 +122,6 @@ ENDPOINT_TO_EDGE_MAPPING = {
     (EndPoint.arrow.value, EndPoint.circle.value): EdgeType.directed_to_circle.value,
     (EndPoint.tail.value, EndPoint.circle.value): EdgeType.undirected_to_circle.value,
 }
+EDGE_TO_ENDPOINT_MAPPING = {val: key for key, val in ENDPOINT_TO_EDGE_MAPPING.items()}
 
 GRAPH_TYPES = ["dag", "cpdag", "admg", "pag"]

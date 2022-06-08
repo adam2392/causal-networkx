@@ -1,9 +1,27 @@
 import random
+from functools import partial
 from typing import Callable
 
 import networkx as nx
 
 from causal_networkx.graphs.cgm import ADMG, PAG
+
+
+def requires_module(function, name, call=None):
+    """Skip a test if package is not available (decorator)."""
+    import pytest
+
+    call = ("import %s" % name) if call is None else call
+    reason = "Test %s skipped, requires %s." % (function.__name__, name)
+    try:
+        exec(call) in globals(), locals()
+    except Exception as exc:
+        if len(str(exc)) > 0 and str(exc) != "No module named %s" % name:
+            reason += " Got exception (%s)" % (exc,)
+        skip = True
+    else:
+        skip = False
+    return pytest.mark.skipif(skip, reason=reason)(function)
 
 
 def _check_ci_estimator(ci_estimator: Callable):
@@ -74,6 +92,11 @@ def _sample_cg(
         #         done = False
 
     return cg
+
+
+def requires_pgmpy():
+    """Wrap to requires_module with a function call (fewer lines to change)."""
+    return partial(requires_module, name="pgmpy")
 
 
 def convert_latent_to_unobserved_confounders(G: ADMG) -> ADMG:

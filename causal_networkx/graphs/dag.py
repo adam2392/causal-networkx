@@ -219,3 +219,21 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
         # create the c-component structures
         new_graph.add_bidirected_edges_from(bidirected_edges)
         return new_graph
+
+    def markov_blanket_of(self, node):
+        """Compute the markov blanket of a node.
+
+        Parameters
+        ----------
+        node : node
+            The node to compute Markov blanket for.
+
+        Returns
+        -------
+        markov_blanket : set
+            A set of parents, children and spouses of the node.
+        """
+        parents = set(self.parents(node))
+        children = set(self.children(node))
+        spouses = {self.parents(child) for child in children}
+        return parents.union(children).union(spouses)
