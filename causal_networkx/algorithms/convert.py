@@ -55,3 +55,35 @@ def admg2pag(graph: ADMG) -> PAG:
     fci.fit(dummy_X)
     pag = fci.graph_
     return pag  # type: ignore
+
+
+def is_markov_equivalent(graph, other_graph) -> bool:
+    """Check markov equivalence of two graphs.
+
+    For DAGs, two graphs are Markov equivalent iff. they have the same skeleton
+    and same v-structures.
+    
+    For ADMGs, two graphs are Markov equivalent iff. they are MEC in the DAG-sense
+    and if whenever there is the same discriminating path for some node in both
+    graphs, the node is a collider on that path in one graph iff. it is a collider
+    on that path in the other graph.
+
+    Parameters
+    ----------
+    graph : _type_
+        _description_
+    other_graph : _type_
+        _description_
+
+    Returns
+    -------
+    is_mec : bool
+        If the two graphs are markov equivalent.
+    """
+    # See: https://graphical-models.readthedocs.io/en/latest/_modules/graphical_models/classes/mags/ancestral_graph.html#AncestralGraph.markov_blanket_of  # noqa
+    # first check skeleton
+
+    # second check v-structures
+
+    # third check discriminating triples if needed
+    pass

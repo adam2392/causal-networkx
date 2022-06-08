@@ -24,3 +24,16 @@ def compare_networks(
     # compute a score
     # scores =
     pass
+
+
+def structure_hamming_dist(graph, other_graph):
+    """Compute structural hamming distance.
+
+    Parameters
+    ----------
+    graph : _type_
+        _description_
+    other_graph : _type_
+        _description_
+    """
+    pass
