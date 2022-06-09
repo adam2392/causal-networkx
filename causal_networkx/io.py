@@ -1,5 +1,3 @@
-from typing import Union
-
 import networkx as nx
 import numpy as np
 

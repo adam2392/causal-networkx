@@ -8,8 +8,8 @@ from numpy.testing import assert_array_equal
 from causal_networkx import ADMG, CPDAG, DAG, PAG
 from causal_networkx.algorithms import d_separated
 from causal_networkx.config import EDGE_TO_VALUE_MAPPING, EdgeType
-from causal_networkx.io import load_from_networkx, load_from_pgmpy
-from causal_networkx.utils import requires_pgmpy
+from causal_networkx.io import load_from_networkx
+from causal_networkx.utils import requires_pydot
 
 
 class TestGraph:
@@ -276,34 +276,7 @@ class TestExportGraph:
         print(G, read_G)
         assert nx.is_isomorphic(read_G.to_networkx(), G.to_networkx())
 
-    # @pytest.mark.skip(reason="Not working for conversion to pgmpy?")
-    @requires_pgmpy()
-    def test_to_pgmpy(self, tmp_path):
-        from pgmpy.readwrite import BIFReader
-
-        # build dict-of-dict-of-dict K3
-        ed1, ed2 = ({}, {})
-        incoming_graph_data = {"first": {"second": ed1, "third": ed2}}
-        G = DAG(incoming_graph_data)
-        if not isinstance(G, DAG):
-            return
-
-        fname = Path(tmp_path) / "test.bif"
-
-        from pgmpy.utils import get_example_model
-        alarm = get_example_model('alarm')
-        print(alarm)
-        alarm.save(str(fname), filetype='bif')
-
-        G.save(fname, format="pgmpy-bif")
-
-        reader = BIFReader(fname)
-        bn_G = reader.get_model()
-        read_G = load_from_pgmpy(bn_G)
-        assert type(read_G) == type(G)
-        assert set(read_G.nodes) == set(map(str, G.nodes))
-        assert nx.is_isomorphic(read_G.to_networkx(), G.to_networkx())
-
+    @requires_pydot()
     def test_to_dot(self):
         """Test exporting to DOT format."""
         # 0 -> 1, 0 -> 2 with 1 <--> 0

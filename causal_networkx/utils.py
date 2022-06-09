@@ -94,9 +94,9 @@ def _sample_cg(
     return cg
 
 
-def requires_pgmpy():
+def requires_pydot():
     """Wrap to requires_module with a function call (fewer lines to change)."""
-    return partial(requires_module, name="pgmpy")
+    return partial(requires_module, name="pydot")
 
 
 def convert_latent_to_unobserved_confounders(G: ADMG) -> ADMG:
