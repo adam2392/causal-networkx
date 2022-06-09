@@ -276,19 +276,25 @@ class TestExportGraph:
         print(G, read_G)
         assert nx.is_isomorphic(read_G.to_networkx(), G.to_networkx())
 
-    @pytest.mark.skip(reason="Not working for conversion to pgmpy?")
+    # @pytest.mark.skip(reason="Not working for conversion to pgmpy?")
     @requires_pgmpy()
     def test_to_pgmpy(self, tmp_path):
         from pgmpy.readwrite import BIFReader
 
         # build dict-of-dict-of-dict K3
         ed1, ed2 = ({}, {})
-        incoming_graph_data = {"0": {"1": ed1, "2": ed2}}
+        incoming_graph_data = {"first": {"second": ed1, "third": ed2}}
         G = DAG(incoming_graph_data)
         if not isinstance(G, DAG):
             return
 
         fname = Path(tmp_path) / "test.bif"
+
+        from pgmpy.utils import get_example_model
+        alarm = get_example_model('alarm')
+        print(alarm)
+        alarm.save(str(fname), filetype='bif')
+
         G.save(fname, format="pgmpy-bif")
 
         reader = BIFReader(fname)

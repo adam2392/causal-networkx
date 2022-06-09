@@ -74,6 +74,5 @@ Conversion to/from other formats
 
    DAG.to_dot_graph
    DAG.to_networkx
-   DAG.to_pgmpy
    DAG.to_numpy
    DAG.save

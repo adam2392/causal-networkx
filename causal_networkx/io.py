@@ -207,36 +207,6 @@ def load_from_pgmpy(pgmpy_dag) -> DAG:
     return dag
 
 
-def to_pgmpy(causal_graph: Union[DAG, ADMG]):
-    """Convert causal graph to pgmpy BayesianNetwork.
-
-    Parameters
-    ----------
-    causal_graph : DAG | ADMG
-        The causal graph with possibly latents.
-
-    Returns
-    -------
-    dag : pgmpy.models.BayesianNetwork
-        The pgmpy Bayesian network.
-    """
-    from pgmpy.models import BayesianNetwork
-
-    latents = set()
-    if isinstance(causal_graph, ADMG):
-        causal_dag = causal_graph.compute_full_graph(to_networkx=True)
-
-        # get the latent nodes
-        for (node, node_dict) in causal_dag.nodes.data():
-            if node_dict.get("observed") == "no":
-                latents.add(node)
-    else:
-        causal_dag = causal_graph.dag
-    # create the pgmpy Bayesian Network
-    dag = BayesianNetwork(causal_dag, latents=latents)
-    return dag
-
-
 def load_from_numpy(arr, type="dag"):
     """Load causal graph from a numpy array.
 

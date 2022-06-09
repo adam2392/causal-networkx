@@ -428,13 +428,6 @@ class ExportMixin:
         G = to_networkx(self)
         return G
 
-    def to_pgmpy(self):
-        """Convert causal graph to pgmpy."""
-        from causal_networkx.io import to_pgmpy
-
-        G = to_pgmpy(self)
-        return G
-
     @typing.no_type_check
     def to_numpy(self) -> NDArray:
         """Convert to a matrix representation.
@@ -468,15 +461,9 @@ class ExportMixin:
         if format == "dot":
             G = self.to_networkx()
             nx.nx_agraph.write_dot(G, fname)
-            # str_dot_graph = self.to_dot_graph()[:-1]
-            # graph = pydot.graph_from_dot_data(str_dot_graph)[0]
-            # graph.write_dot(fname, encoding="utf-8")
         elif format == "networkx-gml":
             G = self.to_networkx()
             nx.write_gml(G, fname)
-        elif format == "pgmpy-bif":
-            G = self.to_pgmpy()
-            G.save(str(fname), filetype="bif")
         elif format == "txt":
             str_dot_graph = self.to_dot_graph()
             with open(fname, "w") as fout:

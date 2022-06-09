@@ -98,7 +98,6 @@ inherent limitations in supporting mixed-edge graphs in other formats.
    load_from_pgmpy
    to_networkx
    to_numpy
-   to_pgmpy
 
 
 Utility Algorithms for Causal Graphs
