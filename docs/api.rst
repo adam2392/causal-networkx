@@ -33,7 +33,7 @@ To see a breakdown of different inner graph functionalities,
 see the :ref:`Graph API <graph_api>` page. See 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 0
 
    graph_api
 

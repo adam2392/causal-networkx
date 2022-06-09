@@ -86,4 +86,7 @@ def is_markov_equivalent(graph, other_graph) -> bool:
     # second check v-structures
 
     # third check discriminating triples if needed
+
+    # fourth if interventional, then must check that
+    # interventional distributions are consistent
     pass

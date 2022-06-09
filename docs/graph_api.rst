@@ -1,3 +1,5 @@
+:orphan:
+
 .. _graph_api:
 
 ***
@@ -12,7 +14,6 @@ different types of edges.
 Overview
 ********
 .. currentmodule:: causal_networkx.graphs.dag
-.. autoclass:: DAG
 
 Copying
 -------
