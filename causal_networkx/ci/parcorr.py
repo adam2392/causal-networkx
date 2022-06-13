@@ -98,10 +98,12 @@ class PartialCorrelation:
 
         # Check if we are using the analytic significance
         if use_sig == "analytic":
-            pval = self._compute_analytic_significance(value=val, n_samples=n_samples, n_dims=n_dims)
+            pval = self._compute_analytic_significance(
+                value=val, n_samples=n_samples, n_dims=n_dims
+            )
         # Check if we are using the shuffle significance
         elif use_sig == "shuffle_test":
-            pval = self.get_shuffle_significance(array=array, xyz=xyz, value=val)
+            pval = self._compute_shuffle_significance(array=array, xyz=xyz, value=val)
         # Check if we are using the fixed_thres significance
         elif use_sig == "fixed_thresh":
             pval = self._compute_fixed_threshold_significance(

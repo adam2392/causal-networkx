@@ -17,6 +17,7 @@ in causal inference, and their differences using implementations in ``causal-net
 import numpy as np
 
 from causal_networkx import StructuralCausalModel
+from causal_networkx.graphs.admg import ADMG
 
 # %%
 # Structural Causal Models: Simulating some data
@@ -100,7 +101,11 @@ print(G.children("xy"))
 # in the graph. These unobserved confounders are graphically depicted with a bidirected edge.
 
 # We can construct an ADMG from the DAG by just setting 'xy' as a latent confounder
-admg = G.set_nodes_as_latent_confounders(["xy"])
+# admg = G.set_nodes_as_latent_confounders(["xy"])
+G_copy = G.copy()
+G_copy.remove_node("xy")
+admg = ADMG(G_copy.dag)
+admg.add_bidirected_edge("x", "y")
 
 # Now there is a bidirected edge between 'x' and 'y'
 admg.draw()
