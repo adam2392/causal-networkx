@@ -49,9 +49,10 @@ rng = np.random.RandomState(seed=seed)
 
 # construct a SCM with 2 exogenous variables and 4 endogenous variables
 func_uz = lambda: rng.binomial(n=1, p=0.25)
+func_ux = lambda: rng.binomial(n=1, p=0.25)
 func_uxy = lambda: rng.binomial(n=1, p=0.4)
 func_xy = lambda u_xy: u_xy
-func_x = lambda u_x, u_xy: 2 * u_x + u_xy
+func_x = lambda u_x: 2 * u_x
 func_y = lambda x, u_xy, z: x * u_xy + z
 func_z = lambda u_z: u_z
 
@@ -60,6 +61,7 @@ scm = StructuralCausalModel(
     exogenous={
         "u_xy": func_uxy,
         "u_z": func_uz,
+        "u_x": func_ux,
     },
     endogenous={"x": func_x, "y": func_y, "z": func_z, "xy": func_xy},
 )

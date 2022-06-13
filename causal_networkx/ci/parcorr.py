@@ -7,11 +7,12 @@ from sklearn.preprocessing import StandardScaler
 
 
 class PartialCorrelation:
-    def __init__(self, random_state=None, method="analytic", **kwargs):
+    def __init__(self, random_state=None, method="analytic", fixed_threshold=0.1, **kwargs):
         self._measure = "par_corr"
         self.method = method
         self.two_sided = True
         self.residual_based = True
+        self.fixed_threshold = fixed_threshold
         self.random_state = random_state
 
     def test(self, X, Y, Z=None):
@@ -104,7 +105,7 @@ class PartialCorrelation:
         # Check if we are using the fixed_thres significance
         elif use_sig == "fixed_thresh":
             pval = self._compute_fixed_threshold_significance(
-                value=val, fixed_thres=self.fixed_thresh
+                value=val, fixed_threshold=self.fixed_threshold
             )
         else:
             raise ValueError("%s not known." % self.method)
@@ -346,27 +347,26 @@ class PartialCorrelation:
 
         return pval
 
-    def _compute_fixed_threshold_significance(self, value, fixed_thres):
+    def _compute_fixed_threshold_significance(self, value, fixed_threshold):
         """Returns signficance for thresholding test.
 
-        Returns 0 if numpy.abs(value) is smaller than fixed_thres and 1 else.
+        Returns 0 if numpy.abs(value) is smaller than ``fixed_threshold`` and 1 else.
 
         Parameters
         ----------
-        value : number
+        value : float
             Value of test statistic for unshuffled estimate.
 
-        fixed_thres : number
+        fixed_threshold : float
             Fixed threshold, is made positive.
 
         Returns
         -------
-        pval : bool
+        pval : float
             Returns 0 if numpy.abs(value) is smaller than fixed_thres and 1
             else.
-
         """
-        if np.abs(value) < np.abs(fixed_thres):
+        if np.abs(value) < np.abs(fixed_threshold):
             pval = 1.0
         else:
             pval = 0.0
