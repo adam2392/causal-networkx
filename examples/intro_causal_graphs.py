@@ -100,7 +100,7 @@ print(G.children("xy"))
 # in the graph. These unobserved confounders are graphically depicted with a bidirected edge.
 
 # We can construct an ADMG from the DAG by just setting 'xy' as a latent confounder
-admg = G.set_nodes_as_latent_confounders("xy")
+admg = G.set_nodes_as_latent_confounders(["xy"])
 
 # Now there is a bidirected edge between 'x' and 'y'
 admg.draw()

@@ -98,7 +98,7 @@ class PartialCorrelation:
 
         # Check if we are using the analytic significance
         if use_sig == "analytic":
-            pval = self.get_analytic_significance(value=val, T=n_samples, dim=n_dims)
+            pval = self._compute_analytic_significance(value=val, n_samples=n_samples, n_dims=n_dims)
         # Check if we are using the shuffle significance
         elif use_sig == "shuffle_test":
             pval = self.get_shuffle_significance(array=array, xyz=xyz, value=val)
@@ -310,9 +310,8 @@ class PartialCorrelation:
 
         return null_dist
 
-    def get_analytic_significance(self, value, T, dim):
-        """Returns analytic p-value from Student's t-test for the Pearson
-        correlation coefficient.
+    def _compute_analytic_significance(self, value, n_samples, n_dims):
+        """Analytic p-value from Student's t-test for Pearson correlation coefficient.
 
         Assumes two-sided correlation. If the degrees of freedom are less than
         1, numpy.nan is returned.
@@ -321,20 +320,18 @@ class PartialCorrelation:
         ----------
         value : float
             Test statistic value.
-
-        T : int
+        n_samples : int
             Sample length
-
-        dim : int
+        n_dims : int
             Dimensionality, ie, number of features.
 
         Returns
         -------
-        pval : float or numpy.nan
+        pval : float | numpy.nan
             P-value.
         """
         # Get the number of degrees of freedom
-        deg_f = T - dim
+        deg_f = n_samples - n_dims
 
         if deg_f < 1:
             pval = np.nan
