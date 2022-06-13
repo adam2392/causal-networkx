@@ -265,15 +265,18 @@ class TestExportGraph:
     def test_to_networkx(self, tmp_path):
         G = self.G
         fname = Path(tmp_path) / "test.gml"
+        # relabel to str
+        mapping = {node: str(node) for node in G.nodes}
+        G.relabel_nodes(mapping, copy=False)
         G.save(fname, format="networkx-gml")
 
         read_G = nx.read_gml(fname)
         read_G = load_from_networkx(read_G)
         assert type(read_G) == type(G)
         assert set(read_G.nodes) == set(map(str, G.nodes))
-        print(read_G.to_networkx())
-        print(G.to_networkx())
-        print(G, read_G)
+        for edge_type, edges in G.all_edges().items():
+            read_edges = read_G.all_edges()[edge_type]
+            assert set(read_edges) == set(edges)
         assert nx.is_isomorphic(read_G.to_networkx(), G.to_networkx())
 
     @requires_pydot()

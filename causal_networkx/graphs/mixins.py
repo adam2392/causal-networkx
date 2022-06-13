@@ -279,6 +279,35 @@ class NetworkXMixin(Protocol):
         """Get dictionary of all the edges by edge type."""
         return {name: graph.edges for name, graph in zip(self._graph_names, self._graphs)}
 
+    def relabel_nodes(self, mapping, copy=True):
+        """Relabel the nodes of the graph G according to a given mapping.
+
+        Parameters
+        ----------
+        mapping : dict
+            A dictionary with the old labels as keys and new labels as values. A partial mapping
+            is allowed. Mapping 2 nodes to a single node is allowed. Any non-node keys in the
+            mapping are ignored.
+        copy : bool (optional, default=True)
+            If True return a copy, or if False relabel the nodes in place.
+
+        Returns
+        -------
+        G : instance of causal DAG
+            A copy (if copy is True) of the relabeled graph.
+        """
+        if copy is True:
+            new_graph = self.copy()
+        else:
+            new_graph = self
+
+        graphs = []
+        for graph in self._graphs:
+            graph = nx.relabel_nodes(graph, mapping, copy=copy)
+            graphs.append(graph)
+        new_graph._graphs = graphs
+        return new_graph
+
 
 class GraphSampleMixin:
     def dummy_sample(self):

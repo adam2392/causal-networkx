@@ -202,7 +202,6 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         from causal_networkx import ADMG
 
         bidirected_edges = []
-        new_graph = ADMG()
 
         for node in nodes:
             # check if the node is a common cause

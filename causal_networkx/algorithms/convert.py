@@ -1,6 +1,4 @@
 from causal_networkx import ADMG, CPDAG, DAG, PAG
-from causal_networkx.ci import Oracle
-from causal_networkx.discovery import FCI, PC
 
 
 def dag2cpdag(graph: DAG) -> CPDAG:
@@ -20,6 +18,9 @@ def dag2cpdag(graph: DAG) -> CPDAG:
     cpdag : CPDAG
         The oracle CPDAG.
     """
+    from causal_networkx.ci import Oracle
+    from causal_networkx.discovery import PC
+
     oracle = Oracle(graph)
     dummy_X = graph.dummy_sample()
 
@@ -47,6 +48,9 @@ def admg2pag(graph: ADMG) -> PAG:
     pag : PAG
         The oracle PAG.
     """
+    from causal_networkx.ci import Oracle
+    from causal_networkx.discovery import FCI
+
     oracle = Oracle(graph)
     dummy_X = graph.dummy_sample()
 
