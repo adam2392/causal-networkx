@@ -71,12 +71,13 @@ variable and then ``sep_set`` is the conditioning set of variables.
 .. autosummary::
    :toctree: generated/
 
-   g_square_binary
-   g_square_discrete
-   fisherz
+   BaseConditionalIndependenceTest
+   GSquareCITest
+   FisherZCITest
+   KernelCITest
+   PartialCorrelation
    Oracle
    ParentOracle
-   KernelCITest
 
 
 IO for reading/writing causal graphs

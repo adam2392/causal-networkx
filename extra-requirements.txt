@@ -17,3 +17,6 @@ pydot
 
 # for interfacing with pgmpy
 pgmpy
+
+# for partial correlations
+pingouin
