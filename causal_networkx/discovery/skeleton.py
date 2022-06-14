@@ -464,6 +464,7 @@ def learn_skeleton_graph_with_order(
                 else:
                     mci_inclusion_set = set()
 
+                # whether to only condition using the MCI set
                 if not only_mci:
                     conditioning_sets = _iter_conditioning_set(
                         possible_adjacencies,

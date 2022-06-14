@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from causal_networkx.ci import g_square_binary, g_square_discrete
+from causal_networkx.ci.g_test import g_square_binary, g_square_discrete
 from causal_networkx.ci.tests.testdata import bin_data, dis_data
 from causal_networkx.discovery import PC
 

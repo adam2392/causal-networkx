@@ -3,8 +3,10 @@ from scipy import stats
 from sklearn.metrics import pairwise_distances, pairwise_kernels
 from sklearn.metrics.pairwise import PAIRWISE_KERNEL_FUNCTIONS
 
+from .base import BaseConditionalIndependenceTest
 
-class KernelCITest:
+
+class KernelCITest(BaseConditionalIndependenceTest):
     def __init__(
         self,
         kernel_x: str = "rbf",
@@ -90,7 +92,19 @@ class KernelCITest:
         self.kwidth_y = kwidth_y
         self.kwidth_z = kwidth_z
 
-    def test(self, X, Y, Z=None):
+    def test(self, df, x_var, y_var, z_covariates=None):
+        if any(col not in df.columns for col in [x_var, y_var]):
+            raise ValueError("The x and y variables are not both in the DataFrame.")
+        if z_covariates is not None and any(col not in df.columns for col in z_covariates):
+            raise ValueError("The z conditioning set variables are not all in the DataFrame.")
+
+        X = df[x_var]
+        Y = df[y_var]
+        if z_covariates is not None:
+            Z = df[z_covariates]
+        else:
+            Z = None
+
         # first normalize the data to have zero mean and unit variance
         # along the columns of the data
         X = stats.zscore(X, axis=0)
