@@ -1,4 +1,3 @@
-import py
 import pytest
 
 from causal_networkx import DAG
