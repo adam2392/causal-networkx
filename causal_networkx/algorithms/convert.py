@@ -25,7 +25,7 @@ def dag2cpdag(graph: DAG) -> CPDAG:
     dummy_X = graph.dummy_sample()
 
     # run PC algorithm with oracle to obtain the CPDAG
-    pcalg = PC(oracle.ci_test)
+    pcalg = PC(oracle)
     pcalg.fit(dummy_X)
     cpdag = pcalg.graph_
     return cpdag  # type: ignore
@@ -55,7 +55,7 @@ def admg2pag(graph: ADMG) -> PAG:
     dummy_X = graph.dummy_sample()
 
     # run FCI algorithm with oracle to obtain the PAG
-    fci = FCI(oracle.ci_test)
+    fci = FCI(oracle)
     fci.fit(dummy_X)
     pag = fci.graph_
     return pag  # type: ignore

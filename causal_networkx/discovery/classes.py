@@ -1,12 +1,13 @@
 import itertools
 from collections import defaultdict
-from typing import Any, Callable, Dict, Optional, Set, Tuple, Union
+from typing import Any, Dict, Optional, Set, Tuple, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 
 from causal_networkx import ADMG
+from causal_networkx.ci.base import BaseConditionalIndependenceTest
 
 
 # TODO: Add ways to fix directed edges
@@ -18,7 +19,7 @@ class ConstraintDiscovery:
 
     Parameters
     ----------
-    ci_estimator : Callable
+    ci_estimator : BaseConditionalIndependenceTest
         The conditional independence test function. The arguments of the estimator should
         be data, node, node to compare, conditioning set of nodes, and any additional
         keyword arguments.
@@ -63,7 +64,7 @@ class ConstraintDiscovery:
 
     def __init__(
         self,
-        ci_estimator: Callable,
+        ci_estimator: BaseConditionalIndependenceTest,
         alpha: float = 0.05,
         init_graph: Union[nx.Graph, ADMG] = None,
         fixed_edges: nx.Graph = None,

@@ -5,8 +5,10 @@ import numpy as np
 from causal_networkx import ADMG, DAG
 from causal_networkx.algorithms.d_separation import d_separated
 
+from .base import BaseConditionalIndependenceTest
 
-class Oracle:
+
+class Oracle(BaseConditionalIndependenceTest):
     """Oracle conditional independence testing.
 
     Used for unit testing and checking intuition.
@@ -20,7 +22,7 @@ class Oracle:
     def __init__(self, graph: Union[ADMG, DAG]) -> None:
         self.graph = graph
 
-    def ci_test(self, data, x, y, sep_set):
+    def test(self, data, x, y, sep_set):
         """Conditional independence test given an oracle.
 
         Checks conditional independence between 'x' and 'y'

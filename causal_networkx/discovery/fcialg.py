@@ -1,12 +1,13 @@
 import logging
 from itertools import combinations, permutations
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 
 from causal_networkx import ADMG, PAG
+from causal_networkx.ci.base import BaseConditionalIndependenceTest
 from causal_networkx.config import EdgeType, EndPoint
 from causal_networkx.discovery.classes import ConstraintDiscovery
 
@@ -18,7 +19,7 @@ logger = logging.getLogger()
 class FCI(ConstraintDiscovery):
     def __init__(
         self,
-        ci_estimator: Callable,
+        ci_estimator: BaseConditionalIndependenceTest,
         alpha: float = 0.05,
         init_graph: Union[nx.Graph, ADMG] = None,
         fixed_edges: nx.Graph = None,

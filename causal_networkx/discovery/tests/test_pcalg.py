@@ -4,8 +4,7 @@ import pandas as pd
 import pytest
 
 from causal_networkx import CPDAG, StructuralCausalModel
-from causal_networkx.ci import Oracle
-from causal_networkx.ci.g_test import g_square_binary, g_square_discrete
+from causal_networkx.ci import GSquareCITest, Oracle
 from causal_networkx.ci.tests.testdata import bin_data, dis_data
 from causal_networkx.discovery import PC
 
@@ -14,7 +13,7 @@ from causal_networkx.discovery import PC
     ("indep_test_func", "data_matrix", "g_answer", "alpha"),
     [
         (
-            g_square_binary,
+            GSquareCITest(),
             np.array(bin_data).reshape((5000, 5)),
             nx.DiGraph(
                 {
@@ -28,7 +27,7 @@ from causal_networkx.discovery import PC
             0.01,
         ),
         (
-            g_square_discrete,
+            GSquareCITest("discrete"),
             np.array(dis_data).reshape((10000, 5)),
             nx.DiGraph(
                 {
@@ -84,7 +83,7 @@ def test_collider():
     )
     G = scm.get_causal_graph()
     oracle = Oracle(G)
-    ci_estimator = oracle.ci_test
+    ci_estimator = oracle
     pc = PC(ci_estimator=ci_estimator)
 
     sample = scm.sample(n=1, include_latents=False)
@@ -121,7 +120,7 @@ class Test_PC:
 
         self.scm = scm
         self.G = G
-        self.ci_estimator = oracle.ci_test
+        self.ci_estimator = oracle
         pc = PC(ci_estimator=self.ci_estimator)
         self.alg = pc
 

@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from itertools import combinations, permutations
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import networkx as nx
 import numpy as np
@@ -9,13 +9,14 @@ import pandas as pd
 
 from causal_networkx import PAG
 from causal_networkx.algorithms.pag import possibly_d_sep_sets
+from causal_networkx.ci import BaseConditionalIndependenceTest
 
 logger = logging.getLogger()
 
 
 def learn_skeleton_graph_with_pdsep(
     X: pd.DataFrame,
-    ci_estimator: Callable,
+    ci_estimator: BaseConditionalIndependenceTest,
     adj_graph: Optional[nx.Graph] = None,
     sep_set: Optional[Dict[str, Dict[str, Set]]] = None,
     fixed_edges: Optional[Set] = None,
@@ -110,7 +111,7 @@ def learn_skeleton_graph_with_pdsep(
                 # loop through all possible conditioning sets of certain size
                 for cond_set in combinations(sep_nodes, size_cond_set):
                     # compute conditional independence test
-                    _, pvalue = ci_estimator(X, i, j, set(cond_set), **ci_estimator_kwargs)
+                    _, pvalue = ci_estimator.test(X, i, j, set(cond_set), **ci_estimator_kwargs)
 
                     # two variables found to be independent given a separating set
                     if pvalue > alpha:
@@ -136,7 +137,7 @@ def learn_skeleton_graph_with_pdsep(
 
 def learn_skeleton_graph_with_neighbors(
     X: pd.DataFrame,
-    ci_estimator: Callable,
+    ci_estimator: BaseConditionalIndependenceTest,
     adj_graph: Optional[nx.Graph] = None,
     sep_set: Optional[Dict[str, Dict[str, Set]]] = None,
     fixed_edges: Set = None,
@@ -235,7 +236,7 @@ def learn_skeleton_graph_with_neighbors(
                 # loop through all possible conditioning sets of certain size
                 for cond_set in combinations(sep_nodes, size_cond_set):
                     # compute conditional independence test
-                    _, pvalue = ci_estimator(X, i, j, set(cond_set), **ci_estimator_kwargs)
+                    _, pvalue = ci_estimator.test(X, i, j, set(cond_set), **ci_estimator_kwargs)
 
                     # two variables found to be independent given a separating set
                     if pvalue > alpha:
@@ -265,7 +266,7 @@ def learn_skeleton_graph_with_neighbors(
 
 def learn_skeleton_graph_with_order(
     X: pd.DataFrame,
-    ci_estimator: Callable,
+    ci_estimator: BaseConditionalIndependenceTest,
     adj_graph: nx.Graph = None,
     sep_set: Dict[str, Dict[str, Set]] = None,
     fixed_edges: Set = None,
@@ -485,7 +486,9 @@ def learn_skeleton_graph_with_order(
                         break
 
                     # compute conditional independence test
-                    test_stat, pvalue = ci_estimator(X, i, j, set(cond_set), **ci_estimator_kwargs)
+                    test_stat, pvalue = ci_estimator.test(
+                        X, i, j, set(cond_set), **ci_estimator_kwargs
+                    )
 
                     # keep track of the smallest test statistic, meaning the highest pvalue
                     # meaning the "most" independent

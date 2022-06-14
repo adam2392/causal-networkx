@@ -50,7 +50,7 @@ def test_possibly_d_separated():
     edge_list = [("D", "A"), ("B", "E"), ("F", "B"), ("C", "F"), ("C", "H"), ("H", "D")]
     latent_edge_list = [("A", "B"), ("D", "E")]
     graph = ADMG(edge_list, latent_edge_list)
-    alg = FCI(ci_estimator=Oracle(graph).ci_test)
+    alg = FCI(ci_estimator=Oracle(graph).test)
     sample = graph.dummy_sample()
     skel_graph, sep_set, _, _ = alg.learn_skeleton(sample)
     fci_pag = PAG(incoming_uncertain_data=skel_graph)

@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from causal_networkx import CPDAG, DAG
+from causal_networkx.ci.base import BaseConditionalIndependenceTest
 
 from .classes import ConstraintDiscovery
 
@@ -18,7 +19,7 @@ logger = logging.getLogger()
 class PC(ConstraintDiscovery):
     def __init__(
         self,
-        ci_estimator: Callable,
+        ci_estimator: BaseConditionalIndependenceTest,
         alpha: float = 0.05,
         init_graph: Union[nx.Graph, CPDAG] = None,
         fixed_edges: nx.Graph = None,
@@ -288,7 +289,7 @@ class PC(ConstraintDiscovery):
 class RobustPC(PC):
     def __init__(
         self,
-        ci_estimator: Callable,
+        ci_estimator: BaseConditionalIndependenceTest,
         alpha: float = 0.05,
         init_graph: Union[nx.Graph, DAG, CPDAG] = None,
         fixed_edges: nx.Graph = None,
