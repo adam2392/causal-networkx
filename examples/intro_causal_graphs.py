@@ -185,8 +185,8 @@ print(cpdag.all_edges())
 # -----------------------------
 # PAGs are Markov equivalence classes for ADMGs. Since we allow latent confounders, these graphs
 # are more complex compared to the CPDAGs. PAGs encode uncertain edge orientations via circle
-# endpoints. A circle endpoint (o-*) can imply either: a tail (-*), or an arrowhead (<-*), which
-# can then imply either an undirected edge (selection bias), directed edge (ancestral relationship),
+# endpoints. A circle endpoint (``o-*``) can imply either: a tail (``-*``), or an arrowhead (``<-*``),
+# which can then imply either an undirected edge (selection bias), directed edge (ancestral relationship),
 # or bidirected edge (possible presence of a latent confounder).
 #
 # Note: a directed edge in the PAG does not actually imply parental relationships.

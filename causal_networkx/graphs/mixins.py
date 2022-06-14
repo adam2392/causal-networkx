@@ -253,6 +253,19 @@ class NetworkXMixin(Protocol):
         """Compute the degree of the DiGraph."""
         return self.dag.degree(n)
 
+    # TODO: do we need these for API to work with networkx?
+    def in_degree(self):
+        """In degree view of DAG."""
+        return self.dag.in_degree()
+
+    def out_degree(self):
+        """Out degree view of DAG."""
+        return self.dag.out_degree()
+
+    def neighbors(self, node):
+        """Neighbors view of DAG."""
+        return self.dag.neighbors(node)
+
     def to_adjacency_graph(self):
         """Compute an adjacency undirected graph.
 

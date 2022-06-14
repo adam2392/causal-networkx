@@ -65,7 +65,7 @@ def d_separated(G: Union[DAG, ADMG], x, y, z=None):
         z = set([z])
 
     if type(G).__name__ == "DAG":
-        return nx_d_separated(G, x, y, z)
+        return nx_d_separated(G.to_networkx(), x, y, z)
 
     # get the full graph by converting bidirected edges into latent confounders
     # and keeping the directed edges
