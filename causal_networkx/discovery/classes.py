@@ -167,9 +167,29 @@ class ConstraintDiscovery:
         self.graph_ = graph
 
     def test_edge(self, data, X, Y, Z=None):
+        """Test any specific edge
+
+        Parameters
+        ----------
+        data : pd.DataFrame
+            The dataset
+        X : column
+            A column in ``data``.
+        Y : column
+            A column in ``data``.
+        Z : list, optional
+            A list of columns in ``data``, by default None.
+
+        Returns
+        -------
+        test_stat : float
+            Test statistic.
+        pvalue : float
+            The pvalue.
+        """
         if Z is None:
             Z = []
-        test_stat, pvalue = self.ci_estimator(data, X, Y, set(Z), **self.ci_estimator_kwargs)
+        test_stat, pvalue = self.ci_estimator.test(data, X, Y, set(Z), **self.ci_estimator_kwargs)
         return test_stat, pvalue
 
     def learn_skeleton(

@@ -1,6 +1,5 @@
 import random
 from functools import partial
-from typing import Callable
 
 import networkx as nx
 
@@ -22,10 +21,6 @@ def requires_module(function, name, call=None):
     else:
         skip = False
     return pytest.mark.skipif(skip, reason=reason)(function)
-
-
-def _check_ci_estimator(ci_estimator: Callable):
-    pass
 
 
 def _sample_cg(
@@ -199,7 +194,7 @@ def _integrate_circle_endpoints_to_graph(G: PAG):
     return G_copy, required_conditioning_set
 
 
-# TODO: integrat into causal graph
+# TODO: integrate into causal graph
 def convert_selection_vars_to_common_effects(G: ADMG) -> nx.DiGraph:
     """Convert all undirected edges to unobserved common effects.
 

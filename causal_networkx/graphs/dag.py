@@ -202,6 +202,7 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         from causal_networkx import ADMG
 
         bidirected_edges = []
+        new_parent_ch_edges = []
 
         for node in nodes:
             # check if the node is a common cause
@@ -214,15 +215,27 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
 
             # keep track of which nodes to form c-components over
             successor_nodes = self.successors(node)
-            for succ in successor_nodes:
-                bidirected_edges.append((node, succ))
+            for idx, succ in enumerate(successor_nodes):
+                # TODO: do we want this?; add parent -> successor edges
+                # if there are parents to this node, they must now point to all the successors
+                for parent in self.parents(node):
+                    new_parent_ch_edges.append((parent, succ))
+
+                # form a c-component among the successors
+                if idx == 0:
+                    prev_succ = succ
+                    continue
+                bidirected_edges.append((prev_succ, succ))
+                prev_succ = succ
 
         # create the graph with nodes excluding those that are converted to latent confounders
-        new_graph = ADMG(self.dag)
+        new_graph = ADMG(self.dag.copy())
         new_graph.remove_nodes_from(nodes)
 
         # create the c-component structures
         new_graph.add_bidirected_edges_from(bidirected_edges)
+
+        new_graph.add_edges_from(new_parent_ch_edges)
         return new_graph
 
     def markov_blanket_of(self, node):

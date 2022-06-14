@@ -12,7 +12,7 @@ from causal_networkx.io import load_from_networkx
 from causal_networkx.utils import requires_pydot
 
 
-class TestGraph:
+class TestDAG:
     def setup_method(self):
         # start every graph with the confounded graph
         # 0 -> 1, 0 -> 2
@@ -39,7 +39,7 @@ class TestGraph:
         assert not d_separated(G, 3, 1, 2)
 
 
-class TestNetworkxGraph(TestGraph):
+class TestNetworkxGraph(TestDAG):
     """Test ADMG relevant networkx properties."""
 
     def test_data_input(self):
@@ -356,7 +356,7 @@ class TestCPDAG(TestNetworkxGraph, TestExportGraph):
         pass
 
 
-class TestADMG(TestGraph, TestExportGraph):
+class TestADMG(TestDAG, TestExportGraph):
     """Test relevant causal graph properties."""
 
     def setup_method(self):
