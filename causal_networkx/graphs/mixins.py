@@ -266,7 +266,7 @@ class NetworkXMixin(Protocol):
         """Neighbors view of DAG."""
         return self.dag.neighbors(node)
 
-    def to_adjacency_graph(self):
+    def to_adjacency_graph(self) -> nx.Graph:
         """Compute an adjacency undirected graph.
 
         Two nodes are considered adjacent if there exist

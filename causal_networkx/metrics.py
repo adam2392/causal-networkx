@@ -1,8 +1,12 @@
+import networkx as nx
 import numpy as np
 from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import LabelBinarizer
+
+from causal_networkx.graphs.base import BaseGraph
 
 
-def compare_networks(
+def confusion_matrix_networks(
     true_graph,
     pred_graph,
 ):
@@ -23,16 +27,30 @@ def compare_networks(
     """
     assert list(true_graph.nodes) == list(pred_graph.nodes)
 
-    # convert graphs to adjacency matrix in numpy array format
-    true_adj_mat = true_graph.to_adjacency_graph()
-    pred_adj_mat = pred_graph.to_adjacency_graph()
+    # convert graphs to adjacency graph in networkx
+    if isinstance(true_graph, BaseGraph):
+        true_graph = true_graph.to_adjacency_graph()
+    if isinstance(pred_graph, BaseGraph):
+        pred_graph = pred_graph.to_adjacency_graph()
+
+    # next convert into 2D numpy array format
+    true_adj_mat = nx.to_numpy_array(true_graph)
+    pred_adj_mat = nx.to_numpy_array(pred_graph)
+
+    # ensure we are looking at symmetric graphs
+    true_adj_mat += true_adj_mat.T
+    pred_adj_mat += pred_adj_mat.T
+
+    # then only extract lower-triangular portion
+    true_adj_mat = true_adj_mat[np.tril_indices_from(true_adj_mat, k=-1)]
+    pred_adj_mat = pred_adj_mat[np.tril_indices_from(pred_adj_mat, k=-1)]
 
     true_adj_mat = true_adj_mat > 0
     pred_adj_mat = pred_adj_mat > 0
 
-    # vectorize
-    y_true = true_adj_mat.flatten()
-    y_pred = pred_adj_mat.flatten()
+    # vectorize and binarize for sklearn's confusion matrix
+    y_true = LabelBinarizer().fit_transform(true_adj_mat.flatten()).squeeze()
+    y_pred = LabelBinarizer().fit_transform(pred_adj_mat.flatten()).squeeze()
 
     # compute the confusion matrix
     conf_mat = confusion_matrix(y_true, y_pred)
@@ -56,9 +74,13 @@ def structure_hamming_dist(graph, other_graph, double_for_anticausal: bool = Tru
     shm : float
         The hamming distance between 0 and infinity.
     """
+    if isinstance(graph, BaseGraph):
+        graph = graph.to_networkx()
+    if isinstance(other_graph, BaseGraph):
+        other_graph = other_graph.to_networkx()
     # convert graphs to adjacency matrix in numpy array format
-    adj_mat = graph.to_adjacency_graph()
-    other_adj_mat = other_graph.to_adjacency_graph()
+    adj_mat = nx.to_numpy_array(graph)
+    other_adj_mat = nx.to_numpy_array(other_graph)
 
     diff = np.abs(adj_mat - other_adj_mat)
 
