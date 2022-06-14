@@ -38,6 +38,17 @@ class TestDAG:
         assert d_separated(G, 3, 1, set())
         assert not d_separated(G, 3, 1, 2)
 
+    def test_markov_blanket_of(self):
+        ed1, ed2 = ({}, {})
+        incoming_graph_data = {0: {1: ed1, 2: ed2}}
+        G = DAG(incoming_graph_data)
+        # add collider on 2
+        G.add_edge(3, 2)
+
+        assert G.markov_blanket_of(0) == {1, 2, 3}
+        assert G.markov_blanket_of(1) == {0}
+        assert G.markov_blanket_of(3) == {2, 0}
+
 
 class TestNetworkxGraph(TestDAG):
     """Test ADMG relevant networkx properties."""

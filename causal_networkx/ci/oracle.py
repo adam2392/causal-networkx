@@ -78,3 +78,17 @@ class ParentOracle(Oracle):
     def get_children(self, x):
         """Return the definite children of node 'x'."""
         return self.graph.successors(x)
+
+
+class MarkovBlanketOracle(ParentOracle):
+    """MB oracle for conditional independence testing.
+
+    An oracle that knows the definite Markov Blanket of every node.
+    """
+
+    def __init__(self, graph: Union[ADMG, DAG]) -> None:
+        super().__init__(graph)
+
+    def get_markov_blanket(self, x):
+        """Return the markov blanket of node 'x'."""
+        return self.graph.markov_blanket_of(x)

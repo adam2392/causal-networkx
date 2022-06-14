@@ -1,5 +1,6 @@
 from typing import Any, List, Optional, Set
 
+import markdown_it
 import networkx as nx
 
 from ..config import EdgeType
@@ -238,7 +239,7 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         new_graph.add_edges_from(new_parent_ch_edges)
         return new_graph
 
-    def markov_blanket_of(self, node):
+    def markov_blanket_of(self, node) -> Set:
         """Compute the markov blanket of a node.
 
         Parameters
@@ -253,8 +254,14 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         """
         parents = set(self.parents(node))
         children = set(self.children(node))
-        spouses = {self.parents(child) for child in children}
-        return parents.union(children).union(spouses)
+        spouses = set()
+        for child in children:
+            spouses = spouses.union(set(self.parents(child)))
+        markov_blanket = parents.union(children).union(spouses)
+
+        # make sure Markov blanket does not contain itself
+        markov_blanket.discard(node)
+        return markov_blanket
 
     def compute_full_graph(self, to_networkx: bool = False):
         if to_networkx:
