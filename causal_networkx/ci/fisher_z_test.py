@@ -10,7 +10,7 @@ from .base import BaseConditionalIndependenceTest
 
 
 class FisherZCITest(BaseConditionalIndependenceTest):
-    def __init__(self, correlation_matrix=None) -> None:
+    def __init__(self, correlation_matrix=None):
         """Conditional independence test using Fisher-Z's test for Gaussian random variables.
 
         Parameters

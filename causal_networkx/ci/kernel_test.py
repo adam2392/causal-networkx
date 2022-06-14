@@ -19,7 +19,7 @@ class KernelCITest(BaseConditionalIndependenceTest):
         kwidth_z=None,
         threshold: float = 1e-5,
         n_jobs: int = None,
-    ) -> None:
+    ):
         """Kernel (Conditional) Independence Test.
 
         For testing (conditional) independence on continuous data, we
@@ -98,12 +98,13 @@ class KernelCITest(BaseConditionalIndependenceTest):
         if z_covariates is not None and any(col not in df.columns for col in z_covariates):
             raise ValueError("The z conditioning set variables are not all in the DataFrame.")
 
-        X = df[x_var]
-        Y = df[y_var]
-        if z_covariates is not None:
-            Z = df[z_covariates]
-        else:
+        if z_covariates is None or len(z_covariates) == 0:
             Z = None
+        else:
+            z_covariates = list(z_covariates)
+            Z = df[z_covariates].to_numpy().reshape((-1, len(z_covariates)))
+        X = df[x_var].to_numpy()[:, np.newaxis]
+        Y = df[y_var].to_numpy()[:, np.newaxis]
 
         # first normalize the data to have zero mean and unit variance
         # along the columns of the data

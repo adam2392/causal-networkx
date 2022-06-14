@@ -367,7 +367,7 @@ def g_square_discrete(
 
 
 class GSquareCITest(BaseConditionalIndependenceTest):
-    def __init__(self, data_type: str = "binary") -> None:
+    def __init__(self, data_type: str = "binary"):
         self.data_type = data_type
 
     def test(

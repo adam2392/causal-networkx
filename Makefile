@@ -54,4 +54,8 @@ run-checks:
 	check-manifest
 	@$(MAKE) codespell-error
 	
+
+test:
+	pytest --verbose --junitxml=test-results/junit.xml --cov-report=xml --cov=causal_networkx "causal_networkx/**/test_*.py"
+	
 # CUDA_VISIBLE_DEVICES='' pytest -v --color=yes --doctest-modules tests/ causal_networkx/

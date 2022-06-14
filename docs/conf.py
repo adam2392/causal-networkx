@@ -140,6 +140,7 @@ numpydoc_xref_aliases = {
     # pandas
     "pd.DataFrame": "pandas.DataFrame",
     "pandas.DataFrame": "pandas.DataFrame",
+    "column": "pandas.DataFrame.columns",
 }
 
 default_role = "py:obj"

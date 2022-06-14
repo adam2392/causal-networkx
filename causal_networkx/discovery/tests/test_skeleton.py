@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from causal_networkx.ci.g_test import g_square_binary, g_square_discrete
+from causal_networkx.ci import GSquareCITest
 from causal_networkx.ci.tests.testdata import bin_data, dis_data
 from causal_networkx.discovery import PC
 
@@ -12,7 +12,7 @@ from causal_networkx.discovery import PC
     ("indep_test_func", "data_matrix", "g_answer"),
     [
         (
-            g_square_binary,
+            GSquareCITest(),
             np.array(bin_data).reshape((5000, 5)),
             nx.DiGraph(
                 {
@@ -25,7 +25,7 @@ from causal_networkx.discovery import PC
             ),
         ),
         (
-            g_square_discrete,
+            GSquareCITest("discrete"),
             np.array(dis_data).reshape((10000, 5)),
             nx.DiGraph(
                 {
