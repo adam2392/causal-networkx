@@ -28,20 +28,20 @@ from causal_networkx.metrics import confusion_matrix_networks, structure_hamming
             ),
             0.01,
         ),
-        # (
-        #     GSquareCITest("discrete"),
-        #     np.array(dis_data).reshape((10000, 5)),
-        #     nx.DiGraph(
-        #         {
-        #             0: (2,),
-        #             1: (2, 3),
-        #             2: (),
-        #             3: (),
-        #             4: (3,),
-        #         }
-        #     ),
-        #     0.1,  # Note: that alpha level of >= 0.1 is required for 2 and 3 to be dependent
-        # ),
+        (
+            GSquareCITest("discrete"),
+            np.array(dis_data).reshape((10000, 5)),
+            nx.DiGraph(
+                {
+                    0: (2,),
+                    1: (2, 3),
+                    2: (),
+                    3: (),
+                    4: (3,),
+                }
+            ),
+            0.1,  # Note: that alpha level of >= 0.1 is required for 2 and 3 to be dependent
+        ),
     ],
 )
 def test_estimate_cpdag(indep_test_func, data_matrix, g_answer, alpha):

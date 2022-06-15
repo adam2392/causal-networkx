@@ -75,9 +75,9 @@ def structure_hamming_dist(graph, other_graph, double_for_anticausal: bool = Tru
         The hamming distance between 0 and infinity.
     """
     if isinstance(graph, BaseGraph):
-        graph = graph.to_networkx()
+        graph = graph.to_networkx()  # type: ignore
     if isinstance(other_graph, BaseGraph):
-        other_graph = other_graph.to_networkx()
+        other_graph = other_graph.to_networkx()  # type: ignore
     # convert graphs to adjacency matrix in numpy array format
     adj_mat = nx.to_numpy_array(graph)
     other_adj_mat = nx.to_numpy_array(other_graph)

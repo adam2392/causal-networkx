@@ -1,6 +1,5 @@
 from typing import Any, List, Optional, Set
 
-import markdown_it
 import networkx as nx
 
 from ..config import EdgeType
@@ -254,7 +253,7 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         """
         parents = set(self.parents(node))
         children = set(self.children(node))
-        spouses = set()
+        spouses: Set = set()
         for child in children:
             spouses = spouses.union(set(self.parents(child)))
         markov_blanket = parents.union(children).union(spouses)

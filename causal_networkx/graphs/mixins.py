@@ -274,7 +274,7 @@ class NetworkXMixin(Protocol):
         """
         # form the undirected graph of all inner graphs
         graph_list = []
-        for graph in self._graphs:
+        for graph in self._graphs:  # type: ignore
             graph_list.append(graph.to_undirected())
 
         adj_graph = graph_list[0]
