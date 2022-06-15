@@ -1,5 +1,4 @@
-from itertools import combinations
-from typing import Any, List, Optional, Set, Tuple
+from typing import Any, List, Optional, Set
 
 import networkx as nx
 

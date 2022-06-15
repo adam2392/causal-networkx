@@ -5,7 +5,6 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from causal_networkx import CPDAG, DAG, StructuralCausalModel
-from causal_networkx.algorithms.d_separation import d_separated
 from causal_networkx.ci import GSquareCITest, Oracle
 from causal_networkx.ci.tests.testdata import bin_data, dis_data
 from causal_networkx.discovery import PC

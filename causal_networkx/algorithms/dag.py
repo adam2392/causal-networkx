@@ -90,7 +90,7 @@ def compute_v_structures(graph: DAG) -> Set[Tuple]:
     vstructs : Set[Tuple]
         The v structures within the graph.
     """
-    vstructs = set()
+    vstructs: Set[Tuple] = set()
     for node in graph.nodes:
         for p1, p2 in combinations(graph.parents(node) | graph.spouses(node), 2):
             if not graph.has_adjacency(p1, p2):
