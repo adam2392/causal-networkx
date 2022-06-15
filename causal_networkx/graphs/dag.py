@@ -1,4 +1,5 @@
-from typing import Any, List, Optional, Set
+from itertools import combinations
+from typing import Any, List, Optional, Set, Tuple
 
 import networkx as nx
 
@@ -253,14 +254,20 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         """
         parents = set(self.parents(node))
         children = set(self.children(node))
-        spouses: Set = set()
-        for child in children:
-            spouses = spouses.union(set(self.parents(child)))
+        spouses = set(self.spouses(node))
         markov_blanket = parents.union(children).union(spouses)
 
         # make sure Markov blanket does not contain itself
         markov_blanket.discard(node)
         return markov_blanket
+
+    def spouses(self, node) -> Set:
+        """Get other parents of the children of a node (spouses)."""
+        children = set(self.children(node))
+        spouses: Set = set()
+        for child in children:
+            spouses = spouses.union(set(self.parents(child)))
+        return spouses
 
     def compute_full_graph(self, to_networkx: bool = False):
         if to_networkx:

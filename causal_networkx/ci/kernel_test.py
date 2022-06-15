@@ -93,11 +93,7 @@ class KernelCITest(BaseConditionalIndependenceTest):
         self.kwidth_z = kwidth_z
 
     def test(self, df, x_var, y_var, z_covariates=None):
-        if any(col not in df.columns for col in [x_var, y_var]):
-            raise ValueError("The x and y variables are not both in the DataFrame.")
-        if z_covariates is not None and any(col not in df.columns for col in z_covariates):
-            raise ValueError("The z conditioning set variables are not all in the DataFrame.")
-
+        self._check_test_input(df, x_var, y_var, z_covariates)
         if z_covariates is None or len(z_covariates) == 0:
             Z = None
         else:

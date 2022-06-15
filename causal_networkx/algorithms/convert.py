@@ -1,4 +1,8 @@
+import networkx as nx
+
 from causal_networkx import ADMG, CPDAG, DAG, PAG
+
+from .dag import compute_v_structures
 
 
 def dag2cpdag(graph: DAG) -> CPDAG:
@@ -74,10 +78,10 @@ def is_markov_equivalent(graph, other_graph) -> bool:
 
     Parameters
     ----------
-    graph : _type_
-        _description_
-    other_graph : _type_
-        _description_
+    graph : instance of DAG
+        Causal graph.
+    other_graph : instance of DAG
+        Another causal graph to compare to.
 
     Returns
     -------
@@ -86,11 +90,29 @@ def is_markov_equivalent(graph, other_graph) -> bool:
     """
     # See: https://graphical-models.readthedocs.io/en/latest/_modules/graphical_models/classes/mags/ancestral_graph.html#AncestralGraph.markov_blanket_of  # noqa
     # first check skeleton
+    first_skel = graph.to_adjacency_graph()
+    second_skel = other_graph.to_adjacency_graph()
+    same_skeleton = nx.is_isomorphic(first_skel, second_skel)
+    if not same_skeleton:
+        return False
 
     # second check v-structures
+    first_vstructs = compute_v_structures(graph)
+    second_vstructs = compute_v_structures(other_graph)
+    same_vstructures = first_vstructs == second_vstructs
+    if not same_vstructures:
+        return False
 
+    # TODO: implement discriminating paths
     # third check discriminating triples if needed
+    # self_discriminating_paths = self.discriminating_paths()
+    # other_discriminating_paths = other.discriminating_paths()
+    # shared_disc_paths = set(self_discriminating_paths.keys()) & set(other_discriminating_paths)
+    # same_discriminating = all(
+    #     self_discriminating_paths[path] == other_discriminating_paths[path]
+    #     for path in shared_disc_paths
+    # )
 
     # fourth if interventional, then must check that
     # interventional distributions are consistent
-    pass
+    return True

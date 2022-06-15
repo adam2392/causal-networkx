@@ -21,7 +21,9 @@ class FisherZCITest(BaseConditionalIndependenceTest):
         """
         self.correlation_matrix = correlation_matrix
 
-    def test(self, df: pd.DataFrame, x: Any, y: Any, z: Any = None) -> Tuple[float, float]:
+    def test(
+        self, df: pd.DataFrame, x_var: Any, y_var: Any, z_covariates: Any = None
+    ) -> Tuple[float, float]:
         """Run conditional independence test.
 
         Parameters
@@ -42,9 +44,11 @@ class FisherZCITest(BaseConditionalIndependenceTest):
         pvalue : float
             The p-value of the test.
         """
-        if z is None:
-            z = set()
-        stat, pvalue = fisherz(df, x, y, z, self.correlation_matrix)
+        self._check_test_input(df, x_var, y_var, z_covariates)
+
+        if z_covariates is None:
+            z_covariates = set()
+        stat, pvalue = fisherz(df, x_var, y_var, z_covariates, self.correlation_matrix)
         return stat, pvalue
 
 

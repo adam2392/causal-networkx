@@ -14,7 +14,7 @@ from causal_networkx.utils import requires_pydot
 
 class TestDAG:
     def setup_method(self):
-        # start every graph with the confounded graph
+        # start every graph with the fork graph
         # 0 -> 1, 0 -> 2
         self.Graph = DAG
         # incoming_latent_data = [(0, 1)]
@@ -470,6 +470,7 @@ class TestADMG(TestDAG, TestExportGraph):
 
         # normal d-separation statements should hold
         assert not d_separated(G, 1, 2, set())
+        assert not d_separated(G, 1, 2)
         assert d_separated(G, 1, 2, 0)
 
         # when we add an edge from 0 -> 1

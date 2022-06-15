@@ -371,15 +371,21 @@ class GSquareCITest(BaseConditionalIndependenceTest):
         self.data_type = data_type
 
     def test(
-        self, df: pd.DataFrame, x: Any, y: Any, z: Any = None, levels: List = None
+        self,
+        df: pd.DataFrame,
+        x_var: Any,
+        y_var: Any,
+        z_covariates: Any = None,
+        levels: List = None,
     ) -> Tuple[float, float]:
-        if z is None:
-            z = set()
+        self._check_test_input(df, x_var, y_var, z_covariates)
+        if z_covariates is None:
+            z_covariates = set()
 
         if self.data_type == "binary":
-            stat, pvalue = g_square_binary(df, x, y, z)
+            stat, pvalue = g_square_binary(df, x_var, y_var, z_covariates)
         elif self.data_type == "discrete":
-            stat, pvalue = g_square_discrete(df, x, y, z, levels=levels)
+            stat, pvalue = g_square_discrete(df, x_var, y_var, z_covariates, levels=levels)
         else:
             raise ValueError(
                 f"The acceptable data_type for G Square CI test is "

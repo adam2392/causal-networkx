@@ -4,7 +4,8 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from causal_networkx import CPDAG, StructuralCausalModel
+from causal_networkx import CPDAG, DAG, StructuralCausalModel
+from causal_networkx.algorithms.d_separation import d_separated
 from causal_networkx.ci import GSquareCITest, Oracle
 from causal_networkx.ci.tests.testdata import bin_data, dis_data
 from causal_networkx.discovery import PC
@@ -80,6 +81,29 @@ def test_estimate_cpdag(indep_test_func, data_matrix, g_answer, alpha):
     complete_graph = alg.graph_
     assert nx.is_isomorphic(complete_graph.undirected_edge_graph, fixed_edges)
     assert not nx.is_isomorphic(complete_graph.dag, g_answer)
+
+
+def test_common_cause_and_collider():
+    """Test orienting a common cause and a collider.
+
+    The following graph has some complexities to test the PC algorithm
+    with the Oracle setting: ``1 <- 0 -> 2 <- 3``.
+    """
+    # build initial DAG
+    ed1, ed2 = ({}, {})
+    incoming_graph_data = {0: {1: ed1, 2: ed2}, 3: {2: ed2}}
+    G = DAG(incoming_graph_data)
+    df = G.dummy_sample()
+
+    pc = PC(ci_estimator=Oracle(G), apply_orientations=True)
+    pc.fit(df)
+    cpdag = pc.graph_
+
+    # compare with the expected CPDAG
+    expected_cpdag = CPDAG(incoming_uncertain_data=G.dag)
+    expected_cpdag.orient_undirected_edge(3, 2)
+    expected_cpdag.orient_undirected_edge(0, 2)
+    assert_array_equal(expected_cpdag.to_numpy(), cpdag.to_numpy())
 
 
 def test_collider():

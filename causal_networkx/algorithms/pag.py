@@ -437,3 +437,7 @@ def uncovered_pd_path(
             uncov_pd_path.appendleft(descendant_nodes[uncov_pd_path[0]])  # type: ignore
         uncov_pd_path = list(uncov_pd_path)
     return uncov_pd_path, found_uncovered_pd_path
+
+
+def compute_all_discriminating_paths():
+    pass

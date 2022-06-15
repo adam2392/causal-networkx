@@ -22,24 +22,24 @@ class Oracle(BaseConditionalIndependenceTest):
     def __init__(self, graph: Union[ADMG, DAG]) -> None:
         self.graph = graph
 
-    def test(self, data, x, y, sep_set):
+    def test(self, df, x_var, y_var, z_covariates):
         """Conditional independence test given an oracle.
 
-        Checks conditional independence between 'x' and 'y'
-        given 'sep_set' of variables using the causal graph
+        Checks conditional independence between 'x_var' and 'y_var'
+        given 'z_covariates' of variables using the causal graph
         as an oracle.
 
         Parameters
         ----------
-        data : np.ndarray of shape (n_samples, n_variables)
+        df : pd.DataFrame of shape (n_samples, n_variables)
             The data matrix. Passed in for API consistency, but not
             used.
-        x : node
+        x_var : node
             A node in the dataset.
-        y : node
+        y_var : node
             A node in the dataset.
-        sep_set : set
-            The set of variables to check that separates x and y.
+        z_covariates : set
+            The set of variables to check that separates x_var and y_var.
 
         Returns
         -------
@@ -49,9 +49,11 @@ class Oracle(BaseConditionalIndependenceTest):
             The pvalue. Return '1.0' if not independent and '0.0'
             if they are.
         """
+        self._check_test_input(df, x_var, y_var, z_covariates)
+
         # just check for d-separation between x and y
         # given sep_set
-        is_sep = d_separated(self.graph, x, y, sep_set)
+        is_sep = d_separated(self.graph, x_var, y_var, z_covariates)
 
         if is_sep:
             pvalue = 1

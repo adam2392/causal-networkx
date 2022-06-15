@@ -246,7 +246,10 @@ class ConstraintDiscovery:
         to determine which variables are (in)dependent. This specific algorithm
         compares exhaustively pairs of adjacent variables.
         """
-        from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_order
+        from causal_networkx.discovery.skeleton import (
+            learn_skeleton_graph_with_neighbors,
+            learn_skeleton_graph_with_order,
+        )
 
         if fixed_edges is None:
             fixed_edges = set()
