@@ -18,7 +18,7 @@ def is_directed_acyclic_graph(G) -> bool:
 
     Returns
     -------
-    bool
+    is_dag : bool
         True if ``G`` is a DAG, False otherwise
 
     Examples
