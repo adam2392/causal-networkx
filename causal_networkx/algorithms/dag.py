@@ -9,17 +9,18 @@ from networkx.algorithms import topological_sort as nx_topological_sort
 from causal_networkx import ADMG, DAG
 
 
-def is_directed_acyclic_graph(G) -> bool:
+def is_directed_acyclic_graph(G):
     """Check if ``G`` is a directed acyclic graph (DAG) or not.
 
     Parameters
     ----------
-    G : ADMG
+    G : instance of DAG
+        The causal graph.
 
     Returns
     -------
     is_dag : bool
-        True if ``G`` is a DAG, False otherwise
+        True if ``G`` is a DAG, False otherwise.
 
     Examples
     --------

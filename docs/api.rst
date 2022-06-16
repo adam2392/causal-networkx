@@ -117,3 +117,4 @@ Utility Algorithms for Causal Graphs
    uncovered_pd_path
    dag2cpdag
    admg2pag
+   is_markov_equivalent

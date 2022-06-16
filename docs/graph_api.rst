@@ -13,6 +13,18 @@ different types of edges.
 
 Overview
 ********
+.. currentmodule:: causal_networkx.graphs.base
+
+All causal graphs are subclassed from the following abstract classes. These
+are provided, so that users may extend the graph classes.
+
+.. autosummary::
+   :toctree: generated
+
+   MarkovianGraph
+   SemiMarkovianGraph
+   MarkovEquivalenceClass
+
 .. currentmodule:: causal_networkx.graphs.dag
 
 Copying
