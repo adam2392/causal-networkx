@@ -1,0 +1,6 @@
+﻿causal\_networkx.graphs.dag.DAG.degree
+======================================
+
+.. currentmodule:: causal_networkx.graphs.dag
+
+.. automethod:: DAG.degree

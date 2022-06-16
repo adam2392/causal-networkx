@@ -1,0 +1,12 @@
+﻿causal_networkx.algorithms.is_markov_equivalent
+===============================================
+
+.. currentmodule:: causal_networkx.algorithms
+
+.. autofunction:: is_markov_equivalent
+
+.. include:: causal_networkx.algorithms.is_markov_equivalent.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

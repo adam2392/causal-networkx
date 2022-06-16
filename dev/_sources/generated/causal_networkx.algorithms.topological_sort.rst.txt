@@ -1,0 +1,12 @@
+﻿causal_networkx.algorithms.topological_sort
+===========================================
+
+.. currentmodule:: causal_networkx.algorithms
+
+.. autofunction:: topological_sort
+
+.. include:: causal_networkx.algorithms.topological_sort.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

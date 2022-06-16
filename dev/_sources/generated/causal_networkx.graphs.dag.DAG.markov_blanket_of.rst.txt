@@ -1,0 +1,6 @@
+﻿causal\_networkx.graphs.dag.DAG.markov\_blanket\_of
+===================================================
+
+.. currentmodule:: causal_networkx.graphs.dag
+
+.. automethod:: DAG.markov_blanket_of

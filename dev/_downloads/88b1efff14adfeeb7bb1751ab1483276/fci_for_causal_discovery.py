@@ -16,7 +16,7 @@ will use the FCI algorithm.
 import numpy as np
 
 from causal_networkx import StructuralCausalModel
-from causal_networkx.ci import Oracle, g_square_discrete
+from causal_networkx.ci import GSquareCITest, Oracle
 from causal_networkx.discovery import FCI
 
 # %%
@@ -54,7 +54,7 @@ G.draw()
 # %%
 # Instantiate some conditional independence tests
 oracle = Oracle(G)
-ci_estimator = g_square_discrete
+ci_estimator = GSquareCITest(data_type="discrete")
 
 # %%
 # Now we are ready to run the FCI algorithm.

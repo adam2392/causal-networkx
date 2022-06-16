@@ -1,0 +1,12 @@
+﻿causal_networkx.algorithms.dag2cpdag
+====================================
+
+.. currentmodule:: causal_networkx.algorithms
+
+.. autofunction:: dag2cpdag
+
+.. include:: causal_networkx.algorithms.dag2cpdag.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

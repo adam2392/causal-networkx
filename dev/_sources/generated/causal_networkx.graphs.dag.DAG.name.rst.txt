@@ -1,0 +1,6 @@
+﻿causal\_networkx.graphs.dag.DAG.name
+====================================
+
+.. currentmodule:: causal_networkx.graphs.dag
+
+.. autoproperty:: DAG.name

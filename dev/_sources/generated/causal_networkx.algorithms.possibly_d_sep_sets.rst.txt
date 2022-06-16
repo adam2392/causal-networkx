@@ -1,0 +1,12 @@
+﻿causal_networkx.algorithms.possibly_d_sep_sets
+==============================================
+
+.. currentmodule:: causal_networkx.algorithms
+
+.. autofunction:: possibly_d_sep_sets
+
+.. include:: causal_networkx.algorithms.possibly_d_sep_sets.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

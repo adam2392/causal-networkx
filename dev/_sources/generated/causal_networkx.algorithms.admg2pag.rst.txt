@@ -1,0 +1,12 @@
+﻿causal_networkx.algorithms.admg2pag
+===================================
+
+.. currentmodule:: causal_networkx.algorithms
+
+.. autofunction:: admg2pag
+
+.. include:: causal_networkx.algorithms.admg2pag.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

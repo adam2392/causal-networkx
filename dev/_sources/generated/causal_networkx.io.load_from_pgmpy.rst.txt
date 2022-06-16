@@ -1,0 +1,12 @@
+﻿causal_networkx.io.load_from_pgmpy
+==================================
+
+.. currentmodule:: causal_networkx.io
+
+.. autofunction:: load_from_pgmpy
+
+.. include:: causal_networkx.io.load_from_pgmpy.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

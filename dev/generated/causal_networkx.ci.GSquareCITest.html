@@ -1,0 +1,705 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>causal_networkx.ci.GSquareCITest &#8212; causal-networkx v0.1.0</title>
+<script>
+  document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+  document.documentElement.dataset.theme = localStorage.getItem("theme") || "light"
+</script>
+
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=92025949c220c2e29695" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=92025949c220c2e29695" rel="stylesheet">
+
+
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=92025949c220c2e29695">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="causal_networkx.ci.FisherZCITest" href="causal_networkx.ci.FisherZCITest.html" />
+    <link rel="prev" title="causal_networkx.ci.BaseConditionalIndependenceTest" href="causal_networkx.ci.BaseConditionalIndependenceTest.html" />
+    <link rel="canonical" href="https://adam2392.github.io/causal-networkx/stable/index.html" />
+    <script type="text/javascript" src="../_static/copybutton.js"></script>
+    <script type="text/javascript" src="../_static/scrollfix.js"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="docsearch:language" content="en">
+
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+    <div class="bd-header-announcement container-fluid" id="banner">
+      
+
+    </div>
+
+    
+    <nav class="bd-header navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="bd-header__inner container-xl">
+
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">causal-networkx v0.1.0</p>
+  
+</a>
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="fas fa-bars"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../installation.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="../api.html">
+  API
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../use.html">
+  Using Causal-Networkx
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../tutorials.html">
+  Tutorial
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../whats_new.html">
+  Release History
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://raw.githubusercontent.com/adam2392/causal-networkx/main/LICENSE">
+  License
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://github.com/adam2392/causal-networkx/main/CONTRIBUTING.md">
+  Contributing
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <div class="dropdown">
+    <button type="button" class="btn btn-primary btn-sm navbar-btn dropdown-toggle" id="dLabelMore" data-toggle="dropdown">
+        v0.1.0
+        <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu list-group-flush py-0" aria-labelledby="dLabelMore">
+        <a class="list-group-item list-group-item-action py-1" href="https://adam2392.github.io/causal-networkx/dev/index.html">v0.1 (devel)</a>
+    </div>
+</div>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/adam2392/causal-networkx" rel="noopener" target="_blank" title="GitHub"><span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="bd-container container-xl">
+      <div class="bd-container__inner row">
+          
+
+<!-- Only show if we have sidebars configured, else just a small margin  -->
+<div class="bd-sidebar-primary col-12 col-md-3 bd-sidebar">
+  <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.StructuralCausalModel.html">
+   causal_networkx.StructuralCausalModel
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.DAG.html">
+   causal_networkx.DAG
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.CPDAG.html">
+   causal_networkx.CPDAG
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ADMG.html">
+   causal_networkx.ADMG
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.PAG.html">
+   causal_networkx.PAG
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../graph_api.html">
+   DAG
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.base.MarkovianGraph.html">
+     causal_networkx.graphs.base.MarkovianGraph
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.base.SemiMarkovianGraph.html">
+     causal_networkx.graphs.base.SemiMarkovianGraph
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.base.MarkovEquivalenceClass.html">
+     causal_networkx.graphs.base.MarkovEquivalenceClass
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.copy.html">
+     causal_networkx.graphs.dag.DAG.copy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.to_adjacency_graph.html">
+     causal_networkx.graphs.dag.DAG.to_adjacency_graph
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.name.html">
+     causal_networkx.graphs.dag.DAG.name
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.parents.html">
+     causal_networkx.graphs.dag.DAG.parents
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.children.html">
+     causal_networkx.graphs.dag.DAG.children
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.successors.html">
+     causal_networkx.graphs.dag.DAG.successors
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.predecessors.html">
+     causal_networkx.graphs.dag.DAG.predecessors
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.edges.html">
+     causal_networkx.graphs.dag.DAG.edges
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.nodes.html">
+     causal_networkx.graphs.dag.DAG.nodes
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.has_adjacency.html">
+     causal_networkx.graphs.dag.DAG.has_adjacency
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.has_edge.html">
+     causal_networkx.graphs.dag.DAG.has_edge
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.has_node.html">
+     causal_networkx.graphs.dag.DAG.has_node
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.number_of_edges.html">
+     causal_networkx.graphs.dag.DAG.number_of_edges
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.number_of_nodes.html">
+     causal_networkx.graphs.dag.DAG.number_of_nodes
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.size.html">
+     causal_networkx.graphs.dag.DAG.size
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.degree.html">
+     causal_networkx.graphs.dag.DAG.degree
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.markov_blanket_of.html">
+     causal_networkx.graphs.dag.DAG.markov_blanket_of
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.add_node.html">
+     causal_networkx.graphs.dag.DAG.add_node
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.add_nodes_from.html">
+     causal_networkx.graphs.dag.DAG.add_nodes_from
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.remove_node.html">
+     causal_networkx.graphs.dag.DAG.remove_node
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.remove_nodes_from.html">
+     causal_networkx.graphs.dag.DAG.remove_nodes_from
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.remove_edge.html">
+     causal_networkx.graphs.dag.DAG.remove_edge
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.remove_edges_from.html">
+     causal_networkx.graphs.dag.DAG.remove_edges_from
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.add_edge.html">
+     causal_networkx.graphs.dag.DAG.add_edge
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.add_edges_from.html">
+     causal_networkx.graphs.dag.DAG.add_edges_from
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.clear.html">
+     causal_networkx.graphs.dag.DAG.clear
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.clear_edges.html">
+     causal_networkx.graphs.dag.DAG.clear_edges
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.order.html">
+     causal_networkx.graphs.dag.DAG.order
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.to_dot_graph.html">
+     causal_networkx.graphs.dag.DAG.to_dot_graph
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.to_networkx.html">
+     causal_networkx.graphs.dag.DAG.to_networkx
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.to_numpy.html">
+     causal_networkx.graphs.dag.DAG.to_numpy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.save.html">
+     causal_networkx.graphs.dag.DAG.save
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.discovery.PC.html">
+   causal_networkx.discovery.PC
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.discovery.FCI.html">
+   causal_networkx.discovery.FCI
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.discovery.RobustPC.html">
+   causal_networkx.discovery.RobustPC
+  </a>
+ </li>
+</ul>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.BaseConditionalIndependenceTest.html">
+   causal_networkx.ci.BaseConditionalIndependenceTest
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   causal_networkx.ci.GSquareCITest
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.FisherZCITest.html">
+   causal_networkx.ci.FisherZCITest
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.KernelCITest.html">
+   causal_networkx.ci.KernelCITest
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.PartialCorrelation.html">
+   causal_networkx.ci.PartialCorrelation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.Oracle.html">
+   causal_networkx.ci.Oracle
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.ParentOracle.html">
+   causal_networkx.ci.ParentOracle
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.io.load_from_networkx.html">
+   causal_networkx.io.load_from_networkx
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.io.load_from_numpy.html">
+   causal_networkx.io.load_from_numpy
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.io.load_from_pgmpy.html">
+   causal_networkx.io.load_from_pgmpy
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.io.to_networkx.html">
+   causal_networkx.io.to_networkx
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.io.to_numpy.html">
+   causal_networkx.io.to_numpy
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.d_separated.html">
+   causal_networkx.algorithms.d_separated
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.find_cliques.html">
+   causal_networkx.algorithms.find_cliques
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.is_directed_acyclic_graph.html">
+   causal_networkx.algorithms.is_directed_acyclic_graph
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.topological_sort.html">
+   causal_networkx.algorithms.topological_sort
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.discriminating_path.html">
+   causal_networkx.algorithms.discriminating_path
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.possibly_d_sep_sets.html">
+   causal_networkx.algorithms.possibly_d_sep_sets
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.uncovered_pd_path.html">
+   causal_networkx.algorithms.uncovered_pd_path
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.dag2cpdag.html">
+   causal_networkx.algorithms.dag2cpdag
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.admg2pag.html">
+   causal_networkx.algorithms.admg2pag
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.is_markov_equivalent.html">
+   causal_networkx.algorithms.is_markov_equivalent
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.compute_v_structures.html">
+   causal_networkx.algorithms.compute_v_structures
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+  </div>
+  <div class="sidebar-end-items">
+  </div>
+</div>
+
+
+          
+
+
+<div class="bd-sidebar-secondary d-none d-xl-block col-xl-2 bd-toc">
+  
+    
+    <div class="toc-item">
+      
+<div class="tocsection onthispage mt-5 pt-1 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#examples-using-causal-networkx-ci-gsquarecitest">
+   Examples using
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     causal_networkx.ci.GSquareCITest
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+    </div>
+    
+    <div class="toc-item">
+      
+    </div>
+    
+  
+</div>
+
+
+          
+          
+          <div class="bd-content col-12 col-md-9 col-xl-7">
+              
+              <article class="bd-article" role="main">
+                
+  <section id="causal-networkx-ci-gsquarecitest">
+<h1>causal_networkx.ci.GSquareCITest<a class="headerlink" href="#causal-networkx-ci-gsquarecitest" title="Permalink to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="causal_networkx.ci.GSquareCITest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">causal_networkx.ci.</span></span><span class="sig-name descname"><span class="pre">GSquareCITest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'binary'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/causal_networkx/ci/g_test.html#GSquareCITest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#causal_networkx.ci.GSquareCITest" title="Permalink to this definition">#</a></dt>
+<dd><p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.ci.GSquareCITest.test" title="causal_networkx.ci.GSquareCITest.test"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test</span></code></a>(df, x_var, y_var[, z_covariates, levels])</p></td>
+<td><p>Abstract method for all conditional independence tests.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.ci.GSquareCITest.test">
+<span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_covariates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/causal_networkx/ci/g_test.html#GSquareCITest.test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#causal_networkx.ci.GSquareCITest.test" title="Permalink to this definition">#</a></dt>
+<dd><p>Abstract method for all conditional independence tests.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> : <a class="reference external" href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.5.0.dev0+974.g111bcbb7d5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></a></p>
+<blockquote>
+<div><p>_description_</p>
+</div></blockquote>
+<p><strong>x_var</strong> : <code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></p>
+<blockquote>
+<div><p>_description_</p>
+</div></blockquote>
+<p><strong>y_var</strong> : <code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></p>
+<blockquote>
+<div><p>_description_</p>
+</div></blockquote>
+<p><strong>z_covariates</strong> : <code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code>, optional</p>
+<blockquote>
+<div><p>_description_, by default None</p>
+</div></blockquote>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><code class="docutils literal notranslate"><span class="pre">float</span></code></a>]</p>
+<blockquote>
+<div><p>_description_</p>
+</div></blockquote>
+<dl>
+<dt><strong>:rtype:</strong><span class="classifier">py:data:<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<section id="examples-using-causal-networkx-ci-gsquarecitest">
+<h2>Examples using <code class="docutils literal notranslate"><span class="pre">causal_networkx.ci.GSquareCITest</span></code><a class="headerlink" href="#examples-using-causal-networkx-ci-gsquarecitest" title="Permalink to this heading">#</a></h2>
+<div class="sphx-glr-thumbcontainer" tooltip="We will simulate some observational data and demonstrate how we will use the FCI algorithm."><figure class="align-default" id="id1">
+<img alt="Fast Causal Inference (FCI) for causal discovery from observational data" src="../_images/sphx_glr_fci_for_causal_discovery_thumb.png" />
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="../auto_examples/fci_for_causal_discovery.html#sphx-glr-auto-examples-fci-for-causal-discovery-py"><span class="std std-ref">Fast Causal Inference (FCI) for causal discovery from observational data</span></a></span><a class="headerlink" href="#id1" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+</div></section>
+</section>
+
+
+              </article>
+              
+
+              
+              <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="causal_networkx.ci.BaseConditionalIndependenceTest.html" title="previous page">
+      <i class="fas fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">causal_networkx.ci.BaseConditionalIndependenceTest</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="causal_networkx.ci.FisherZCITest.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">causal_networkx.ci.FisherZCITest</p>
+  </div>
+  <i class="fas fa-angle-right"></i>
+  </a>
+</div>
+              </footer>
+              
+          </div>
+          
+      </div>
+    </div>
+
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=92025949c220c2e29695"></script>
+
+<footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    <p class="copyright">
+    &copy; Copyright 2022, Adam Li.<br>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
+</p>
+  </div>
+  
+</div>
+</footer>
+  </body>
+</html>

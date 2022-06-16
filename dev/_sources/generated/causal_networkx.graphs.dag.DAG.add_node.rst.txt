@@ -1,0 +1,6 @@
+﻿causal\_networkx.graphs.dag.DAG.add\_node
+=========================================
+
+.. currentmodule:: causal_networkx.graphs.dag
+
+.. automethod:: DAG.add_node

@@ -1,0 +1,6 @@
+﻿causal\_networkx.graphs.dag.DAG.to\_dot\_graph
+==============================================
+
+.. currentmodule:: causal_networkx.graphs.dag
+
+.. automethod:: DAG.to_dot_graph

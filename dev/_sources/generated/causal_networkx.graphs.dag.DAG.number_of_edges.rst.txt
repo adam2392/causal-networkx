@@ -1,0 +1,6 @@
+﻿causal\_networkx.graphs.dag.DAG.number\_of\_edges
+=================================================
+
+.. currentmodule:: causal_networkx.graphs.dag
+
+.. automethod:: DAG.number_of_edges

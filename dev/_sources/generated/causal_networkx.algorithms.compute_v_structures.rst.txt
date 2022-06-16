@@ -1,0 +1,12 @@
+﻿causal_networkx.algorithms.compute_v_structures
+===============================================
+
+.. currentmodule:: causal_networkx.algorithms
+
+.. autofunction:: compute_v_structures
+
+.. include:: causal_networkx.algorithms.compute_v_structures.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

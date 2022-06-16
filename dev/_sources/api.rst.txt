@@ -16,7 +16,7 @@ stage.
 Most-used classes
 =================
 These are the causal classes for Structural Causal Models (SCMs), or various causal
-graphs encountered in the literature.
+graphs encountered in the literature. 
 
 .. currentmodule:: causal_networkx
 
@@ -28,6 +28,14 @@ graphs encountered in the literature.
    CPDAG
    ADMG
    PAG
+
+To see a breakdown of different inner graph functionalities,
+see the :ref:`Graph API <graph_api>` page. See 
+
+.. toctree::
+   :maxdepth: 0
+
+   graph_api
 
 Discovery functions
 ===================
@@ -63,12 +71,13 @@ variable and then ``sep_set`` is the conditioning set of variables.
 .. autosummary::
    :toctree: generated/
 
-   g_square_binary
-   g_square_discrete
-   fisherz
+   BaseConditionalIndependenceTest
+   GSquareCITest
+   FisherZCITest
+   KernelCITest
+   PartialCorrelation
    Oracle
    ParentOracle
-   KernelCITest
 
 
 IO for reading/writing causal graphs
@@ -90,7 +99,6 @@ inherent limitations in supporting mixed-edge graphs in other formats.
    load_from_pgmpy
    to_networkx
    to_numpy
-   to_pgmpy
 
 
 Utility Algorithms for Causal Graphs
@@ -107,4 +115,7 @@ Utility Algorithms for Causal Graphs
    discriminating_path
    possibly_d_sep_sets
    uncovered_pd_path
-   
+   dag2cpdag
+   admg2pag
+   is_markov_equivalent
+   compute_v_structures

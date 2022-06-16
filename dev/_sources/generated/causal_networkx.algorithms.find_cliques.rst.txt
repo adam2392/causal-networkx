@@ -1,0 +1,12 @@
+﻿causal_networkx.algorithms.find_cliques
+=======================================
+
+.. currentmodule:: causal_networkx.algorithms
+
+.. autofunction:: find_cliques
+
+.. include:: causal_networkx.algorithms.find_cliques.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

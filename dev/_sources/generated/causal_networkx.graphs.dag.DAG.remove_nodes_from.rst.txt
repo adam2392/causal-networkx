@@ -1,0 +1,6 @@
+﻿causal\_networkx.graphs.dag.DAG.remove\_nodes\_from
+===================================================
+
+.. currentmodule:: causal_networkx.graphs.dag
+
+.. automethod:: DAG.remove_nodes_from

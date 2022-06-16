@@ -1,0 +1,6 @@
+﻿causal\_networkx.graphs.dag.DAG.has\_edge
+=========================================
+
+.. currentmodule:: causal_networkx.graphs.dag
+
+.. automethod:: DAG.has_edge

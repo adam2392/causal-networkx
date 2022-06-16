@@ -1,0 +1,6 @@
+﻿causal\_networkx.graphs.dag.DAG.remove\_edge
+============================================
+
+.. currentmodule:: causal_networkx.graphs.dag
+
+.. automethod:: DAG.remove_edge

@@ -1,0 +1,12 @@
+﻿causal_networkx.io.to_numpy
+===========================
+
+.. currentmodule:: causal_networkx.io
+
+.. autofunction:: to_numpy
+
+.. include:: causal_networkx.io.to_numpy.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

@@ -1,0 +1,12 @@
+﻿causal_networkx.algorithms.is_directed_acyclic_graph
+====================================================
+
+.. currentmodule:: causal_networkx.algorithms
+
+.. autofunction:: is_directed_acyclic_graph
+
+.. include:: causal_networkx.algorithms.is_directed_acyclic_graph.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

@@ -1,0 +1,6 @@
+﻿causal\_networkx.graphs.dag.DAG.parents
+=======================================
+
+.. currentmodule:: causal_networkx.graphs.dag
+
+.. automethod:: DAG.parents

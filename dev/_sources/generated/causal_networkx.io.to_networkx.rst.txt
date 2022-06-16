@@ -1,0 +1,12 @@
+﻿causal_networkx.io.to_networkx
+==============================
+
+.. currentmodule:: causal_networkx.io
+
+.. autofunction:: to_networkx
+
+.. include:: causal_networkx.io.to_networkx.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

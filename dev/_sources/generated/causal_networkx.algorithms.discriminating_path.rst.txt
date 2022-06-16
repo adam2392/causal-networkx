@@ -1,0 +1,12 @@
+﻿causal_networkx.algorithms.discriminating_path
+==============================================
+
+.. currentmodule:: causal_networkx.algorithms
+
+.. autofunction:: discriminating_path
+
+.. include:: causal_networkx.algorithms.discriminating_path.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

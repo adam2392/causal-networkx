@@ -1,0 +1,1394 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>causal_networkx.DAG &#8212; causal-networkx v0.1.0</title>
+<script>
+  document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+  document.documentElement.dataset.theme = localStorage.getItem("theme") || "light"
+</script>
+
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=92025949c220c2e29695" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=92025949c220c2e29695" rel="stylesheet">
+
+
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=92025949c220c2e29695">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="causal_networkx.CPDAG" href="causal_networkx.CPDAG.html" />
+    <link rel="prev" title="causal_networkx.StructuralCausalModel" href="causal_networkx.StructuralCausalModel.html" />
+    <link rel="canonical" href="https://adam2392.github.io/causal-networkx/stable/index.html" />
+    <script type="text/javascript" src="../_static/copybutton.js"></script>
+    <script type="text/javascript" src="../_static/scrollfix.js"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="docsearch:language" content="en">
+
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+    <div class="bd-header-announcement container-fluid" id="banner">
+      
+
+    </div>
+
+    
+    <nav class="bd-header navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="bd-header__inner container-xl">
+
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">causal-networkx v0.1.0</p>
+  
+</a>
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="fas fa-bars"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../installation.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="../api.html">
+  API
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../use.html">
+  Using Causal-Networkx
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../tutorials.html">
+  Tutorial
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../whats_new.html">
+  Release History
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://raw.githubusercontent.com/adam2392/causal-networkx/main/LICENSE">
+  License
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://github.com/adam2392/causal-networkx/main/CONTRIBUTING.md">
+  Contributing
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <div class="dropdown">
+    <button type="button" class="btn btn-primary btn-sm navbar-btn dropdown-toggle" id="dLabelMore" data-toggle="dropdown">
+        v0.1.0
+        <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu list-group-flush py-0" aria-labelledby="dLabelMore">
+        <a class="list-group-item list-group-item-action py-1" href="https://adam2392.github.io/causal-networkx/dev/index.html">v0.1 (devel)</a>
+    </div>
+</div>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/adam2392/causal-networkx" rel="noopener" target="_blank" title="GitHub"><span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="bd-container container-xl">
+      <div class="bd-container__inner row">
+          
+
+<!-- Only show if we have sidebars configured, else just a small margin  -->
+<div class="bd-sidebar-primary col-12 col-md-3 bd-sidebar">
+  <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.StructuralCausalModel.html">
+   causal_networkx.StructuralCausalModel
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   causal_networkx.DAG
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.CPDAG.html">
+   causal_networkx.CPDAG
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ADMG.html">
+   causal_networkx.ADMG
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.PAG.html">
+   causal_networkx.PAG
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../graph_api.html">
+   DAG
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.base.MarkovianGraph.html">
+     causal_networkx.graphs.base.MarkovianGraph
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.base.SemiMarkovianGraph.html">
+     causal_networkx.graphs.base.SemiMarkovianGraph
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.base.MarkovEquivalenceClass.html">
+     causal_networkx.graphs.base.MarkovEquivalenceClass
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.copy.html">
+     causal_networkx.graphs.dag.DAG.copy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.to_adjacency_graph.html">
+     causal_networkx.graphs.dag.DAG.to_adjacency_graph
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.name.html">
+     causal_networkx.graphs.dag.DAG.name
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.parents.html">
+     causal_networkx.graphs.dag.DAG.parents
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.children.html">
+     causal_networkx.graphs.dag.DAG.children
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.successors.html">
+     causal_networkx.graphs.dag.DAG.successors
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.predecessors.html">
+     causal_networkx.graphs.dag.DAG.predecessors
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.edges.html">
+     causal_networkx.graphs.dag.DAG.edges
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.nodes.html">
+     causal_networkx.graphs.dag.DAG.nodes
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.has_adjacency.html">
+     causal_networkx.graphs.dag.DAG.has_adjacency
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.has_edge.html">
+     causal_networkx.graphs.dag.DAG.has_edge
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.has_node.html">
+     causal_networkx.graphs.dag.DAG.has_node
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.number_of_edges.html">
+     causal_networkx.graphs.dag.DAG.number_of_edges
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.number_of_nodes.html">
+     causal_networkx.graphs.dag.DAG.number_of_nodes
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.size.html">
+     causal_networkx.graphs.dag.DAG.size
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.degree.html">
+     causal_networkx.graphs.dag.DAG.degree
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.markov_blanket_of.html">
+     causal_networkx.graphs.dag.DAG.markov_blanket_of
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.add_node.html">
+     causal_networkx.graphs.dag.DAG.add_node
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.add_nodes_from.html">
+     causal_networkx.graphs.dag.DAG.add_nodes_from
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.remove_node.html">
+     causal_networkx.graphs.dag.DAG.remove_node
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.remove_nodes_from.html">
+     causal_networkx.graphs.dag.DAG.remove_nodes_from
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.remove_edge.html">
+     causal_networkx.graphs.dag.DAG.remove_edge
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.remove_edges_from.html">
+     causal_networkx.graphs.dag.DAG.remove_edges_from
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.add_edge.html">
+     causal_networkx.graphs.dag.DAG.add_edge
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.add_edges_from.html">
+     causal_networkx.graphs.dag.DAG.add_edges_from
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.clear.html">
+     causal_networkx.graphs.dag.DAG.clear
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.clear_edges.html">
+     causal_networkx.graphs.dag.DAG.clear_edges
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.order.html">
+     causal_networkx.graphs.dag.DAG.order
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.to_dot_graph.html">
+     causal_networkx.graphs.dag.DAG.to_dot_graph
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.to_networkx.html">
+     causal_networkx.graphs.dag.DAG.to_networkx
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.to_numpy.html">
+     causal_networkx.graphs.dag.DAG.to_numpy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="causal_networkx.graphs.dag.DAG.save.html">
+     causal_networkx.graphs.dag.DAG.save
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.discovery.PC.html">
+   causal_networkx.discovery.PC
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.discovery.FCI.html">
+   causal_networkx.discovery.FCI
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.discovery.RobustPC.html">
+   causal_networkx.discovery.RobustPC
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.BaseConditionalIndependenceTest.html">
+   causal_networkx.ci.BaseConditionalIndependenceTest
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.GSquareCITest.html">
+   causal_networkx.ci.GSquareCITest
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.FisherZCITest.html">
+   causal_networkx.ci.FisherZCITest
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.KernelCITest.html">
+   causal_networkx.ci.KernelCITest
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.PartialCorrelation.html">
+   causal_networkx.ci.PartialCorrelation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.Oracle.html">
+   causal_networkx.ci.Oracle
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.ci.ParentOracle.html">
+   causal_networkx.ci.ParentOracle
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.io.load_from_networkx.html">
+   causal_networkx.io.load_from_networkx
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.io.load_from_numpy.html">
+   causal_networkx.io.load_from_numpy
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.io.load_from_pgmpy.html">
+   causal_networkx.io.load_from_pgmpy
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.io.to_networkx.html">
+   causal_networkx.io.to_networkx
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.io.to_numpy.html">
+   causal_networkx.io.to_numpy
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.d_separated.html">
+   causal_networkx.algorithms.d_separated
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.find_cliques.html">
+   causal_networkx.algorithms.find_cliques
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.is_directed_acyclic_graph.html">
+   causal_networkx.algorithms.is_directed_acyclic_graph
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.topological_sort.html">
+   causal_networkx.algorithms.topological_sort
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.discriminating_path.html">
+   causal_networkx.algorithms.discriminating_path
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.possibly_d_sep_sets.html">
+   causal_networkx.algorithms.possibly_d_sep_sets
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.uncovered_pd_path.html">
+   causal_networkx.algorithms.uncovered_pd_path
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.dag2cpdag.html">
+   causal_networkx.algorithms.dag2cpdag
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.admg2pag.html">
+   causal_networkx.algorithms.admg2pag
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.is_markov_equivalent.html">
+   causal_networkx.algorithms.is_markov_equivalent
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_networkx.algorithms.compute_v_structures.html">
+   causal_networkx.algorithms.compute_v_structures
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+  </div>
+  <div class="sidebar-end-items">
+  </div>
+</div>
+
+
+          
+
+
+<div class="bd-sidebar-secondary d-none d-xl-block col-xl-2 bd-toc">
+  
+    
+    <div class="toc-item">
+      
+<div class="tocsection onthispage mt-5 pt-1 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#examples-using-causal-networkx-dag">
+   Examples using
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     causal_networkx.DAG
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+    </div>
+    
+    <div class="toc-item">
+      
+    </div>
+    
+  
+</div>
+
+
+          
+          
+          <div class="bd-content col-12 col-md-9 col-xl-7">
+              
+              <article class="bd-article" role="main">
+                
+  <section id="causal-networkx-dag">
+<h1>causal_networkx.DAG<a class="headerlink" href="#causal-networkx-dag" title="Permalink to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="causal_networkx.DAG">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">causal_networkx.</span></span><span class="sig-name descname"><span class="pre">DAG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">incoming_graph_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/causal_networkx/graphs/dag.html#DAG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#causal_networkx.DAG" title="Permalink to this definition">#</a></dt>
+<dd><p>Causal directed acyclic graph.</p>
+<p>This is a causal Bayesian network, or a Bayesian network
+with directed edges that constitute causal relations, rather than
+probabilistic dependences.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>incoming_graph_data</strong> : <a class="reference external" href="https://docs.python.org/3/library/functions.html#input" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">input</span></code></a> graph (optional, default: <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="docutils literal notranslate"><span class="pre">None</span></code></a>)</p>
+<blockquote>
+<div><p>Data to initialize directed edge graph. The edges in this graph
+represent directed edges between observed variables, which are
+represented using a <code class="docutils literal notranslate"><span class="pre">networkx.DiGraph</span></code>, so accepts any arguments
+from the <a class="reference external" href="https://networkx.org/documentation/latest/reference/classes/digraph.html#networkx.DiGraph" title="(in NetworkX v3.0b1.dev0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">networkx.DiGraph</span></code></a> class. There must be no cycles in this graph
+structure.</p>
+</div></blockquote>
+<p><strong>attr</strong> : keyword arguments, optional (default= no attributes)</p>
+<blockquote>
+<div><p>Attributes to add to graph as key=value pairs.</p>
+</div></blockquote>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference external" href="https://networkx.org/documentation/latest/reference/classes/digraph.html#networkx.DiGraph" title="(in NetworkX v3.0b1.dev0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">networkx.DiGraph</span></code></a></dt><dd></dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<p><code class="docutils literal notranslate"><span class="pre">_graphs</span></code> and <code class="docutils literal notranslate"><span class="pre">_graph_names</span></code> private properties store graph
+objects denoting different types of edges and their corresponding
+names. These are useful for encoding various extensions of the causal DAG.</p>
+<dl class="field-list">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#causal_networkx.DAG.edges" title="causal_networkx.DAG.edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">edges</span></code></a></p>
+<blockquote>
+<div><p>Directed edges.</p>
+</div></blockquote>
+<p><a class="reference internal" href="#causal_networkx.DAG.name" title="causal_networkx.DAG.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p>
+<blockquote>
+<div><p>Name as a string identifier of the graph.</p>
+</div></blockquote>
+<p><a class="reference internal" href="#causal_networkx.DAG.nodes" title="causal_networkx.DAG.nodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nodes</span></code></a></p>
+<blockquote>
+<div><p>Return the nodes within the DAG.</p>
+</div></blockquote>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.add_chain" title="causal_networkx.DAG.add_chain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_chain</span></code></a>(node_chain)</p></td>
+<td><p>Add a causal chain.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.add_edge" title="causal_networkx.DAG.add_edge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_edge</span></code></a>(u_of_edge, v_of_edge, **attr)</p></td>
+<td><p>Add an edge between u and v.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.add_edges_from" title="causal_networkx.DAG.add_edges_from"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_edges_from</span></code></a>(ebunch, **attr)</p></td>
+<td><p>Add directed edges.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.add_node" title="causal_networkx.DAG.add_node"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_node</span></code></a>(node_for_adding, **attr)</p></td>
+<td><p>Add node to causal graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.add_nodes_from" title="causal_networkx.DAG.add_nodes_from"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nodes_from</span></code></a>(nodes_for_adding, **attr)</p></td>
+<td><p>Add nodes to causal graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.adjacencies" title="causal_networkx.DAG.adjacencies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adjacencies</span></code></a>(u)</p></td>
+<td><p>Get all adjacent nodes to u.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.all_edges" title="causal_networkx.DAG.all_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">all_edges</span></code></a>()</p></td>
+<td><p>Get dictionary of all the edges by edge type.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.children" title="causal_networkx.DAG.children"><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code></a>(n)</p></td>
+<td><p>Return an iterator over children of node n.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.clear" title="causal_networkx.DAG.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a>()</p></td>
+<td><p>Remove all nodes and edges in graphs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.clear_edges" title="causal_networkx.DAG.clear_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_edges</span></code></a>()</p></td>
+<td><p>Remove all edges from causal graph without removing nodes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.copy" title="causal_networkx.DAG.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
+<td><p>Return a copy of the causal graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.degree" title="causal_networkx.DAG.degree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">degree</span></code></a>(n)</p></td>
+<td><p>Compute the degree of the DiGraph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.dummy_sample" title="causal_networkx.DAG.dummy_sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dummy_sample</span></code></a>()</p></td>
+<td><p>Sample an empty dataframe with columns as the nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.get_edge_data" title="causal_networkx.DAG.get_edge_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_edge_data</span></code></a>(u, v[, default])</p></td>
+<td><p>Get edge data from underlying DiGraph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.has_adjacency" title="causal_networkx.DAG.has_adjacency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_adjacency</span></code></a>(u, v)</p></td>
+<td><p>Check if there is any edge between u and v.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.has_edge" title="causal_networkx.DAG.has_edge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_edge</span></code></a>(u, v)</p></td>
+<td><p>Check if graph has edge (u, v).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.has_node" title="causal_networkx.DAG.has_node"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_node</span></code></a>(n)</p></td>
+<td><p>Check if graph has node 'n'.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.in_degree" title="causal_networkx.DAG.in_degree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_degree</span></code></a>()</p></td>
+<td><p>In degree view of DAG.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.is_acyclic" title="causal_networkx.DAG.is_acyclic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_acyclic</span></code></a>()</p></td>
+<td><p>Check if graph is acyclic.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.is_node_common_cause" title="causal_networkx.DAG.is_node_common_cause"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_node_common_cause</span></code></a>(node[, exclude_nodes])</p></td>
+<td><p>Check if a node is a common cause within the graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.markov_blanket_of" title="causal_networkx.DAG.markov_blanket_of"><code class="xref py py-obj docutils literal notranslate"><span class="pre">markov_blanket_of</span></code></a>(node)</p></td>
+<td><p>Compute the markov blanket of a node.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.neighbors" title="causal_networkx.DAG.neighbors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neighbors</span></code></a>(node)</p></td>
+<td><p>Neighbors view of DAG.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.number_of_edges" title="causal_networkx.DAG.number_of_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_edges</span></code></a>()</p></td>
+<td><p>Return number of edges in graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.number_of_nodes" title="causal_networkx.DAG.number_of_nodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_nodes</span></code></a>()</p></td>
+<td><p>Return number of nodes in graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.order" title="causal_networkx.DAG.order"><code class="xref py py-obj docutils literal notranslate"><span class="pre">order</span></code></a>()</p></td>
+<td><p>Return the order of the DiGraph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.out_degree" title="causal_networkx.DAG.out_degree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">out_degree</span></code></a>()</p></td>
+<td><p>Out degree view of DAG.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.parents" title="causal_networkx.DAG.parents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parents</span></code></a>(n)</p></td>
+<td><p>Return an iterator over parents of node n.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.predecessors" title="causal_networkx.DAG.predecessors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predecessors</span></code></a>(u)</p></td>
+<td><p>Return predecessors of node u.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.relabel_nodes" title="causal_networkx.DAG.relabel_nodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">relabel_nodes</span></code></a>(mapping[, copy])</p></td>
+<td><p>Relabel the nodes of the graph G according to a given mapping.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.remove_edge" title="causal_networkx.DAG.remove_edge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_edge</span></code></a>(u, v)</p></td>
+<td><p>Remove directed edge.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.remove_edges_from" title="causal_networkx.DAG.remove_edges_from"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_edges_from</span></code></a>(ebunch)</p></td>
+<td><p>Remove directed edges.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.remove_node" title="causal_networkx.DAG.remove_node"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_node</span></code></a>(n)</p></td>
+<td><p>Remove node in causal graphs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.remove_nodes_from" title="causal_networkx.DAG.remove_nodes_from"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_nodes_from</span></code></a>(ebunch)</p></td>
+<td><p>Remove nodes from causal graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.sample" title="causal_networkx.DAG.sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample</span></code></a>([n])</p></td>
+<td><p>Sample from a graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.set_nodes_as_latent_confounders" title="causal_networkx.DAG.set_nodes_as_latent_confounders"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_nodes_as_latent_confounders</span></code></a>(nodes)</p></td>
+<td><p>Set nodes as latent unobserved confounders.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.size" title="causal_networkx.DAG.size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></a>([weight])</p></td>
+<td><p>Return the total number of edges possibly with weights.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.spouses" title="causal_networkx.DAG.spouses"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spouses</span></code></a>(node)</p></td>
+<td><p>Get other parents of the children of a node (spouses).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.successors" title="causal_networkx.DAG.successors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">successors</span></code></a>(u)</p></td>
+<td><p>Return successors of node u.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.to_adjacency_graph" title="causal_networkx.DAG.to_adjacency_graph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_adjacency_graph</span></code></a>()</p></td>
+<td><p>Compute an adjacency undirected graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.to_dot_graph" title="causal_networkx.DAG.to_dot_graph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_dot_graph</span></code></a>([to_dagitty])</p></td>
+<td><p>Convert to 'dot' graph representation as a string.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.DAG.to_networkx" title="causal_networkx.DAG.to_networkx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_networkx</span></code></a>()</p></td>
+<td><p>Converts causal graphs to networkx.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.DAG.to_numpy" title="causal_networkx.DAG.to_numpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_numpy</span></code></a>()</p></td>
+<td><p>Convert to a matrix representation.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<tbody>
+<tr class="row-odd"><td><p><strong>compute_full_graph</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>draw</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>is_directed</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>is_multigraph</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>save</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.__contains__">
+<span class="sig-name descname"><span class="pre">__contains__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.__contains__" title="Permalink to this definition">#</a></dt>
+<dd><p>Return True if n is a node, False otherwise. Use: ‘n in G’.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">path_graph</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># or DiGraph, MultiGraph, MultiDiGraph, etc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">1</span> <span class="ow">in</span> <span class="n">G</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.__hash__" title="Permalink to this definition">#</a></dt>
+<dd><p>Return hash(self).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.add_chain">
+<span class="sig-name descname"><span class="pre">add_chain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_chain</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.add_chain" title="Permalink to this definition">#</a></dt>
+<dd><p>Add a causal chain.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.add_edge">
+<span class="sig-name descname"><span class="pre">add_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_of_edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_of_edge</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.add_edge" title="Permalink to this definition">#</a></dt>
+<dd><p>Add an edge between u and v.</p>
+<p>The nodes u and v will be automatically added if they are
+not already in the graph.</p>
+<p>Edge attributes can be specified with keywords or by directly
+accessing the edge’s attribute dictionary. See examples below.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>u_of_edge, v_of_edge</strong> : nodes</p>
+<blockquote>
+<div><p>Nodes can be, for example, strings or numbers.
+Nodes must be hashable (and not None) Python objects.</p>
+</div></blockquote>
+<p><strong>attr</strong> : keyword arguments, optional</p>
+<blockquote>
+<div><p>Edge data (or labels or objects) can be assigned using
+keyword arguments.</p>
+</div></blockquote>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#causal_networkx.DAG.add_edges_from" title="causal_networkx.DAG.add_edges_from"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_edges_from</span></code></a></dt><dd><p>add a collection of edges</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<p>Adding an edge that already exists updates the edge data.</p>
+<p>Many NetworkX algorithms designed for weighted graphs use
+an edge attribute (by default <code class="docutils literal notranslate"><span class="pre">weight</span></code>) to hold a numerical value.</p>
+<p class="rubric">Examples</p>
+<p>The following all add the edge e=(1, 2) to graph G:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>  <span class="c1"># or DiGraph, MultiGraph, MultiDiGraph, etc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># explicit two-node form</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">)</span>  <span class="c1"># single edge as tuple of two nodes</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>  <span class="c1"># add edges from iterable container</span>
+</pre></div>
+</div>
+<p>Associate data to edges using keywords:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">342.7</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For non-string attribute keys, use subscript notation.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.add_edges_from">
+<span class="sig-name descname"><span class="pre">add_edges_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ebunch</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.add_edges_from" title="Permalink to this definition">#</a></dt>
+<dd><p>Add directed edges.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.add_node">
+<span class="sig-name descname"><span class="pre">add_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_for_adding</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.add_node" title="Permalink to this definition">#</a></dt>
+<dd><p>Add node to causal graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.add_nodes_from">
+<span class="sig-name descname"><span class="pre">add_nodes_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes_for_adding</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.add_nodes_from" title="Permalink to this definition">#</a></dt>
+<dd><p>Add nodes to causal graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.adjacencies">
+<span class="sig-name descname"><span class="pre">adjacencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.adjacencies" title="Permalink to this definition">#</a></dt>
+<dd><p>Get all adjacent nodes to u.</p>
+<p>Adjacencies are defined as any type of edge to node ‘u’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.all_edges">
+<span class="sig-name descname"><span class="pre">all_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.all_edges" title="Permalink to this definition">#</a></dt>
+<dd><p>Get dictionary of all the edges by edge type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.children">
+<span class="sig-name descname"><span class="pre">children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/causal_networkx/graphs/dag.html#DAG.children"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#causal_networkx.DAG.children" title="Permalink to this definition">#</a></dt>
+<dd><p>Return an iterator over children of node n.</p>
+<p>Children of node ‘n’ are nodes with a directed
+edge from ‘n’ to that node. For example,
+‘n’ -&gt; ‘x’, ‘n’ -&gt; ‘y’. Nodes only connected
+via a bidirected edge are not considered children:
+‘n’ &lt;-&gt; ‘y’.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> : node</p>
+<blockquote>
+<div><p>A node in the causal DAG.</p>
+</div></blockquote>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>children</strong> : <code class="xref py py-obj docutils literal notranslate"><span class="pre">Iterator</span></code></p>
+<blockquote>
+<div><p>An iterator of the children of node ‘n’.</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.clear" title="Permalink to this definition">#</a></dt>
+<dd><p>Remove all nodes and edges in graphs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.clear_edges">
+<span class="sig-name descname"><span class="pre">clear_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.clear_edges" title="Permalink to this definition">#</a></dt>
+<dd><p>Remove all edges from causal graph without removing nodes.</p>
+<p>Clears edges in the DiGraph and the bidirected undirected graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.copy" title="Permalink to this definition">#</a></dt>
+<dd><p>Return a copy of the causal graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.degree">
+<span class="sig-name descname"><span class="pre">degree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.degree" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute the degree of the DiGraph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.dummy_sample">
+<span class="sig-name descname"><span class="pre">dummy_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.dummy_sample" title="Permalink to this definition">#</a></dt>
+<dd><p>Sample an empty dataframe with columns as the nodes.</p>
+<p>Used for oracle testing.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="causal_networkx.DAG.edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edges</span></span><a class="headerlink" href="#causal_networkx.DAG.edges" title="Permalink to this definition">#</a></dt>
+<dd><p>Directed edges.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.get_edge_data">
+<span class="sig-name descname"><span class="pre">get_edge_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.get_edge_data" title="Permalink to this definition">#</a></dt>
+<dd><p>Get edge data from underlying DiGraph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.has_adjacency">
+<span class="sig-name descname"><span class="pre">has_adjacency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.has_adjacency" title="Permalink to this definition">#</a></dt>
+<dd><p>Check if there is any edge between u and v.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.has_edge">
+<span class="sig-name descname"><span class="pre">has_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.has_edge" title="Permalink to this definition">#</a></dt>
+<dd><p>Check if graph has edge (u, v).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.has_node">
+<span class="sig-name descname"><span class="pre">has_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.has_node" title="Permalink to this definition">#</a></dt>
+<dd><p>Check if graph has node ‘n’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.in_degree">
+<span class="sig-name descname"><span class="pre">in_degree</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.in_degree" title="Permalink to this definition">#</a></dt>
+<dd><p>In degree view of DAG.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.is_acyclic">
+<span class="sig-name descname"><span class="pre">is_acyclic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/causal_networkx/graphs/dag.html#DAG.is_acyclic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#causal_networkx.DAG.is_acyclic" title="Permalink to this definition">#</a></dt>
+<dd><p>Check if graph is acyclic.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.is_node_common_cause">
+<span class="sig-name descname"><span class="pre">is_node_common_cause</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/causal_networkx/graphs/dag.html#DAG.is_node_common_cause"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#causal_networkx.DAG.is_node_common_cause" title="Permalink to this definition">#</a></dt>
+<dd><p>Check if a node is a common cause within the graph.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> : node</p>
+<blockquote>
+<div><p>A node in the graph.</p>
+</div></blockquote>
+<p><strong>exclude_nodes</strong> : <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a>, optional</p>
+<blockquote>
+<div><p>Set of nodes to exclude from consideration, by default None.</p>
+</div></blockquote>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>is_common_cause</strong> : <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bltin-boolean-values" title="(in Python v3.10)"><span class="xref std std-ref">bool</span></a></p>
+<blockquote>
+<div><p>Whether or not the node is a common cause or not.</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.markov_blanket_of">
+<span class="sig-name descname"><span class="pre">markov_blanket_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/causal_networkx/graphs/dag.html#DAG.markov_blanket_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#causal_networkx.DAG.markov_blanket_of" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute the markov blanket of a node.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> : node</p>
+<blockquote>
+<div><p>The node to compute Markov blanket for.</p>
+</div></blockquote>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>markov_blanket</strong> : <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set</span></code></a></p>
+<blockquote>
+<div><p>A set of parents, children and spouses of the node.</p>
+</div></blockquote>
+<dl>
+<dt><strong>:rtype:</strong><span class="classifier">py:class:<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Set</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="causal_networkx.DAG.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#causal_networkx.DAG.name" title="Permalink to this definition">#</a></dt>
+<dd><p>Name as a string identifier of the graph.</p>
+<p>This graph attribute appears in the attribute dict G.graph
+keyed by the string “name”. as well as an attribute (technically
+a property) <code class="docutils literal notranslate"><span class="pre">G.name</span></code>. This is entirely user controlled.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.neighbors">
+<span class="sig-name descname"><span class="pre">neighbors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.neighbors" title="Permalink to this definition">#</a></dt>
+<dd><p>Neighbors view of DAG.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="causal_networkx.DAG.nodes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nodes</span></span><a class="headerlink" href="#causal_networkx.DAG.nodes" title="Permalink to this definition">#</a></dt>
+<dd><p>Return the nodes within the DAG.</p>
+<p>Ignores the c-component graph nodes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.number_of_edges">
+<span class="sig-name descname"><span class="pre">number_of_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.number_of_edges" title="Permalink to this definition">#</a></dt>
+<dd><p>Return number of edges in graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.number_of_nodes">
+<span class="sig-name descname"><span class="pre">number_of_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.number_of_nodes" title="Permalink to this definition">#</a></dt>
+<dd><p>Return number of nodes in graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.order">
+<span class="sig-name descname"><span class="pre">order</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.order" title="Permalink to this definition">#</a></dt>
+<dd><p>Return the order of the DiGraph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.out_degree">
+<span class="sig-name descname"><span class="pre">out_degree</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.out_degree" title="Permalink to this definition">#</a></dt>
+<dd><p>Out degree view of DAG.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.parents">
+<span class="sig-name descname"><span class="pre">parents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/causal_networkx/graphs/dag.html#DAG.parents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#causal_networkx.DAG.parents" title="Permalink to this definition">#</a></dt>
+<dd><p>Return an iterator over parents of node n.</p>
+<p>Parents of node ‘n’ are nodes with a directed
+edge from ‘n’ to that node. For example,
+‘n’ &lt;- ‘x’, ‘n’ &lt;- ‘y’. Nodes only connected
+via a bidirected edge are not considered parents:
+‘n’ &lt;-&gt; ‘y’.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> : node</p>
+<blockquote>
+<div><p>A node in the causal DAG.</p>
+</div></blockquote>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>parents</strong> : <code class="xref py py-obj docutils literal notranslate"><span class="pre">Iterator</span></code></p>
+<blockquote>
+<div><p>An iterator of the parents of node ‘n’.</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.predecessors">
+<span class="sig-name descname"><span class="pre">predecessors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.predecessors" title="Permalink to this definition">#</a></dt>
+<dd><p>Return predecessors of node u.</p>
+<p>A predecessor is defined as nodes with a directed edge to ‘u’.
+That is ‘v’ -&gt; ‘u’. A bidirected edge would not qualify as a
+predecessor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.relabel_nodes">
+<span class="sig-name descname"><span class="pre">relabel_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.relabel_nodes" title="Permalink to this definition">#</a></dt>
+<dd><p>Relabel the nodes of the graph G according to a given mapping.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mapping</strong> : <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><code class="docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+<blockquote>
+<div><p>A dictionary with the old labels as keys and new labels as values. A partial mapping
+is allowed. Mapping 2 nodes to a single node is allowed. Any non-node keys in the
+mapping are ignored.</p>
+</div></blockquote>
+<p><strong>copy</strong> : <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bltin-boolean-values" title="(in Python v3.10)"><span class="xref std std-ref">bool</span></a> (optional, default=True)</p>
+<blockquote>
+<div><p>If True return a copy, or if False relabel the nodes in place.</p>
+</div></blockquote>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>G</strong> : instance of causal <a class="reference internal" href="#causal_networkx.DAG" title="causal_networkx.DAG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DAG</span></code></a></p>
+<blockquote>
+<div><p>A copy (if copy is True) of the relabeled graph.</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.remove_edge">
+<span class="sig-name descname"><span class="pre">remove_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.remove_edge" title="Permalink to this definition">#</a></dt>
+<dd><p>Remove directed edge.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.remove_edges_from">
+<span class="sig-name descname"><span class="pre">remove_edges_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ebunch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.remove_edges_from" title="Permalink to this definition">#</a></dt>
+<dd><p>Remove directed edges.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.remove_node">
+<span class="sig-name descname"><span class="pre">remove_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.remove_node" title="Permalink to this definition">#</a></dt>
+<dd><p>Remove node in causal graphs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.remove_nodes_from">
+<span class="sig-name descname"><span class="pre">remove_nodes_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ebunch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.remove_nodes_from" title="Permalink to this definition">#</a></dt>
+<dd><p>Remove nodes from causal graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.sample" title="Permalink to this definition">#</a></dt>
+<dd><p>Sample from a graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.set_nodes_as_latent_confounders">
+<span class="sig-name descname"><span class="pre">set_nodes_as_latent_confounders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/causal_networkx/graphs/dag.html#DAG.set_nodes_as_latent_confounders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#causal_networkx.DAG.set_nodes_as_latent_confounders" title="Permalink to this definition">#</a></dt>
+<dd><p>Set nodes as latent unobserved confounders.</p>
+<p>Note that this only works if the original node is a common cause
+of some variables in the graph.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>nodes</strong> : <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><code class="docutils literal notranslate"><span class="pre">list</span></code></a></p>
+<blockquote>
+<div><p>A list of nodes to set. They must all be common causes of
+variables within the graph.</p>
+</div></blockquote>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>graph</strong> : <a class="reference internal" href="causal_networkx.ADMG.html#causal_networkx.ADMG" title="causal_networkx.ADMG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADMG</span></code></a></p>
+<blockquote>
+<div><p>The mixed-edge causal graph that results.</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.size">
+<span class="sig-name descname"><span class="pre">size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.size" title="Permalink to this definition">#</a></dt>
+<dd><p>Return the total number of edges possibly with weights.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.spouses">
+<span class="sig-name descname"><span class="pre">spouses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/causal_networkx/graphs/dag.html#DAG.spouses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#causal_networkx.DAG.spouses" title="Permalink to this definition">#</a></dt>
+<dd><p>Get other parents of the children of a node (spouses).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.successors">
+<span class="sig-name descname"><span class="pre">successors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.successors" title="Permalink to this definition">#</a></dt>
+<dd><p>Return successors of node u.</p>
+<p>A successor is defined as nodes with a directed edge from ‘u’.
+That is ‘u’ -&gt; ‘v’. A bidirected edge would not qualify as a
+successor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.to_adjacency_graph">
+<span class="sig-name descname"><span class="pre">to_adjacency_graph</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.to_adjacency_graph" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute an adjacency undirected graph.</p>
+<p>Two nodes are considered adjacent if there exist
+any type of edge between the two nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://networkx.org/documentation/latest/reference/classes/graph.html#networkx.Graph" title="(in NetworkX v3.0b1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Graph</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.to_dot_graph">
+<span class="sig-name descname"><span class="pre">to_dot_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_dagitty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.to_dot_graph" title="Permalink to this definition">#</a></dt>
+<dd><p>Convert to ‘dot’ graph representation as a string.</p>
+<p>The DOT language for graphviz is what is commonly
+used in R’s <code class="docutils literal notranslate"><span class="pre">dagitty</span></code> package. This is a string
+representation of the graph. However, this converts to a
+string format that is not 100% representative of DOT [1]. See
+Notes for more information.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>to_dagitty</strong> : <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bltin-boolean-values" title="(in Python v3.10)"><span class="xref std std-ref">bool</span></a></p>
+<blockquote>
+<div><p>Whether to conform to the Dagitty format, where the
+string begins with <code class="docutils literal notranslate"><span class="pre">dag</span> <span class="pre">{</span></code> instead of <code class="docutils literal notranslate"><span class="pre">strict</span> <span class="pre">digraph</span> <span class="pre">{</span></code>.</p>
+</div></blockquote>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dot_graph</strong> : <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></p>
+<blockquote>
+<div><p>A string representation in DOT format for the graph.</p>
+</div></blockquote>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The output of this function can be immediately plugged into
+the dagitty online portal for drawing a graph.</p>
+<p>For example, if we have a mixed edge graph, with directed
+and bidirected arrows (i.e. a causal DAG). Specifically, if
+we had <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">-&gt;</span> <span class="pre">1</span></code> with a latent confounder, we would get the
+following output:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>strict digraph {
+    0;
+    1;
+    0 -&gt; 1;
+    0 &lt;-&gt; 1;
+}
+</pre></div>
+</div>
+<p>To represent for example a bidirected edge, <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">&lt;-&gt;</span> <span class="pre">B</span></code>,
+the DOT format would make you use <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">-&gt;</span> <span class="pre">B</span> <span class="pre">[dir=both]</span></code>, but
+this is not as intuitive. <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">&lt;-&gt;</span> <span class="pre">B</span></code> also complies with dagitty
+and other approaches to drawing graphs in Python/R.</p>
+<p class="rubric">References</p>
+<p>[1] <a class="reference external" href="https://github.com/pydot/pydot">https://github.com/pydot/pydot</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.to_networkx">
+<span class="sig-name descname"><span class="pre">to_networkx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.to_networkx" title="Permalink to this definition">#</a></dt>
+<dd><p>Converts causal graphs to networkx.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.DAG.to_numpy">
+<span class="sig-name descname"><span class="pre">to_numpy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.DAG.to_numpy" title="Permalink to this definition">#</a></dt>
+<dd><p>Convert to a matrix representation.</p>
+<p>A single 2D numpy array is returned, since a PAG only
+maps one edge between any two nodes.</p>
+<dl class="field-list">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>numpy_graph</strong> : <a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.24.dev0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code></a> of shape (n_nodes, n_nodes)</p>
+<blockquote>
+<div><p>The causal graph with values specified as a string
+character. For example, if A has a directed edge to B,
+then the array at indices for A and B has <code class="docutils literal notranslate"><span class="pre">'-&gt;'</span></code>.</p>
+</div></blockquote>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>In R’s <code class="docutils literal notranslate"><span class="pre">pcalg</span></code> package, the following encodes the
+types of edges as an array. We will follow the same encoding
+for our numpy array representation.</p>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://rdrr.io/cran/pcalg/man/fci.html">https://rdrr.io/cran/pcalg/man/fci.html</a></p>
+</dd></dl>
+
+</dd></dl>
+
+<section id="examples-using-causal-networkx-dag">
+<h2>Examples using <code class="docutils literal notranslate"><span class="pre">causal_networkx.DAG</span></code><a class="headerlink" href="#examples-using-causal-networkx-dag" title="Permalink to this heading">#</a></h2>
+<div class="sphx-glr-thumbcontainer" tooltip="Causal graphs are graphical objects that attach causal notions to each edge and missing edge. W..."><figure class="align-default" id="id1">
+<img alt="An introduction to causal graphs and how to use them" src="../_images/sphx_glr_intro_causal_graphs_thumb.png" />
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="../auto_examples/intro_causal_graphs.html#sphx-glr-auto-examples-intro-causal-graphs-py"><span class="std std-ref">An introduction to causal graphs and how to use them</span></a></span><a class="headerlink" href="#id1" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+</div></section>
+</section>
+
+
+              </article>
+              
+
+              
+              <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="causal_networkx.StructuralCausalModel.html" title="previous page">
+      <i class="fas fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">causal_networkx.StructuralCausalModel</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="causal_networkx.CPDAG.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">causal_networkx.CPDAG</p>
+  </div>
+  <i class="fas fa-angle-right"></i>
+  </a>
+</div>
+              </footer>
+              
+          </div>
+          
+      </div>
+    </div>
+
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=92025949c220c2e29695"></script>
+
+<footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    <p class="copyright">
+    &copy; Copyright 2022, Adam Li.<br>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
+</p>
+  </div>
+  
+</div>
+</footer>
+  </body>
+</html>

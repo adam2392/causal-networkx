@@ -1,0 +1,375 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Fast Causal Inference (FCI) for causal discovery from observational data &#8212; causal-networkx v0.1.0</title>
+<script>
+  document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+  document.documentElement.dataset.theme = localStorage.getItem("theme") || "light"
+</script>
+
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=92025949c220c2e29695" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=92025949c220c2e29695" rel="stylesheet">
+
+
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=92025949c220c2e29695">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorial" href="../tutorials.html" />
+    <link rel="prev" title="An introduction to causal graphs and how to use them" href="intro_causal_graphs.html" />
+    <link rel="canonical" href="https://adam2392.github.io/causal-networkx/stable/index.html" />
+    <script type="text/javascript" src="../_static/copybutton.js"></script>
+    <script type="text/javascript" src="../_static/scrollfix.js"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="docsearch:language" content="en">
+
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+    <div class="bd-header-announcement container-fluid" id="banner">
+      
+
+    </div>
+
+    
+    <nav class="bd-header navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="bd-header__inner container-xl">
+
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">causal-networkx v0.1.0</p>
+  
+</a>
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="fas fa-bars"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../installation.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../api.html">
+  API
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="../use.html">
+  Using Causal-Networkx
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../tutorials.html">
+  Tutorial
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../whats_new.html">
+  Release History
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://raw.githubusercontent.com/adam2392/causal-networkx/main/LICENSE">
+  License
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://github.com/adam2392/causal-networkx/main/CONTRIBUTING.md">
+  Contributing
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <div class="dropdown">
+    <button type="button" class="btn btn-primary btn-sm navbar-btn dropdown-toggle" id="dLabelMore" data-toggle="dropdown">
+        v0.1.0
+        <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu list-group-flush py-0" aria-labelledby="dLabelMore">
+        <a class="list-group-item list-group-item-action py-1" href="https://adam2392.github.io/causal-networkx/dev/index.html">v0.1 (devel)</a>
+    </div>
+</div>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/adam2392/causal-networkx" rel="noopener" target="_blank" title="GitHub"><span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="bd-container container-xl">
+      <div class="bd-container__inner row">
+          
+
+<!-- Only show if we have sidebars configured, else just a small margin  -->
+<div class="bd-sidebar-primary col-12 col-md-3 bd-sidebar">
+  <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="intro_causal_graphs.html">
+   An introduction to causal graphs and how to use them
+  </a>
+ </li>
+</ul>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Fast Causal Inference (FCI) for causal discovery from observational data
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+  </div>
+  <div class="sidebar-end-items">
+  </div>
+</div>
+
+
+          
+
+
+<div class="bd-sidebar-secondary d-none d-xl-block col-xl-2 bd-toc">
+  
+    
+    <div class="toc-item">
+      
+
+<nav id="bd-toc-nav">
+    
+</nav>
+    </div>
+    
+    <div class="toc-item">
+      
+    </div>
+    
+  
+</div>
+
+
+          
+          
+          <div class="bd-content col-12 col-md-9 col-xl-7">
+              
+              <article class="bd-article" role="main">
+                
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-fci-for-causal-discovery-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
+</div>
+<section class="sphx-glr-example-title" id="fast-causal-inference-fci-for-causal-discovery-from-observational-data">
+<span id="ex-fci-algorithm"></span><span id="sphx-glr-auto-examples-fci-for-causal-discovery-py"></span><h1>Fast Causal Inference (FCI) for causal discovery from observational data<a class="headerlink" href="#fast-causal-inference-fci-for-causal-discovery-from-observational-data" title="Permalink to this heading">#</a></h1>
+<p>We will simulate some observational data and demonstrate how we
+will use the FCI algorithm.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authors: Adam Li &lt;adam2392@gmail.com&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># License: BSD (3-clause)</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">causal_networkx</span> <span class="kn">import</span> <a href="../generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel" title="causal_networkx.StructuralCausalModel" class="sphx-glr-backref-module-causal_networkx sphx-glr-backref-type-py-class"><span class="n">StructuralCausalModel</span></a>
+<span class="kn">from</span> <span class="nn">causal_networkx.ci</span> <span class="kn">import</span> <a href="../generated/causal_networkx.ci.GSquareCITest.html#causal_networkx.ci.GSquareCITest" title="causal_networkx.ci.GSquareCITest" class="sphx-glr-backref-module-causal_networkx-ci sphx-glr-backref-type-py-class"><span class="n">GSquareCITest</span></a><span class="p">,</span> <a href="../generated/causal_networkx.ci.Oracle.html#causal_networkx.ci.Oracle" title="causal_networkx.ci.Oracle" class="sphx-glr-backref-module-causal_networkx-ci sphx-glr-backref-type-py-class"><span class="n">Oracle</span></a>
+<span class="kn">from</span> <span class="nn">causal_networkx.discovery</span> <span class="kn">import</span> <a href="../generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI" title="causal_networkx.discovery.FCI" class="sphx-glr-backref-module-causal_networkx-discovery sphx-glr-backref-type-py-class"><span class="n">FCI</span></a>
+</pre></div>
+</div>
+<p>Simulate some data</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># set a random seed to make example reproducible</span>
+<a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">seed</span></a> <span class="o">=</span> <span class="mi">12345</span>
+<a href="https://numpy.org/devdocs/reference/random/legacy.html#numpy.random.RandomState" title="numpy.random.RandomState" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a> <span class="o">=</span> <a href="https://numpy.org/devdocs/reference/random/legacy.html#numpy.random.RandomState" title="numpy.random.RandomState" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-class"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">seed</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">seed</span></a><span class="p">)</span>
+
+<span class="c1"># construct a causal graph that will result in</span>
+<span class="c1"># x -&gt; y &lt;- z</span>
+<span class="n">func_uz</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <a href="https://numpy.org/devdocs/reference/random/legacy.html#numpy.random.RandomState" title="numpy.random.RandomState" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">func_uxy</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <a href="https://numpy.org/devdocs/reference/random/legacy.html#numpy.random.RandomState" title="numpy.random.RandomState" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+<span class="n">func_x</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">u_xy</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">u_xy</span>
+<span class="n">func_y</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">u_xy</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="n">u_xy</span> <span class="o">+</span> <span class="n">z</span>
+<span class="n">func_z</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">u_z</span><span class="p">:</span> <span class="n">u_z</span>
+
+<span class="c1"># construct the SCM and the corresponding causal graph</span>
+<a href="../generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel" title="causal_networkx.StructuralCausalModel" class="sphx-glr-backref-module-causal_networkx sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scm</span></a> <span class="o">=</span> <a href="../generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel" title="causal_networkx.StructuralCausalModel" class="sphx-glr-backref-module-causal_networkx sphx-glr-backref-type-py-class"><span class="n">StructuralCausalModel</span></a><span class="p">(</span>
+    <span class="n">exogenous</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;u_xy&quot;</span><span class="p">:</span> <span class="n">func_uxy</span><span class="p">,</span>
+        <span class="s2">&quot;u_z&quot;</span><span class="p">:</span> <span class="n">func_uz</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">endogenous</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">func_x</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">func_y</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">func_z</span><span class="p">},</span>
+<span class="p">)</span>
+<a href="../generated/causal_networkx.ADMG.html#causal_networkx.ADMG" title="causal_networkx.ADMG" class="sphx-glr-backref-module-causal_networkx sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">G</span></a> <span class="o">=</span> <a href="../generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel.get_causal_graph" title="causal_networkx.StructuralCausalModel.get_causal_graph" class="sphx-glr-backref-module-causal_networkx sphx-glr-backref-type-py-method"><span class="n">scm</span><span class="o">.</span><span class="n">get_causal_graph</span></a><span class="p">()</span>
+
+<span class="c1"># sample the incomplete observational data</span>
+<a href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.core.frame.DataFrame" class="sphx-glr-backref-module-pandas-core-frame sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a> <span class="o">=</span> <a href="../generated/causal_networkx.StructuralCausalModel.html#causal_networkx.StructuralCausalModel.sample" title="causal_networkx.StructuralCausalModel.sample" class="sphx-glr-backref-module-causal_networkx sphx-glr-backref-type-py-method"><span class="n">scm</span><span class="o">.</span><span class="n">sample</span></a><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">include_latents</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># note the graph shows a collider and will not show</span>
+<span class="c1"># the unobserved confounder</span>
+<a href="../generated/causal_networkx.ADMG.html#causal_networkx.ADMG.draw" title="causal_networkx.ADMG.draw" class="sphx-glr-backref-module-causal_networkx sphx-glr-backref-type-py-method"><span class="n">G</span><span class="o">.</span><span class="n">draw</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_fci_for_causal_discovery_001.png" srcset="../_images/sphx_glr_fci_for_causal_discovery_001.png" alt="fci for causal discovery" class = "sphx-glr-single-img"/><p>Instantiate some conditional independence tests</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../generated/causal_networkx.ci.Oracle.html#causal_networkx.ci.Oracle" title="causal_networkx.ci.Oracle" class="sphx-glr-backref-module-causal_networkx-ci sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oracle</span></a> <span class="o">=</span> <a href="../generated/causal_networkx.ci.Oracle.html#causal_networkx.ci.Oracle" title="causal_networkx.ci.Oracle" class="sphx-glr-backref-module-causal_networkx-ci sphx-glr-backref-type-py-class"><span class="n">Oracle</span></a><span class="p">(</span><a href="../generated/causal_networkx.ADMG.html#causal_networkx.ADMG" title="causal_networkx.ADMG" class="sphx-glr-backref-module-causal_networkx sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">G</span></a><span class="p">)</span>
+<a href="../generated/causal_networkx.ci.GSquareCITest.html#causal_networkx.ci.GSquareCITest" title="causal_networkx.ci.GSquareCITest" class="sphx-glr-backref-module-causal_networkx-ci sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ci_estimator</span></a> <span class="o">=</span> <a href="../generated/causal_networkx.ci.GSquareCITest.html#causal_networkx.ci.GSquareCITest" title="causal_networkx.ci.GSquareCITest" class="sphx-glr-backref-module-causal_networkx-ci sphx-glr-backref-type-py-class"><span class="n">GSquareCITest</span></a><span class="p">(</span><span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;discrete&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we are ready to run the FCI algorithm.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI" title="causal_networkx.discovery.FCI" class="sphx-glr-backref-module-causal_networkx-discovery sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fci</span></a> <span class="o">=</span> <a href="../generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI" title="causal_networkx.discovery.FCI" class="sphx-glr-backref-module-causal_networkx-discovery sphx-glr-backref-type-py-class"><span class="n">FCI</span></a><span class="p">(</span><a href="../generated/causal_networkx.ci.GSquareCITest.html#causal_networkx.ci.GSquareCITest" title="causal_networkx.ci.GSquareCITest" class="sphx-glr-backref-module-causal_networkx-ci sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ci_estimator</span></a><span class="o">=</span><a href="../generated/causal_networkx.ci.GSquareCITest.html#causal_networkx.ci.GSquareCITest" title="causal_networkx.ci.GSquareCITest" class="sphx-glr-backref-module-causal_networkx-ci sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ci_estimator</span></a><span class="p">)</span>
+<a href="../generated/causal_networkx.discovery.FCI.html#causal_networkx.discovery.FCI.fit" title="causal_networkx.discovery.FCI.fit" class="sphx-glr-backref-module-causal_networkx-discovery sphx-glr-backref-type-py-method"><span class="n">fci</span><span class="o">.</span><span class="n">fit</span></a><span class="p">(</span><a href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.core.frame.DataFrame" class="sphx-glr-backref-module-pandas-core-frame sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a><span class="p">)</span>
+
+<span class="c1"># the resulting partial ancestral graph (PAG) that is learned</span>
+<a href="../generated/causal_networkx.PAG.html#causal_networkx.PAG" title="causal_networkx.PAG" class="sphx-glr-backref-module-causal_networkx sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">graph</span></a> <span class="o">=</span> <a href="../generated/causal_networkx.PAG.html#causal_networkx.PAG" title="causal_networkx.PAG" class="sphx-glr-backref-module-causal_networkx sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fci</span><span class="o">.</span><span class="n">graph_</span></a>
+<a href="../generated/causal_networkx.PAG.html#causal_networkx.PAG.draw" title="causal_networkx.PAG.draw" class="sphx-glr-backref-module-causal_networkx sphx-glr-backref-type-py-method"><span class="n">graph</span><span class="o">.</span><span class="n">draw</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_fci_for_causal_discovery_002.png" srcset="../_images/sphx_glr_fci_for_causal_discovery_002.png" alt="fci for causal discovery" class = "sphx-glr-single-img"/><p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/circleci/project/causal_networkx/ci/g_test.py:199: RuntimeWarning: invalid value encountered in true_divide
+  tlog[:, :, k] = contingency_tble[:, :, k] * nk[k] / tdijk
+/home/circleci/project/causal_networkx/ci/g_test.py:201: RuntimeWarning: divide by zero encountered in log
+  log_tlog = np.log(tlog)
+/home/circleci/project/causal_networkx/ci/g_test.py:202: RuntimeWarning: invalid value encountered in multiply
+  G2 = np.nansum(2 * contingency_tble * log_tlog)
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.152 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-fci-for-causal-discovery-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/88b1efff14adfeeb7bb1751ab1483276/fci_for_causal_discovery.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">fci_for_causal_discovery.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/6adc24f60b57e0b4d6574188947f075d/fci_for_causal_discovery.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">fci_for_causal_discovery.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+
+
+              </article>
+              
+
+              
+              <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="intro_causal_graphs.html" title="previous page">
+      <i class="fas fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">An introduction to causal graphs and how to use them</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="../tutorials.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">Tutorial</p>
+  </div>
+  <i class="fas fa-angle-right"></i>
+  </a>
+</div>
+              </footer>
+              
+          </div>
+          
+      </div>
+    </div>
+
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=92025949c220c2e29695"></script>
+
+<footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    <p class="copyright">
+    &copy; Copyright 2022, Adam Li.<br>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
+</p>
+  </div>
+  
+</div>
+</footer>
+  </body>
+</html>

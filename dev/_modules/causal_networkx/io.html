@@ -6,12 +6,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>causal_networkx.io &#8212; causal-networkx v0.1.0</title>
-    
-  <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<script>
+  document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+  document.documentElement.dataset.theme = localStorage.getItem("theme") || "light"
+</script>
 
-    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=92025949c220c2e29695" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=92025949c220c2e29695" rel="stylesheet">
+
+
   <link rel="stylesheet"
     href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
   <link rel="preload" as="font" type="font/woff2" crossorigin
@@ -26,9 +30,9 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
-    
+
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=92025949c220c2e29695">
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
@@ -45,33 +49,41 @@
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <script type="text/javascript" src="../../_static/scrollfix.js"></script>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="en">
-    
-
-    <!-- Google Analytics -->
-    
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="docsearch:language" content="en">
 
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
-    
-    <div class="container-fluid" id="banner"></div>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+    <div class="bd-header-announcement container-fluid" id="banner">
+      
+
+    </div>
 
     
-    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+    <nav class="bd-header navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="bd-header__inner container-xl">
 
   <div id="navbar-start">
     
     
-<a class="navbar-brand" href="../../index.html">
-<p class="title">Causal-Networkx</p>
-</a>
+  
 
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">causal-networkx v0.1.0</p>
+  
+</a>
     
   </div>
 
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
+    <span class="fas fa-bars"></span>
   </button>
 
   
@@ -81,12 +93,6 @@
       <div class="navbar-center-item">
         <ul id="navbar-main-elements" class="navbar-nav">
     <li class="toctree-l1 nav-item">
- <a class="reference internal nav-link" href="../../overview.html">
-  Overview
- </a>
-</li>
-
-<li class="toctree-l1 nav-item">
  <a class="reference internal nav-link" href="../../installation.html">
   Installation
  </a>
@@ -99,14 +105,14 @@
 </li>
 
 <li class="toctree-l1 nav-item">
- <a class="reference internal nav-link" href="../../tutorials.html">
-  Tutorial
+ <a class="reference internal nav-link" href="../../use.html">
+  Using Causal-Networkx
  </a>
 </li>
 
 <li class="toctree-l1 nav-item">
- <a class="reference internal nav-link" href="../../use.html">
-  Using Causal-Networkx
+ <a class="reference internal nav-link" href="../../tutorials.html">
+  Tutorial
  </a>
 </li>
 
@@ -163,13 +169,13 @@
     </nav>
     
 
-    <div class="container-xl">
-      <div class="row">
+    <div class="bd-container container-xl">
+      <div class="bd-container__inner row">
           
-            
-            <!-- Only show if we have sidebars configured, else just a small margin  -->
-            <div class="col-12 col-md-3 bd-sidebar">
-              <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+
+<!-- Only show if we have sidebars configured, else just a small margin  -->
+<div class="bd-sidebar-primary col-12 col-md-3 bd-sidebar">
+  <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
@@ -177,41 +183,39 @@
     
   </div>
 </nav>
-              </div>
-              <div class="sidebar-end-items">
-              </div>
-            </div>
-            
-          
+  </div>
+  <div class="sidebar-end-items">
+  </div>
+</div>
+
 
           
-          <div class="d-none d-xl-block col-xl-2 bd-toc">
-            
-          </div>
-          
+
+
+<div class="bd-sidebar-secondary d-none d-xl-block col-xl-2 bd-toc">
+  
+</div>
+
 
           
           
-            
-          
-          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+          <div class="bd-content col-12 col-md-9 col-xl-7">
               
-              <div>
+              <article class="bd-article" role="main">
                 
   <h1>Source code for causal_networkx.io</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
-
-<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span></span><span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
+<span class="kn">from</span> <span class="nn">causal_networkx</span> <span class="kn">import</span> <span class="n">ADMG</span><span class="p">,</span> <span class="n">CPDAG</span><span class="p">,</span> <span class="n">DAG</span><span class="p">,</span> <span class="n">PAG</span>
 <span class="kn">from</span> <span class="nn">causal_networkx.config</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EDGE_TO_VALUE_MAPPING</span><span class="p">,</span>
     <span class="n">ENDPOINT_TO_EDGE_MAPPING</span><span class="p">,</span>
     <span class="n">GRAPH_TYPES</span><span class="p">,</span>
     <span class="n">VALUE_TO_MIXED_EDGE_MAPPING</span><span class="p">,</span>
     <span class="n">EdgeType</span><span class="p">,</span>
     <span class="n">EndPoint</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">causal_networkx.graphs.cgm</span> <span class="kn">import</span> <span class="n">ADMG</span><span class="p">,</span> <span class="n">CPDAG</span><span class="p">,</span> <span class="n">DAG</span><span class="p">,</span> <span class="n">PAG</span>
 
 <span class="n">GRAPH_TYPE</span> <span class="o">=</span> <span class="p">{</span><span class="n">DAG</span><span class="p">:</span> <span class="s2">&quot;DAG&quot;</span><span class="p">,</span> <span class="n">ADMG</span><span class="p">:</span> <span class="s2">&quot;ADMG&quot;</span><span class="p">,</span> <span class="n">CPDAG</span><span class="p">:</span> <span class="s2">&quot;CPDAG&quot;</span><span class="p">,</span> <span class="n">PAG</span><span class="p">:</span> <span class="s2">&quot;PAG&quot;</span><span class="p">}</span>
 <span class="n">GRAPH_TYPE_TO_FUNC</span> <span class="o">=</span> <span class="p">{</span><span class="n">val</span><span class="p">:</span> <span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">GRAPH_TYPE</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
@@ -259,6 +263,8 @@
         <span class="c1"># replace edge marks with their appropriate string representation</span>
         <span class="k">if</span> <span class="n">edge_type</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">directed</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
             <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">edge_type</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">undirected</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">add_undirected_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">edge_type</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">bidirected</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
             <span class="n">graph</span><span class="o">.</span><span class="n">add_bidirected_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">edge_type</span> <span class="o">==</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">circle</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
@@ -288,7 +294,7 @@
 
     <span class="c1"># preserve the name</span>
     <span class="n">G</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">causal_graph</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">graph_type</span> <span class="o">=</span> <span class="n">GRAPH_TYPE</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">causal_graph</span><span class="p">)]</span>
+    <span class="n">graph_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">causal_graph</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>  <span class="c1"># GRAPH_TYPE[type(causal_graph)]</span>
     <span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s2">&quot;graph_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_type</span>
 
     <span class="c1"># add all nodes to the networkx graph</span>
@@ -298,11 +304,13 @@
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">graph</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">causal_graph</span><span class="o">.</span><span class="n">_graph_names</span><span class="p">,</span> <span class="n">causal_graph</span><span class="o">.</span><span class="n">_graphs</span><span class="p">):</span>
         <span class="c1"># replace edge marks with their appropriate string representation</span>
         <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">directed</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
-            <span class="n">attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;directed&quot;</span><span class="p">}</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">directed</span><span class="o">.</span><span class="n">value</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">undirected</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">undirected</span><span class="o">.</span><span class="n">value</span><span class="p">}</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">bidirected</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
-            <span class="n">attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bidirected&quot;</span><span class="p">}</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">EdgeType</span><span class="o">.</span><span class="n">bidirected</span><span class="o">.</span><span class="n">value</span><span class="p">}</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">circle</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
-            <span class="n">attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;circle&quot;</span><span class="p">}</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">EndPoint</span><span class="o">.</span><span class="n">circle</span><span class="o">.</span><span class="n">value</span><span class="p">}</span>
         <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">G</span></div>
 
@@ -403,36 +411,6 @@
     <span class="k">return</span> <span class="n">dag</span></div>
 
 
-<div class="viewcode-block" id="to_pgmpy"><a class="viewcode-back" href="../../generated/causal_networkx.io.to_pgmpy.html#causal_networkx.io.to_pgmpy">[docs]</a><span class="k">def</span> <span class="nf">to_pgmpy</span><span class="p">(</span><span class="n">causal_graph</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DAG</span><span class="p">,</span> <span class="n">ADMG</span><span class="p">]):</span>
-    <span class="sd">&quot;&quot;&quot;Convert causal graph to pgmpy BayesianNetwork.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    causal_graph : DAG | ADMG</span>
-<span class="sd">        The causal graph with possibly latents.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    dag : pgmpy.models.BayesianNetwork</span>
-<span class="sd">        The pgmpy Bayesian network.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">pgmpy.models</span> <span class="kn">import</span> <span class="n">BayesianNetwork</span>
-
-    <span class="n">latents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">causal_graph</span><span class="p">,</span> <span class="n">ADMG</span><span class="p">):</span>
-        <span class="n">causal_dag</span> <span class="o">=</span> <span class="n">causal_graph</span><span class="o">.</span><span class="n">compute_full_graph</span><span class="p">()</span>
-
-        <span class="c1"># get the latent nodes</span>
-        <span class="k">for</span> <span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">node_dict</span><span class="p">)</span> <span class="ow">in</span> <span class="n">causal_dag</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">data</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">node_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;observed&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
-                <span class="n">latents</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">causal_dag</span> <span class="o">=</span> <span class="n">causal_graph</span><span class="o">.</span><span class="n">dag</span>
-    <span class="c1"># create the pgmpy Bayesian Network</span>
-    <span class="n">dag</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">(</span><span class="n">causal_dag</span><span class="p">,</span> <span class="n">latents</span><span class="o">=</span><span class="n">latents</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">dag</span></div>
-
-
 <div class="viewcode-block" id="load_from_numpy"><a class="viewcode-back" href="../../generated/causal_networkx.io.load_from_numpy.html#causal_networkx.io.load_from_numpy">[docs]</a><span class="k">def</span> <span class="nf">load_from_numpy</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;dag&quot;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Load causal graph from a numpy array.</span>
 
@@ -503,23 +481,44 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    causal_graph : DAG</span>
+<span class="sd">    causal_graph : instance of DAG</span>
 <span class="sd">        The causal graph.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    numpy_graph : np.ndarray of shape (n_nodes, n_nodes)</span>
-<span class="sd">        The numpy array that represents the graph.</span>
+<span class="sd">        The numpy array that represents the graph. The values representing edges</span>
+<span class="sd">        are mapped according to a pre-defined set of values. See Notes.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The adjacency matrix is defined where the ijth entry of ``numpy_graph`` has a</span>
+<span class="sd">    non-zero entry if there is an edge from i to j. The ijth entry is symmetric with the</span>
+<span class="sd">    jith entry if the edge is &#39;undirected&#39;, or &#39;bidirected&#39;. Then specific edges are</span>
+<span class="sd">    mapped to the following values:</span>
+
+<span class="sd">        - directed edge (-&gt;): 1</span>
+<span class="sd">        - undirected edge (--): 2</span>
+<span class="sd">        - bidirected edge (&lt;-&gt;): 3</span>
+<span class="sd">        - circle endpoint (-o): 4</span>
+
+<span class="sd">    Circle endpoints can be symmetric, but they can also contain a tail, or a directed</span>
+<span class="sd">    edge at the other end.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">causal_graph</span><span class="p">,</span> <span class="n">ADMG</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Converting ADMG to numpy format is not supported.&quot;</span><span class="p">)</span>
+
     <span class="c1"># master list of nodes is in the internal dag</span>
     <span class="n">node_list</span> <span class="o">=</span> <span class="n">causal_graph</span><span class="o">.</span><span class="n">nodes</span>
     <span class="n">n_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node_list</span><span class="p">)</span>
 
     <span class="n">numpy_graph</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_nodes</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">))</span>
     <span class="n">bidirected_graph_arr</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">graph_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">graph</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">causal_graph</span><span class="o">.</span><span class="n">_graph_names</span><span class="p">,</span> <span class="n">causal_graph</span><span class="o">.</span><span class="n">_graphs</span><span class="p">):</span>
         <span class="c1"># make sure all nodes are in the internal graph</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">graph</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">node_list</span><span class="p">):</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">graph</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">node_list</span><span class="p">)</span>
 
         <span class="c1"># handle bidirected edge separately</span>
@@ -528,14 +527,28 @@
             <span class="k">continue</span>
 
         <span class="c1"># convert internal graph to a numpy array</span>
-        <span class="c1"># graph_arr = nx.to_numpy_array(graph, nodelist=node_list)</span>
-        <span class="c1"># TODO: fix to use EndPoints</span>
-        <span class="c1"># graph_arr[graph_arr != 0] = PAG_EDGE_MAPPING[name]</span>
-        <span class="c1"># numpy_graph += graph_arr</span>
+        <span class="n">graph_arr</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">nodelist</span><span class="o">=</span><span class="n">node_list</span><span class="p">)</span>
+        <span class="n">graph_map</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_arr</span>
 
-    <span class="k">if</span> <span class="n">bidirected_graph_arr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># bidirected_graph_arr[bidirected_graph_arr != 0] = PAG_EDGE_MAPPING[EdgeType.directed.value]</span>
+    <span class="c1"># ADMGs can have two edges between any 2 nodes</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">causal_graph</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;ADMG&quot;</span><span class="p">:</span>
+        <span class="c1"># we handle this case separately from the other graphs</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">graph_map</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+
+        <span class="c1"># set all bidirected edges with value 10</span>
+        <span class="n">bidirected_graph_arr</span><span class="p">[</span><span class="n">bidirected_graph_arr</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
         <span class="n">numpy_graph</span> <span class="o">+=</span> <span class="n">bidirected_graph_arr</span>
+        <span class="n">numpy_graph</span> <span class="o">+=</span> <span class="n">graph_arr</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># map each edge to an edge value</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">graph_arr</span> <span class="ow">in</span> <span class="n">graph_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">graph_arr</span><span class="p">[</span><span class="n">graph_arr</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">EDGE_TO_VALUE_MAPPING</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">numpy_graph</span> <span class="o">+=</span> <span class="n">graph_arr</span>
+
+        <span class="c1"># bidirected case is handled separately</span>
+        <span class="k">if</span> <span class="n">bidirected_graph_arr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">numpy_graph</span> <span class="o">+=</span> <span class="n">bidirected_graph_arr</span>
+
     <span class="k">return</span> <span class="n">numpy_graph</span></div>
 
 
@@ -557,39 +570,50 @@
     <span class="n">nx_graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">drawing</span><span class="o">.</span><span class="n">nx_pydot</span><span class="o">.</span><span class="n">from_pydot</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
     <span class="n">dag</span> <span class="o">=</span> <span class="n">DAG</span><span class="p">(</span><span class="n">nx_graph</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dag</span>
+
+
+<span class="k">def</span> <span class="nf">read_gml</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read .gml file from disc to causal-networkx graph.&quot;&quot;&quot;</span>
+    <span class="n">nx_graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">read_gml</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">load_from_networkx</span><span class="p">(</span><span class="n">nx_graph</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">graph</span>
 </pre></div>
 
-              </div>
+              </article>
               
+
               
-              <!-- Previous / next buttons -->
+              <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
 <div class='prev-next-area'>
 </div>
+              </footer>
               
-          </main>
+          </div>
           
-
       </div>
     </div>
+
+  
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
-<footer class="footer mt-5 mt-md-0">
-  <div class="container">
-    
-    <div class="footer-item">
-      <p class="copyright">
+  <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=92025949c220c2e29695"></script>
+
+<footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    <p class="copyright">
     &copy; Copyright 2022, Adam Li.<br>
 </p>
-    </div>
-    
-    <div class="footer-item">
-      <p class="sphinx-version">
+  </div>
+  
+  <div class="footer-item">
+    <p class="sphinx-version">
 Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
 </p>
-    </div>
-    
   </div>
+  
+</div>
 </footer>
   </body>
 </html>

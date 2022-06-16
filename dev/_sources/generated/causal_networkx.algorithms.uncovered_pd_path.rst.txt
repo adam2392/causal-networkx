@@ -1,0 +1,12 @@
+﻿causal_networkx.algorithms.uncovered_pd_path
+============================================
+
+.. currentmodule:: causal_networkx.algorithms
+
+.. autofunction:: uncovered_pd_path
+
+.. include:: causal_networkx.algorithms.uncovered_pd_path.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

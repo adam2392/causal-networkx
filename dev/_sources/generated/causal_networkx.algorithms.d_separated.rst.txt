@@ -1,0 +1,12 @@
+﻿causal_networkx.algorithms.d_separated
+======================================
+
+.. currentmodule:: causal_networkx.algorithms
+
+.. autofunction:: d_separated
+
+.. include:: causal_networkx.algorithms.d_separated.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>
