@@ -333,6 +333,18 @@ class RobustPC(PC):
         self.use_children = use_children
         self.skip_first_stage = skip_first_stage
 
+    def _learn_first_phase(self, X, graph, sep_set, fixed_edges):
+        # learn skeleton using original PC algorithm
+        graph, sep_set, test_stat_dict, pvalue_dict = super().learn_skeleton(
+            X, graph, sep_set, fixed_edges
+        )
+        # convert graph to a CPDAG
+        graph = self.convert_skeleton_graph(graph)
+        # orient the edges of the skeleton graph to build up a set of
+        # "definite" parents
+        graph = self.orient_edges(graph, sep_set)
+        return graph, sep_set, test_stat_dict, pvalue_dict
+
     def learn_skeleton(
         self,
         X: pd.DataFrame,
@@ -355,17 +367,12 @@ class RobustPC(PC):
             sep_set = defaultdict(lambda: defaultdict(set))
         orig_graph = graph.copy()
         orig_sep_set = sep_set.copy()
-
+        test_stat_dict = dict()
+        pvalue_dict = dict()
+        
         if not self.skip_first_stage:
-            # learn skeleton using original PC algorithm
-            graph, sep_set, test_stat_dict, pvalue_dict = super().learn_skeleton(
-                X, graph, sep_set, fixed_edges
-            )
-            # convert graph to a CPDAG
-            graph = self.convert_skeleton_graph(graph)
-            # orient the edges of the skeleton graph to build up a set of
-            # "definite" parents
-            graph = self.orient_edges(graph, sep_set)
+            graph, sep_set, test_stat_dict, pvalue_dict = self._learn_first_phase(
+                X, graph, sep_set, fixed_edges)
 
         # store the estimated "definite" parents/children for each node
         def_parent_dict = dict()
