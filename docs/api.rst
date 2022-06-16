@@ -118,3 +118,4 @@ Utility Algorithms for Causal Graphs
    dag2cpdag
    admg2pag
    is_markov_equivalent
+   compute_v_structures

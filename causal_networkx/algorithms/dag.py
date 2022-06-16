@@ -71,8 +71,6 @@ def topological_sort(G: ADMG):
     --------
     networkx.algorithms.dag.topological_sort
     """
-    assert isinstance(G, ADMG)
-
     # topological sorting only occurs from the directed edges,
     # not bi-directed edges
     return nx_topological_sort(G.dag)
@@ -93,7 +91,7 @@ def compute_v_structures(graph: DAG) -> Set[Tuple]:
     """
     vstructs: Set[Tuple] = set()
     for node in graph.nodes:
-        for p1, p2 in combinations(graph.parents(node) | graph.spouses(node), 2):
+        for p1, p2 in combinations(set(graph.parents(node)).union(graph.spouses(node)), 2):
             if not graph.has_adjacency(p1, p2):
                 p1_, p2_ = sorted((p1, p2))
                 vstructs.add((p1_, node, p2_))

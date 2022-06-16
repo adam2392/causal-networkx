@@ -12,6 +12,20 @@ from causal_networkx.io import load_from_networkx
 from causal_networkx.utils import requires_pydot
 
 
+def test_spouses(self):
+    ed1, ed2 = ({}, {})
+    incoming_graph_data = {0: {1: ed1, 2: ed2}}
+    G = DAG(incoming_graph_data)
+    # add collider on 2
+    G.add_edge(3, 2)
+
+    assert G.spouses(0) == (3,)
+    assert G.spouses(1) == {}
+    assert G.spouses(3) == {
+        0,
+    }
+
+
 class TestDAG:
     def setup_method(self):
         # start every graph with the fork graph

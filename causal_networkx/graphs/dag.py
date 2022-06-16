@@ -266,6 +266,7 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         spouses: Set = set()
         for child in children:
             spouses = spouses.union(set(self.parents(child)))
+        spouses.discard(node)
         return spouses
 
     def compute_full_graph(self, to_networkx: bool = False):
