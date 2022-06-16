@@ -2,8 +2,6 @@ import networkx as nx
 
 from causal_networkx import ADMG, CPDAG, DAG, PAG
 
-from .dag import compute_v_structures
-
 
 def dag2cpdag(graph: DAG) -> CPDAG:
     """Convert a DAG to a completed partially directed acyclic graph.
@@ -88,6 +86,8 @@ def is_markov_equivalent(graph, other_graph) -> bool:
     is_mec : bool
         If the two graphs are markov equivalent.
     """
+    from causal_networkx.algorithms.dag import compute_v_structures
+
     # See: https://graphical-models.readthedocs.io/en/latest/_modules/graphical_models/classes/mags/ancestral_graph.html#AncestralGraph.markov_blanket_of  # noqa
     # first check skeleton
     first_skel = graph.to_adjacency_graph()

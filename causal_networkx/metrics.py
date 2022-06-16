@@ -6,6 +6,40 @@ from sklearn.preprocessing import LabelBinarizer
 from causal_networkx.graphs.base import BaseGraph
 
 
+def graph_to_pred_vector(graph, as_adjacency: bool = True):
+    """Convert a causal DAG graph to a prediction vector.
+
+    Parameters
+    ----------
+    graph : _type_
+        _description_
+    as_adjacency : bool, optional
+        Whether to convert to a vector representing the adjacencies, by default True.
+        If False, then will also evaluate correct edges. See Notes for details.
+
+    Returns
+    -------
+    y_pred : np.ndarray of shape ((n_nodes ** 2 - n_nodes) / 2,)
+        _description_
+
+    Notes
+    -----
+    Assumes that the graph is acyclic.
+    """
+    # convert graphs to adjacency graph in networkx
+    if isinstance(graph, BaseGraph):
+        graph = graph.to_adjacency_graph()
+
+    # next convert into 2D numpy array format
+    adj_mat = nx.to_numpy_array(graph)
+
+    # then only extract lower-triangular portion and binarize the labels
+    adj_mat = adj_mat[np.tril_indices_from(adj_mat, k=-1)]
+    adj_mat = adj_mat > 0
+    y_vec = LabelBinarizer().fit_transform(adj_mat.flatten()).squeeze()
+    return y_vec
+
+
 def confusion_matrix_networks(
     true_graph,
     pred_graph,

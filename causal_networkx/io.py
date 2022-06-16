@@ -364,3 +364,10 @@ def read_dot(fname: str):
     nx_graph = nx.drawing.nx_pydot.from_pydot(graph)
     dag = DAG(nx_graph)
     return dag
+
+
+def read_gml(fname):
+    """Read .gml file from disc to causal-networkx graph."""
+    nx_graph = nx.read_gml(fname)
+    graph = load_from_networkx(nx_graph)
+    return graph
