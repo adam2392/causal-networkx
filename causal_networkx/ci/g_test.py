@@ -1,12 +1,14 @@
 # This code was originally adapted from https://github.com/keiichishima/gsq
 # and heavily refactored and modified.
 
-from typing import List, Set, Tuple, Union
+from typing import Any, List, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 from scipy.stats import chi2
+
+from .base import BaseConditionalIndependenceTest
 
 
 def _calculate_contingency_tble(
@@ -301,8 +303,8 @@ def g_square_discrete(
         'y' must be in the columns of ``data``.
     sep_set : set
         the set of neibouring nodes of x and y (as a set()).
-    levels: levels of each column in the data matrix
-            (as a list()).
+    levels : list
+        Levels of each column in the data matrix (as a list()).
 
     Returns
     -------
@@ -362,3 +364,31 @@ def g_square_discrete(
     else:
         p_val = chi2.sf(G2, dof)
     return G2, p_val
+
+
+class GSquareCITest(BaseConditionalIndependenceTest):
+    def __init__(self, data_type: str = "binary"):
+        self.data_type = data_type
+
+    def test(
+        self,
+        df: pd.DataFrame,
+        x_var: Any,
+        y_var: Any,
+        z_covariates: Any = None,
+        levels: List = None,
+    ) -> Tuple[float, float]:
+        self._check_test_input(df, x_var, y_var, z_covariates)
+        if z_covariates is None:
+            z_covariates = set()
+
+        if self.data_type == "binary":
+            stat, pvalue = g_square_binary(df, x_var, y_var, z_covariates)
+        elif self.data_type == "discrete":
+            stat, pvalue = g_square_discrete(df, x_var, y_var, z_covariates, levels=levels)
+        else:
+            raise ValueError(
+                f"The acceptable data_type for G Square CI test is "
+                f'"binary" and "discrete", not {self.data_type}.'
+            )
+        return stat, pvalue

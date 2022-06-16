@@ -1,10 +1,55 @@
 from math import log, sqrt
-from typing import Set, Union
+from typing import Any, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 from scipy.stats import norm
+
+from .base import BaseConditionalIndependenceTest
+
+
+class FisherZCITest(BaseConditionalIndependenceTest):
+    def __init__(self, correlation_matrix=None):
+        """Conditional independence test using Fisher-Z's test for Gaussian random variables.
+
+        Parameters
+        ----------
+        correlation_matrix : np.ndarray of shape (n_variables, n_variables), optional
+            ``None`` means without the parameter of correlation matrix and
+            the correlation will be computed from the data., by default None
+        """
+        self.correlation_matrix = correlation_matrix
+
+    def test(
+        self, df: pd.DataFrame, x_var: Any, y_var: Any, z_covariates: Any = None
+    ) -> Tuple[float, float]:
+        """Run conditional independence test.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            _description_
+        x : Any
+            _description_
+        y : Any
+            _description_
+        z : Any, optional
+            _description_, by default None
+
+        Returns
+        -------
+        stat : float
+            The test statistic.
+        pvalue : float
+            The p-value of the test.
+        """
+        self._check_test_input(df, x_var, y_var, z_covariates)
+
+        if z_covariates is None:
+            z_covariates = set()
+        stat, pvalue = fisherz(df, x_var, y_var, z_covariates, self.correlation_matrix)
+        return stat, pvalue
 
 
 def fisherz(
@@ -16,9 +61,11 @@ def fisherz(
 ):
     """Perform an independence test using Fisher-Z's test.
 
+    Works on Gaussian random variables.
+
     Parameters
     ----------
-    data : np.ndarray of shape (n_samples, n_variables)
+    data : pd.DataFrame
         The data.
     x : int | str
         the first node variable. If ``data`` is a DataFrame, then
@@ -28,22 +75,30 @@ def fisherz(
         'y' must be in the columns of ``data``.
     sep_set : set
         the set of neibouring nodes of x and y (as a set()).
-    correlation_matrix : np.ndarray of shape (n_variables, n_variables
-        ``None`` means without the parameter of correlation matrix and
-        the correlation will be computed from the data.
+    correlation_matrix : np.ndarray of shape (n_variables, n_variables), optional
+            ``None`` means without the parameter of correlation matrix and
+            the correlation will be computed from the data., by default None
 
     Returns
     -------
-    p : the p-value of the test
+    X : float
+        The test statistic.
+    p : float
+        The p-value of the test.
     """
+    data_arr = data.to_numpy()
+
     if correlation_matrix is None:
-        correlation_matrix = np.corrcoef(data.T)
+        correlation_matrix = np.corrcoef(data_arr.T)
     sample_size = data.shape[0]
     var = list({x, y}.union(sep_set))  # type: ignore
-    sub_corr_matrix = correlation_matrix[np.ix_(var, var)]
+    (var_idx,) = np.in1d(data.columns, var).nonzero()
+
+    # compute the correlation matrix within the specified data
+    sub_corr_matrix = correlation_matrix[np.ix_(var_idx, var_idx)]
     inv = np.linalg.inv(sub_corr_matrix)
     r = -inv[0, 1] / sqrt(inv[0, 0] * inv[1, 1])
     Z = 0.5 * log((1 + r) / (1 - r))
     X = sqrt(sample_size - len(sep_set) - 3) * abs(Z)
     p = 2 * (1 - norm.cdf(abs(X)))
-    return p
+    return X, p

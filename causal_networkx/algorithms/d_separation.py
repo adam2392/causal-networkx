@@ -3,10 +3,10 @@ from typing import Union
 import numpy as np
 from networkx.algorithms import d_separated as nx_d_separated
 
-from causal_networkx.graphs.cgm import ADMG, PAG
+from causal_networkx import ADMG, DAG
 
 
-def d_separated(G: Union[ADMG, PAG], x, y, z):
+def d_separated(G: Union[DAG, ADMG], x, y, z=None):
     """Check d-separation among 'x' and 'y' given 'z' in graph G.
 
     This algorithm wraps ``networkx.algorithms.d_separated``, but
@@ -40,9 +40,8 @@ def d_separated(G: Union[ADMG, PAG], x, y, z):
     ``ADMG`` is not represented.
 
     """
-    # get the full graph by converting bidirected edges into latent confounders
-    # and keeping the directed edges
-    explicit_G = G.compute_full_graph(to_networkx=True)
+    if z is None:
+        z = set()
 
     # run d-separation
     if isinstance(x, np.ndarray):
@@ -64,6 +63,13 @@ def d_separated(G: Union[ADMG, PAG], x, y, z):
         z = set([z])
     elif type(z) in (int, float):
         z = set([z])
+
+    if type(G).__name__ == "DAG":
+        return nx_d_separated(G.to_networkx(), x, y, z)
+
+    # get the full graph by converting bidirected edges into latent confounders
+    # and keeping the directed edges
+    explicit_G = G.compute_full_graph(to_networkx=True)
 
     # make sure there are always conditioned on the conditioning set
     z = z.union(G._cond_set)

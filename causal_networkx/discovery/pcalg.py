@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from causal_networkx import CPDAG, DAG
+from causal_networkx.ci.base import BaseConditionalIndependenceTest
 
 from .classes import ConstraintDiscovery
 
@@ -18,7 +19,7 @@ logger = logging.getLogger()
 class PC(ConstraintDiscovery):
     def __init__(
         self,
-        ci_estimator: Callable,
+        ci_estimator: BaseConditionalIndependenceTest,
         alpha: float = 0.05,
         init_graph: Union[nx.Graph, CPDAG] = None,
         fixed_edges: nx.Graph = None,
@@ -288,7 +289,7 @@ class PC(ConstraintDiscovery):
 class RobustPC(PC):
     def __init__(
         self,
-        ci_estimator: Callable,
+        ci_estimator: BaseConditionalIndependenceTest,
         alpha: float = 0.05,
         init_graph: Union[nx.Graph, DAG, CPDAG] = None,
         fixed_edges: nx.Graph = None,
@@ -304,6 +305,8 @@ class RobustPC(PC):
         mci_ci_estimator: Callable = None,
         partial_knowledge: object = None,
         only_mci: bool = False,
+        use_children: bool = False,
+        skip_first_stage: bool = False,
         **ci_estimator_kwargs,
     ):
         super().__init__(
@@ -326,6 +329,9 @@ class RobustPC(PC):
         self.only_mci = only_mci
         if mci_ci_estimator is None:
             self.mci_ci_estimator = ci_estimator
+
+        self.use_children = use_children
+        self.skip_first_stage = skip_first_stage
 
     def learn_skeleton(
         self,
@@ -350,21 +356,24 @@ class RobustPC(PC):
         orig_graph = graph.copy()
         orig_sep_set = sep_set.copy()
 
-        # learn skeleton using original PC algorithm
-        graph, sep_set, test_stat_dict, pvalue_dict = super().learn_skeleton(
-            X, graph, sep_set, fixed_edges
-        )
-        # convert graph to a CPDAG
-        graph = self.convert_skeleton_graph(graph)
-        # orient the edges of the skeleton graph to build up a set of
-        # "definite" parents
-        graph = self.orient_edges(graph, sep_set)
+        if not self.skip_first_stage:
+            # learn skeleton using original PC algorithm
+            graph, sep_set, test_stat_dict, pvalue_dict = super().learn_skeleton(
+                X, graph, sep_set, fixed_edges
+            )
+            # convert graph to a CPDAG
+            graph = self.convert_skeleton_graph(graph)
+            # orient the edges of the skeleton graph to build up a set of
+            # "definite" parents
+            graph = self.orient_edges(graph, sep_set)
+
+        # store the estimated "definite" parents/children for each node
+        def_parent_dict = dict()
+        def_children_dict = dict()
 
         # now obtain the definite parents for every node in the set either using
         # partial knowledge oracle, or using the existing graph oriented after initial PC
         if hasattr(self.partial_knowledge, "get_parents"):
-            def_parent_dict = dict()
-            def_children_dict = dict()
             test_stat_dict = dict()
             for node in graph.nodes:
                 parents = self.partial_knowledge.get_parents(node)  # type: ignore
@@ -373,11 +382,16 @@ class RobustPC(PC):
                 def_children_dict[node] = children
 
                 test_stat_dict[node] = {_node: np.inf for _node in parents}
+
+                if self.use_children:
+                    test_stat_dict[node] = {_node: np.inf for _node in children}
         else:
+            # use the estimated parents/children
             def_parent_dict = self._get_definite_parents(graph)
             def_children_dict = self._get_definite_children(graph)
 
             # use definite parents to filter the dependencies in the test statistics / pvalue
+            # removing them from the possible adjacency list
             for node, parents in def_parent_dict.items():
                 # create a copy of the possible parents, since we will be removing
                 # certain keys in the nested dictionary
@@ -386,12 +400,19 @@ class RobustPC(PC):
                 for adj_node in possible_parents:
                     # now remove any adjacent nodes from consideration if they
                     # are not part of parent set
-                    if adj_node not in parents and adj_node not in children:
+                    check_condition = adj_node not in parents
+
+                    # optionally, also include children
+                    if self.use_children:
+                        check_condition = check_condition and (adj_node not in children)
+
+                    if check_condition:
                         test_stat_dict[node].pop(adj_node)
                         # pvalue_dict[node].pop(parent)
 
         self._inter_test_stat_dict = test_stat_dict
         self.def_parents_ = def_parent_dict
+        self.def_children_ = def_children_dict
 
         # now we will re-learn the skeleton using the MCI condition
         skel_graph, sep_set, test_stat_dict, pvalue_dict = learn_skeleton_graph_with_order(  # type: ignore

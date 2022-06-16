@@ -1,16 +1,15 @@
-from typing import Union
-
 import networkx as nx
 import numpy as np
 
+from causal_networkx import ADMG, CPDAG, DAG, PAG
 from causal_networkx.config import (
+    EDGE_TO_VALUE_MAPPING,
     ENDPOINT_TO_EDGE_MAPPING,
     GRAPH_TYPES,
     VALUE_TO_MIXED_EDGE_MAPPING,
     EdgeType,
     EndPoint,
 )
-from causal_networkx.graphs.cgm import ADMG, CPDAG, DAG, PAG
 
 GRAPH_TYPE = {DAG: "DAG", ADMG: "ADMG", CPDAG: "CPDAG", PAG: "PAG"}
 GRAPH_TYPE_TO_FUNC = {val: key for key, val in GRAPH_TYPE.items()}
@@ -58,6 +57,8 @@ def load_from_networkx(G: nx.Graph):
         # replace edge marks with their appropriate string representation
         if edge_type == EdgeType.directed.value:
             graph.add_edge(u, v)
+        elif edge_type == EdgeType.undirected.value:
+            graph.add_undirected_edge(u, v)
         elif edge_type == EdgeType.bidirected.value:
             graph.add_bidirected_edge(u, v)
         elif edge_type == EndPoint.circle.value:
@@ -87,7 +88,7 @@ def to_networkx(causal_graph: DAG):
 
     # preserve the name
     G.name = causal_graph.name
-    graph_type = GRAPH_TYPE[type(causal_graph)]
+    graph_type = type(causal_graph).__name__  # GRAPH_TYPE[type(causal_graph)]
     G.graph["graph_type"] = graph_type
 
     # add all nodes to the networkx graph
@@ -97,11 +98,13 @@ def to_networkx(causal_graph: DAG):
     for name, graph in zip(causal_graph._graph_names, causal_graph._graphs):
         # replace edge marks with their appropriate string representation
         if name == EdgeType.directed.value:
-            attr = {"type": "directed"}
+            attr = {"type": EdgeType.directed.value}
+        elif name == EdgeType.undirected.value:
+            attr = {"type": EdgeType.undirected.value}
         elif name == EdgeType.bidirected.value:
-            attr = {"type": "bidirected"}
+            attr = {"type": EdgeType.bidirected.value}
         elif name == EndPoint.circle.value:
-            attr = {"type": "circle"}
+            attr = {"type": EndPoint.circle.value}
         G.add_edges_from(graph.edges, **attr)
     return G
 
@@ -202,36 +205,6 @@ def load_from_pgmpy(pgmpy_dag) -> DAG:
     return dag
 
 
-def to_pgmpy(causal_graph: Union[DAG, ADMG]):
-    """Convert causal graph to pgmpy BayesianNetwork.
-
-    Parameters
-    ----------
-    causal_graph : DAG | ADMG
-        The causal graph with possibly latents.
-
-    Returns
-    -------
-    dag : pgmpy.models.BayesianNetwork
-        The pgmpy Bayesian network.
-    """
-    from pgmpy.models import BayesianNetwork
-
-    latents = set()
-    if isinstance(causal_graph, ADMG):
-        causal_dag = causal_graph.compute_full_graph()
-
-        # get the latent nodes
-        for (node, node_dict) in causal_dag.nodes.data():
-            if node_dict.get("observed") == "no":
-                latents.add(node)
-    else:
-        causal_dag = causal_graph.dag
-    # create the pgmpy Bayesian Network
-    dag = BayesianNetwork(causal_dag, latents=latents)
-    return dag
-
-
 def load_from_numpy(arr, type="dag"):
     """Load causal graph from a numpy array.
 
@@ -302,23 +275,44 @@ def to_numpy(causal_graph):
 
     Parameters
     ----------
-    causal_graph : DAG
+    causal_graph : instance of DAG
         The causal graph.
 
     Returns
     -------
     numpy_graph : np.ndarray of shape (n_nodes, n_nodes)
-        The numpy array that represents the graph.
+        The numpy array that represents the graph. The values representing edges
+        are mapped according to a pre-defined set of values. See Notes.
+
+    Notes
+    -----
+    The adjacency matrix is defined where the ijth entry of ``numpy_graph`` has a
+    non-zero entry if there is an edge from i to j. The ijth entry is symmetric with the
+    jith entry if the edge is 'undirected', or 'bidirected'. Then specific edges are
+    mapped to the following values:
+
+        - directed edge (->): 1
+        - undirected edge (--): 2
+        - bidirected edge (<->): 3
+        - circle endpoint (-o): 4
+
+    Circle endpoints can be symmetric, but they can also contain a tail, or a directed
+    edge at the other end.
     """
+    if isinstance(causal_graph, ADMG):
+        raise RuntimeError("Converting ADMG to numpy format is not supported.")
+
     # master list of nodes is in the internal dag
     node_list = causal_graph.nodes
     n_nodes = len(node_list)
 
     numpy_graph = np.zeros((n_nodes, n_nodes))
     bidirected_graph_arr = None
+    graph_map = dict()
     for name, graph in zip(causal_graph._graph_names, causal_graph._graphs):
         # make sure all nodes are in the internal graph
         if any(node not in graph for node in node_list):
+            graph = graph.copy()
             graph.add_nodes_from(node_list)
 
         # handle bidirected edge separately
@@ -327,14 +321,28 @@ def to_numpy(causal_graph):
             continue
 
         # convert internal graph to a numpy array
-        # graph_arr = nx.to_numpy_array(graph, nodelist=node_list)
-        # TODO: fix to use EndPoints
-        # graph_arr[graph_arr != 0] = PAG_EDGE_MAPPING[name]
-        # numpy_graph += graph_arr
+        graph_arr = nx.to_numpy_array(graph, nodelist=node_list)
+        graph_map[name] = graph_arr
 
-    if bidirected_graph_arr is not None:
-        # bidirected_graph_arr[bidirected_graph_arr != 0] = PAG_EDGE_MAPPING[EdgeType.directed.value]
+    # ADMGs can have two edges between any 2 nodes
+    if type(causal_graph).__name__ == "ADMG":
+        # we handle this case separately from the other graphs
+        assert len(graph_map) == 1
+
+        # set all bidirected edges with value 10
+        bidirected_graph_arr[bidirected_graph_arr != 0] = 10
         numpy_graph += bidirected_graph_arr
+        numpy_graph += graph_arr
+    else:
+        # map each edge to an edge value
+        for name, graph_arr in graph_map.items():
+            graph_arr[graph_arr != 0] = EDGE_TO_VALUE_MAPPING[name]
+            numpy_graph += graph_arr
+
+        # bidirected case is handled separately
+        if bidirected_graph_arr is not None:
+            numpy_graph += bidirected_graph_arr
+
     return numpy_graph
 
 
@@ -356,3 +364,10 @@ def read_dot(fname: str):
     nx_graph = nx.drawing.nx_pydot.from_pydot(graph)
     dag = DAG(nx_graph)
     return dag
+
+
+def read_gml(fname):
+    """Read .gml file from disc to causal-networkx graph."""
+    nx_graph = nx.read_gml(fname)
+    graph = load_from_networkx(nx_graph)
+    return graph

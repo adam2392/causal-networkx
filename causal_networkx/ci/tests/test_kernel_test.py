@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 
 from causal_networkx.ci import KernelCITest
@@ -31,14 +32,17 @@ def test_kci_with_gaussian_data(ci_estimator):
     rng = np.random.RandomState(seed)
     X = rng.randn(300, 1)
     X1 = rng.randn(300, 1)
-    Y = np.concatenate((X, X), axis=1) + 0.5 * rng.randn(300, 2)
-    Z = Y + 0.5 * rng.randn(300, 2)
+    Y = X + X1 + 0.5 * rng.randn(300, 1)
+    Z = Y + 0.5 * rng.randn(300, 1)
 
-    _, pvalue = ci_estimator.test(X, X1)
+    # create input for the CI test
+    df = pd.DataFrame(np.hstack((X, X1, Y, Z)), columns=["x", "x1", "y", "z"])
+
+    _, pvalue = ci_estimator.test(df, "x", "x1")
     assert pvalue > 0.05
-    _, pvalue = ci_estimator.test(X, Z)
+    _, pvalue = ci_estimator.test(df, "x", "z")
     assert pvalue < 0.05
-    _, pvalue = ci_estimator.test(X, Z, Y)
+    _, pvalue = ci_estimator.test(df, "x", "z", "y")
     assert pvalue > 0.05
 
 

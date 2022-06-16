@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from causal_networkx import ADMG, PAG
 from causal_networkx.algorithms import d_separated, possibly_d_sep_sets
 from causal_networkx.ci import Oracle
 from causal_networkx.discovery import FCI
-from causal_networkx.graphs.cgm import ADMG, PAG
 from causal_networkx.scm import StructuralCausalModel
 
 
@@ -36,7 +36,7 @@ class Test_FCI:
 
         self.scm = scm
         self.G = G
-        self.ci_estimator = oracle.ci_test
+        self.ci_estimator = oracle
 
         fci = FCI(ci_estimator=self.ci_estimator)
         self.alg = fci
@@ -426,7 +426,7 @@ class Test_FCI:
         sample.columns = list(G.nodes)
 
         oracle = Oracle(G)
-        ci_estimator = oracle.ci_test
+        ci_estimator = oracle
         fci = FCI(ci_estimator=ci_estimator)
         fci.fit(sample)
         pag = fci.graph_
@@ -462,7 +462,7 @@ class Test_FCI:
         edge_list = [("D", "A"), ("B", "E"), ("F", "B"), ("C", "F"), ("C", "H"), ("H", "D")]
         latent_edge_list = [("A", "B"), ("D", "E")]
         graph = ADMG(edge_list, latent_edge_list)
-        alg = FCI(ci_estimator=Oracle(graph).ci_test)
+        alg = FCI(ci_estimator=Oracle(graph))
 
         sample = graph.dummy_sample()
         alg.fit(sample)
@@ -517,7 +517,7 @@ class Test_FCI:
         sample.columns = list(G.nodes)
 
         oracle = Oracle(G)
-        ci_estimator = oracle.ci_test
+        ci_estimator = oracle
         fci = FCI(ci_estimator=ci_estimator, max_iter=np.inf)
         fci.fit(sample)
         pag = fci.graph_

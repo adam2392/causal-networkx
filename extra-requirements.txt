@@ -14,3 +14,9 @@ matplotlib
 
 # for exporting to DOT format
 pydot
+
+# for interfacing with pgmpy
+pgmpy
+
+# for partial correlations
+pingouin

@@ -3,26 +3,67 @@ from pathlib import Path
 import networkx as nx
 import numpy as np
 import pytest
+from numpy.testing import assert_array_equal
 
+from causal_networkx import ADMG, CPDAG, DAG, PAG
 from causal_networkx.algorithms import d_separated
-from causal_networkx.graphs.cgm import ADMG, CPDAG, PAG
+from causal_networkx.config import EDGE_TO_VALUE_MAPPING, EdgeType
 from causal_networkx.io import load_from_networkx
+from causal_networkx.utils import requires_pydot
 
 
-class TestGraph:
+def test_spouses():
+    ed1, ed2 = ({}, {})
+    incoming_graph_data = {0: {1: ed1, 2: ed2}}
+    G = DAG(incoming_graph_data)
+    # add collider on 2
+    G.add_edge(3, 2)
+
+    assert G.spouses(0) == {3}
+    assert G.spouses(1) == set()
+    assert G.spouses(2) == set()
+    assert G.spouses(3) == {0}
+
+
+class TestDAG:
     def setup_method(self):
-        # start every graph with the confounded graph
-        # 0 -> 1, 0 -> 2 with 1 <--> 0
-        self.Graph = ADMG
-        incoming_latent_data = [(0, 1)]
+        # start every graph with the fork graph
+        # 0 -> 1, 0 -> 2
+        self.Graph = DAG
+        # incoming_latent_data = [(0, 1)]
 
         # build dict-of-dict-of-dict K3
         ed1, ed2 = ({}, {})
         incoming_graph_data = {0: {1: ed1, 2: ed2}}
-        self.G = self.Graph(incoming_graph_data, incoming_latent_data)
+        self.G = self.Graph(incoming_graph_data)
+
+    def test_d_separation(self):
+        G = self.G.copy()
+        # add collider on 2
+        G.add_edge(3, 2)
+
+        # normal d-separation statements should hold
+        assert not d_separated(G, 1, 2, set())
+        assert d_separated(G, 1, 2, 0)
+
+        # when we add an edge from 3 -> 2
+        # there is no d-separation statement
+        assert d_separated(G, 3, 1, set())
+        assert not d_separated(G, 3, 1, 2)
+
+    def test_markov_blanket_of(self):
+        ed1, ed2 = ({}, {})
+        incoming_graph_data = {0: {1: ed1, 2: ed2}}
+        G = DAG(incoming_graph_data)
+        # add collider on 2
+        G.add_edge(3, 2)
+
+        assert G.markov_blanket_of(0) == {1, 2, 3}
+        assert G.markov_blanket_of(1) == {0}
+        assert G.markov_blanket_of(3) == {2, 0}
 
 
-class TestNetworkxGraph(TestGraph):
+class TestNetworkxGraph(TestDAG):
     """Test ADMG relevant networkx properties."""
 
     def test_data_input(self):
@@ -233,20 +274,94 @@ class TestNetworkxGraph(TestGraph):
         G.add_edge(2, 1, foo=ll)
 
 
-class TestExportGraph(TestGraph):
+class TestExportGraph:
+    def setup_method(self):
+        # start every graph with the confounded graph
+        # 0 -> 1, 0 -> 2
+        self.Graph = DAG
+        # incoming_latent_data = [(0, 1)]
+
+        # build dict-of-dict-of-dict K3
+        ed1, ed2 = ({}, {})
+        incoming_graph_data = {0: {1: ed1, 2: ed2}}
+        self.G = self.Graph(incoming_graph_data)
+
     def test_to_networkx(self, tmp_path):
         G = self.G
         fname = Path(tmp_path) / "test.gml"
+        # relabel to str
+        mapping = {node: str(node) for node in G.nodes}
+        G.relabel_nodes(mapping, copy=False)
         G.save(fname, format="networkx-gml")
 
         read_G = nx.read_gml(fname)
         read_G = load_from_networkx(read_G)
         assert type(read_G) == type(G)
         assert set(read_G.nodes) == set(map(str, G.nodes))
+        for edge_type, edges in G.all_edges().items():
+            read_edges = read_G.all_edges()[edge_type]
+            assert set(read_edges) == set(edges)
         assert nx.is_isomorphic(read_G.to_networkx(), G.to_networkx())
 
+    @requires_pydot()
+    def test_to_dot(self):
+        """Test exporting to DOT format."""
+        # 0 -> 1, 0 -> 2 with 1 <--> 0
+        G = self.G.copy()
 
-class TestCPDAG(TestNetworkxGraph):
+        # make sure output handles a string for a node
+        # G.add_edge(0, "1-0")
+        dot_graph = G.to_dot_graph()
+
+        # make sure the output adheres to the DOT format
+        assert dot_graph.startswith("strict digraph\t{")
+        assert dot_graph.endswith("}")
+        for node in G.nodes:
+            assert f"{node};\n" in dot_graph
+        for u, v in G.edges:
+            if isinstance(u, str):
+                u = f'"{u}"'
+            if isinstance(v, str):
+                v = f'"{v}"'
+            assert f"{u} -> {v};\n" in dot_graph
+        if hasattr(G, "bidirected_edges"):
+            for u, v in G.bidirected_edges:
+                assert f"{u} <-> {v};\n" in dot_graph
+
+    def test_to_numpy(self):
+        # TODO: make it eventually work for ADMG too
+        if isinstance(self.G, ADMG):
+            with pytest.raises(RuntimeError, match="Converting ADMG to numpy"):
+                self.G.to_numpy()
+            return
+
+        G = self.G
+        # add completely disconnected node
+        G.add_node(10)
+        numpy_graph = G.to_numpy()
+        node_list = list(G.nodes)
+        n_nodes = len(node_list)
+
+        expected_arr = np.zeros((n_nodes, n_nodes))
+
+        for edge_type, edges in G.all_edges().items():
+            for (u, v) in edges:
+                # get the index which should be in the numpy array
+                idx = node_list.index(u)
+                jdx = node_list.index(v)
+
+                # the expected array is created
+                expected_arr[idx, jdx] += EDGE_TO_VALUE_MAPPING[edge_type]
+
+                # check if (v, u) also in the set of edges, implying bidirectional
+                if edge_type in [EdgeType.bidirected.value, EdgeType.undirected.value]:
+                    expected_arr[jdx, idx] += EDGE_TO_VALUE_MAPPING[edge_type]
+
+        # all non-zero entries should be consistent
+        assert_array_equal(numpy_graph, expected_arr)
+
+
+class TestCPDAG(TestNetworkxGraph, TestExportGraph):
     def setup_method(self):
         # start every graph with the confounded graph
         # 0 -> 1, 0 -> 2 with 1 <--> 0
@@ -265,7 +380,7 @@ class TestCPDAG(TestNetworkxGraph):
         pass
 
 
-class TestADMG(TestGraph):
+class TestADMG(TestDAG, TestExportGraph):
     """Test relevant causal graph properties."""
 
     def setup_method(self):
@@ -368,6 +483,7 @@ class TestADMG(TestGraph):
 
         # normal d-separation statements should hold
         assert not d_separated(G, 1, 2, set())
+        assert not d_separated(G, 1, 2)
         assert d_separated(G, 1, 2, 0)
 
         # when we add an edge from 0 -> 1
@@ -380,10 +496,6 @@ class TestADMG(TestGraph):
         G.remove_edge(0, 1)
         assert d_separated(G, 3, 1, set())
         assert not d_separated(G, 3, 1, 0)
-
-    # def test_add_multiple_edges(self):
-    #     G = self.G
-    # since there is a directed edge from
 
     def test_children_and_parents(self):
         """Test working with children and parents."""
@@ -400,42 +512,6 @@ class TestADMG(TestGraph):
         G.add_bidirected_edge(2, 3)
         assert [] == list(G.parents(3))
         assert [] == list(G.children(3))
-
-    def test_export_dot(self):
-        """Test exporting to DOT format."""
-        # 0 -> 1, 0 -> 2 with 1 <--> 0
-        G = self.G.copy()
-
-        # make sure output handles a string for a node
-        # G.add_edge(0, "1-0")
-        dot_graph = G.to_dot_graph()
-
-        # make sure the output adheres to the DOT format
-        assert dot_graph.startswith("strict digraph\t{")
-        assert dot_graph.endswith("}")
-        for node in G.nodes:
-            assert f"{node};\n" in dot_graph
-        for u, v in G.edges:
-            if isinstance(u, str):
-                u = f'"{u}"'
-            if isinstance(v, str):
-                v = f'"{v}"'
-            assert f"{u} -> {v};\n" in dot_graph
-        for u, v in G.bidirected_edges:
-            assert f"{u} <-> {v};\n" in dot_graph
-
-    # TODO: make numpy work by just creating a lower-triangular matrix with enum mapping for edge types
-    @pytest.mark.skip()
-    def test_export_numpy(self):
-        # 0 -> 1, 0 -> 2 with 1 <--> 0
-        G = self.PAG.copy()
-
-        numpy_graph = G.to_numpy()
-        expected_arr = np.zeros((3, 3))
-        expected_arr[0, 1] = 2
-        expected_arr[0, 2] = 2
-        expected_arr[1, 0] = 1
-        assert numpy_graph
 
     def test_size(self):
         G = self.G

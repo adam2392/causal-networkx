@@ -2,18 +2,20 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_array_equal
 
-from causal_networkx import CPDAG, StructuralCausalModel
-from causal_networkx.ci import Oracle, g_square_binary, g_square_discrete
+from causal_networkx import CPDAG, DAG, StructuralCausalModel
+from causal_networkx.ci import GSquareCITest, Oracle
 from causal_networkx.ci.tests.testdata import bin_data, dis_data
 from causal_networkx.discovery import PC
+from causal_networkx.metrics import confusion_matrix_networks, structure_hamming_dist
 
 
 @pytest.mark.parametrize(
     ("indep_test_func", "data_matrix", "g_answer", "alpha"),
     [
         (
-            g_square_binary,
+            GSquareCITest(),
             np.array(bin_data).reshape((5000, 5)),
             nx.DiGraph(
                 {
@@ -27,7 +29,7 @@ from causal_networkx.discovery import PC
             0.01,
         ),
         (
-            g_square_discrete,
+            GSquareCITest("discrete"),
             np.array(dis_data).reshape((10000, 5)),
             nx.DiGraph(
                 {
@@ -52,6 +54,25 @@ def test_estimate_cpdag(indep_test_func, data_matrix, g_answer, alpha):
     error_msg = "True edges should be: %s" % (g_answer.edges(),)
     assert nx.is_isomorphic(graph.dag, g_answer), error_msg
 
+    # Test confusion matrix
+    cm = confusion_matrix_networks(graph, g_answer)
+
+    # The total number of edges if we assume symmetric graph: (N^2 - N) / 2
+    ub_num_edges = (graph.number_of_nodes() ** 2 - graph.number_of_nodes()) / 2
+
+    # now construct expected confusion matrix
+    expected_cm = np.diag(
+        [ub_num_edges - len(graph.edges) - len(graph.undirected_edges), len(graph.edges)]
+    )
+    expected_cm[1, 0] = len(graph.undirected_edges)
+    assert_array_equal(cm, expected_cm)
+
+    # structure hamming distance is equal to the number of edges we could not get rid of
+    # in our case, because all other orientations were correct
+    assert structure_hamming_dist(graph, g_answer, double_for_anticausal=False) == len(
+        graph.undirected_edges
+    )
+
     # test what happens if fixed edges are present
     fixed_edges = nx.complete_graph(data_df.columns.values)
     alg = PC(fixed_edges=fixed_edges, ci_estimator=indep_test_func, alpha=alpha)
@@ -59,6 +80,29 @@ def test_estimate_cpdag(indep_test_func, data_matrix, g_answer, alpha):
     complete_graph = alg.graph_
     assert nx.is_isomorphic(complete_graph.undirected_edge_graph, fixed_edges)
     assert not nx.is_isomorphic(complete_graph.dag, g_answer)
+
+
+def test_common_cause_and_collider():
+    """Test orienting a common cause and a collider.
+
+    The following graph has some complexities to test the PC algorithm
+    with the Oracle setting: ``1 <- 0 -> 2 <- 3``.
+    """
+    # build initial DAG
+    ed1, ed2 = ({}, {})
+    incoming_graph_data = {0: {1: ed1, 2: ed2}, 3: {2: ed2}}
+    G = DAG(incoming_graph_data)
+    df = G.dummy_sample()
+
+    pc = PC(ci_estimator=Oracle(G), apply_orientations=True)
+    pc.fit(df)
+    cpdag = pc.graph_
+
+    # compare with the expected CPDAG
+    expected_cpdag = CPDAG(incoming_uncertain_data=G.dag)
+    expected_cpdag.orient_undirected_edge(3, 2)
+    expected_cpdag.orient_undirected_edge(0, 2)
+    assert_array_equal(expected_cpdag.to_numpy(), cpdag.to_numpy())
 
 
 def test_collider():
@@ -83,7 +127,7 @@ def test_collider():
     )
     G = scm.get_causal_graph()
     oracle = Oracle(G)
-    ci_estimator = oracle.ci_test
+    ci_estimator = oracle
     pc = PC(ci_estimator=ci_estimator)
 
     sample = scm.sample(n=1, include_latents=False)
@@ -120,7 +164,7 @@ class Test_PC:
 
         self.scm = scm
         self.G = G
-        self.ci_estimator = oracle.ci_test
+        self.ci_estimator = oracle
         pc = PC(ci_estimator=self.ci_estimator)
         self.alg = pc
 

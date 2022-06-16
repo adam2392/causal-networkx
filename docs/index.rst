@@ -21,11 +21,10 @@ Contents
    :maxdepth: 1
    :caption: Getting started:
 
-   overview
    installation
    api
-   tutorials
    use
+   tutorials
    whats_new
 
 .. toctree::

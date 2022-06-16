@@ -253,7 +253,20 @@ class NetworkXMixin(Protocol):
         """Compute the degree of the DiGraph."""
         return self.dag.degree(n)
 
-    def to_adjacency_graph(self):
+    # TODO: do we need these for API to work with networkx?
+    def in_degree(self):
+        """In degree view of DAG."""
+        return self.dag.in_degree()
+
+    def out_degree(self):
+        """Out degree view of DAG."""
+        return self.dag.out_degree()
+
+    def neighbors(self, node):
+        """Neighbors view of DAG."""
+        return self.dag.neighbors(node)
+
+    def to_adjacency_graph(self) -> nx.Graph:
         """Compute an adjacency undirected graph.
 
         Two nodes are considered adjacent if there exist
@@ -261,7 +274,7 @@ class NetworkXMixin(Protocol):
         """
         # form the undirected graph of all inner graphs
         graph_list = []
-        for graph in self._graphs:
+        for graph in self._graphs:  # type: ignore
             graph_list.append(graph.to_undirected())
 
         adj_graph = graph_list[0]
@@ -274,6 +287,39 @@ class NetworkXMixin(Protocol):
 
     def is_multigraph(self):
         return False
+
+    def all_edges(self):
+        """Get dictionary of all the edges by edge type."""
+        return {name: graph.edges for name, graph in zip(self._graph_names, self._graphs)}
+
+    def relabel_nodes(self, mapping, copy=True):
+        """Relabel the nodes of the graph G according to a given mapping.
+
+        Parameters
+        ----------
+        mapping : dict
+            A dictionary with the old labels as keys and new labels as values. A partial mapping
+            is allowed. Mapping 2 nodes to a single node is allowed. Any non-node keys in the
+            mapping are ignored.
+        copy : bool (optional, default=True)
+            If True return a copy, or if False relabel the nodes in place.
+
+        Returns
+        -------
+        G : instance of causal DAG
+            A copy (if copy is True) of the relabeled graph.
+        """
+        if copy is True:
+            new_graph = self.copy()
+        else:
+            new_graph = self
+
+        graphs = []
+        for graph in self._graphs:
+            graph = nx.relabel_nodes(graph, mapping, copy=copy)
+            graphs.append(graph)
+        new_graph._graphs = graphs
+        return new_graph
 
 
 class GraphSampleMixin:
@@ -457,9 +503,6 @@ class ExportMixin:
         if format == "dot":
             G = self.to_networkx()
             nx.nx_agraph.write_dot(G, fname)
-            # str_dot_graph = self.to_dot_graph()[:-1]
-            # graph = pydot.graph_from_dot_data(str_dot_graph)[0]
-            # graph.write_dot(fname, encoding="utf-8")
         elif format == "networkx-gml":
             G = self.to_networkx()
             nx.write_gml(G, fname)

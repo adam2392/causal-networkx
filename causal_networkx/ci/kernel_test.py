@@ -3,8 +3,10 @@ from scipy import stats
 from sklearn.metrics import pairwise_distances, pairwise_kernels
 from sklearn.metrics.pairwise import PAIRWISE_KERNEL_FUNCTIONS
 
+from .base import BaseConditionalIndependenceTest
 
-class KernelCITest:
+
+class KernelCITest(BaseConditionalIndependenceTest):
     def __init__(
         self,
         kernel_x: str = "rbf",
@@ -17,7 +19,7 @@ class KernelCITest:
         kwidth_z=None,
         threshold: float = 1e-5,
         n_jobs: int = None,
-    ) -> None:
+    ):
         """Kernel (Conditional) Independence Test.
 
         For testing (conditional) independence on continuous data, we
@@ -90,7 +92,16 @@ class KernelCITest:
         self.kwidth_y = kwidth_y
         self.kwidth_z = kwidth_z
 
-    def test(self, X, Y, Z=None):
+    def test(self, df, x_var, y_var, z_covariates=None):
+        self._check_test_input(df, x_var, y_var, z_covariates)
+        if z_covariates is None or len(z_covariates) == 0:
+            Z = None
+        else:
+            z_covariates = list(z_covariates)
+            Z = df[z_covariates].to_numpy().reshape((-1, len(z_covariates)))
+        X = df[x_var].to_numpy()[:, np.newaxis]
+        Y = df[y_var].to_numpy()[:, np.newaxis]
+
         # first normalize the data to have zero mean and unit variance
         # along the columns of the data
         X = stats.zscore(X, axis=0)

@@ -1,12 +1,13 @@
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Set
 
 import networkx as nx
 
 from ..config import EdgeType
+from .base import MarkovianGraph
 from .mixins import AddingEdgeMixin, ExportMixin, GraphSampleMixin, NetworkXMixin
 
 
-class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
+class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, MarkovianGraph):
     """Causal directed acyclic graph.
 
     This is a causal Bayesian network, or a Bayesian network
@@ -40,6 +41,7 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
     _graph_names: List[str]
     _current_hash: Optional[int]
     _full_graph: Optional[nx.DiGraph]
+    _cond_set: Set
 
     def __init__(self, incoming_graph_data=None, **attr) -> None:
         # create the DAG of observed variables
@@ -62,6 +64,10 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
             for node in graph.nodes:
                 if node not in self:
                     self.dag.add_node(node)
+
+        # the conditioning set used in d-separation
+        # keep track of variables that are always conditioned on
+        self._cond_set = set()
 
     def _init_graphs(self):
         """Private function to initialize graphs.
@@ -193,10 +199,10 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
         graph : ADMG
             The mixed-edge causal graph that results.
         """
-        from causal_networkx.graphs.cgm import ADMG
+        from causal_networkx import ADMG
 
         bidirected_edges = []
-        new_graph = ADMG()
+        new_parent_ch_edges = []
 
         for node in nodes:
             # check if the node is a common cause
@@ -209,13 +215,61 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin):
 
             # keep track of which nodes to form c-components over
             successor_nodes = self.successors(node)
-            for succ in successor_nodes:
-                bidirected_edges.append((node, succ))
+            for idx, succ in enumerate(successor_nodes):
+                # TODO: do we want this?; add parent -> successor edges
+                # if there are parents to this node, they must now point to all the successors
+                for parent in self.parents(node):
+                    new_parent_ch_edges.append((parent, succ))
+
+                # form a c-component among the successors
+                if idx == 0:
+                    prev_succ = succ
+                    continue
+                bidirected_edges.append((prev_succ, succ))
+                prev_succ = succ
 
         # create the graph with nodes excluding those that are converted to latent confounders
-        new_graph = ADMG(self.dag)
+        new_graph = ADMG(self.dag.copy())
         new_graph.remove_nodes_from(nodes)
 
         # create the c-component structures
         new_graph.add_bidirected_edges_from(bidirected_edges)
+
+        new_graph.add_edges_from(new_parent_ch_edges)
         return new_graph
+
+    def markov_blanket_of(self, node) -> Set:
+        """Compute the markov blanket of a node.
+
+        Parameters
+        ----------
+        node : node
+            The node to compute Markov blanket for.
+
+        Returns
+        -------
+        markov_blanket : set
+            A set of parents, children and spouses of the node.
+        """
+        parents = set(self.parents(node))
+        children = set(self.children(node))
+        spouses = set(self.spouses(node))
+        markov_blanket = parents.union(children).union(spouses)
+
+        # make sure Markov blanket does not contain itself
+        markov_blanket.discard(node)
+        return markov_blanket
+
+    def spouses(self, node) -> Set:
+        """Get other parents of the children of a node (spouses)."""
+        children = set(self.children(node))
+        spouses: Set = set()
+        for child in children:
+            spouses = spouses.union(set(self.parents(child)))
+        spouses.discard(node)
+        return spouses
+
+    def compute_full_graph(self, to_networkx: bool = False):
+        if to_networkx:
+            return nx.DiGraph(self.dag)  # type: ignore
+        return self.dag

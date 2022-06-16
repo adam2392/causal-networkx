@@ -1,6 +1,6 @@
 from typing import Iterator
 
-from causal_networkx.graphs.cgm import ADMG
+from causal_networkx import ADMG
 
 
 def find_cliques(G: ADMG, nodes=None) -> Iterator:

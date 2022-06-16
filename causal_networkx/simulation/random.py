@@ -2,7 +2,7 @@ import math
 
 import pandas as pd
 
-from causal_networkx.graphs.cgm import DAG
+from causal_networkx import DAG
 
 ALLOWED_FUNCTIONS = ["linear", "quadratic", "cubic", "tanh", "sin", "cos"]
 

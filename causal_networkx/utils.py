@@ -1,13 +1,26 @@
 import random
-from typing import Callable
+from functools import partial
 
 import networkx as nx
 
-from causal_networkx.graphs.cgm import ADMG, PAG
+from causal_networkx import ADMG, PAG
 
 
-def _check_ci_estimator(ci_estimator: Callable):
-    pass
+def requires_module(function, name, call=None):
+    """Skip a test if package is not available (decorator)."""
+    import pytest
+
+    call = ("import %s" % name) if call is None else call
+    reason = "Test %s skipped, requires %s." % (function.__name__, name)
+    try:
+        exec(call) in globals(), locals()
+    except Exception as exc:
+        if len(str(exc)) > 0 and str(exc) != "No module named %s" % name:
+            reason += " Got exception (%s)" % (exc,)
+        skip = True
+    else:
+        skip = False
+    return pytest.mark.skipif(skip, reason=reason)(function)
 
 
 def _sample_cg(
@@ -74,6 +87,11 @@ def _sample_cg(
         #         done = False
 
     return cg
+
+
+def requires_pydot():
+    """Wrap to requires_module with a function call (fewer lines to change)."""
+    return partial(requires_module, name="pydot")
 
 
 def convert_latent_to_unobserved_confounders(G: ADMG) -> ADMG:
@@ -176,7 +194,7 @@ def _integrate_circle_endpoints_to_graph(G: PAG):
     return G_copy, required_conditioning_set
 
 
-# TODO: integrat into causal graph
+# TODO: integrate into causal graph
 def convert_selection_vars_to_common_effects(G: ADMG) -> nx.DiGraph:
     """Convert all undirected edges to unobserved common effects.
 

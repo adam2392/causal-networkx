@@ -1,21 +1,22 @@
 import logging
 from collections import defaultdict
 from itertools import combinations, permutations
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 
+from causal_networkx import PAG
 from causal_networkx.algorithms.pag import possibly_d_sep_sets
-from causal_networkx.graphs.cgm import PAG
+from causal_networkx.ci import BaseConditionalIndependenceTest
 
 logger = logging.getLogger()
 
 
 def learn_skeleton_graph_with_pdsep(
     X: pd.DataFrame,
-    ci_estimator: Callable,
+    ci_estimator: BaseConditionalIndependenceTest,
     adj_graph: Optional[nx.Graph] = None,
     sep_set: Optional[Dict[str, Dict[str, Set]]] = None,
     fixed_edges: Optional[Set] = None,
@@ -110,7 +111,7 @@ def learn_skeleton_graph_with_pdsep(
                 # loop through all possible conditioning sets of certain size
                 for cond_set in combinations(sep_nodes, size_cond_set):
                     # compute conditional independence test
-                    _, pvalue = ci_estimator(X, i, j, set(cond_set), **ci_estimator_kwargs)
+                    _, pvalue = ci_estimator.test(X, i, j, set(cond_set), **ci_estimator_kwargs)
 
                     # two variables found to be independent given a separating set
                     if pvalue > alpha:
@@ -136,7 +137,7 @@ def learn_skeleton_graph_with_pdsep(
 
 def learn_skeleton_graph_with_neighbors(
     X: pd.DataFrame,
-    ci_estimator: Callable,
+    ci_estimator: BaseConditionalIndependenceTest,
     adj_graph: Optional[nx.Graph] = None,
     sep_set: Optional[Dict[str, Dict[str, Set]]] = None,
     fixed_edges: Set = None,
@@ -235,7 +236,7 @@ def learn_skeleton_graph_with_neighbors(
                 # loop through all possible conditioning sets of certain size
                 for cond_set in combinations(sep_nodes, size_cond_set):
                     # compute conditional independence test
-                    _, pvalue = ci_estimator(X, i, j, set(cond_set), **ci_estimator_kwargs)
+                    _, pvalue = ci_estimator.test(X, i, j, set(cond_set), **ci_estimator_kwargs)
 
                     # two variables found to be independent given a separating set
                     if pvalue > alpha:
@@ -265,7 +266,7 @@ def learn_skeleton_graph_with_neighbors(
 
 def learn_skeleton_graph_with_order(
     X: pd.DataFrame,
-    ci_estimator: Callable,
+    ci_estimator: BaseConditionalIndependenceTest,
     adj_graph: nx.Graph = None,
     sep_set: Dict[str, Dict[str, Set]] = None,
     fixed_edges: Set = None,
@@ -413,6 +414,13 @@ def learn_skeleton_graph_with_order(
 
     mci_set: Union[Set[Any], str]
 
+    logger.info(
+        f"\n\nRunning skeleton phase with: \n"
+        f"max_combinations: {max_combinations},\n"
+        f"min_cond_set_size: {min_cond_set_size},\n"
+        f"max_cond_set_size: {max_cond_set_size},\n"
+    )
+
     # loop through every node
     for i in nodes:
         possible_adjacencies = adjacency_mapping[i]
@@ -426,15 +434,21 @@ def learn_skeleton_graph_with_order(
             possible_conds_x = list(parent_dep_dict[i].keys())  # type: ignore
             conds_x = set(possible_conds_x[:max_conds_x])
 
+        logger.info("\n\n")
+        logger.info(f"On node {i}:")
+
         # the total number of conditioning set variables
         total_num_vars = len(possible_adjacencies)
+        logger.debug(f"{total_num_vars}")
+
         for size_cond_set in range(min_cond_set_size, total_num_vars):
             remove_edges = []
 
+            logger.debug(f"{len(possible_adjacencies) - 1} and {size_cond_set}")
             # if the number of adjacencies is the size of the conditioning set
             # exit the loop and increase the size of the conditioning set
             if len(possible_adjacencies) - 1 < size_cond_set:
-                break
+                continue
 
             # only allow conditioning set sizes up to maximum set number
             if size_cond_set > max_cond_set_size:
@@ -464,6 +478,7 @@ def learn_skeleton_graph_with_order(
                 else:
                     mci_inclusion_set = set()
 
+                # whether to only condition using the MCI set
                 if not only_mci:
                     conditioning_sets = _iter_conditioning_set(
                         possible_adjacencies,
@@ -484,11 +499,14 @@ def learn_skeleton_graph_with_order(
                         break
 
                     # compute conditional independence test
-                    test_stat, pvalue = ci_estimator(X, i, j, set(cond_set), **ci_estimator_kwargs)
+                    test_stat, pvalue = ci_estimator.test(
+                        X, i, j, set(cond_set), **ci_estimator_kwargs
+                    )
 
                     # keep track of the smallest test statistic, meaning the highest pvalue
                     # meaning the "most" independent
-                    if np.abs(test_stat) < test_stat_dict[i].get(j, np.inf):
+                    if np.abs(test_stat) <= test_stat_dict[i].get(j, np.inf):
+                        logger.debug(f"Adding {j} to possible adjacency of node {i}")
                         test_stat_dict[i][j] = np.abs(test_stat)
 
                     # keep track of the maximum pvalue as well
@@ -502,6 +520,7 @@ def learn_skeleton_graph_with_order(
                         logger.info(f"{conds_x}, {conds_y}")
                     else:
                         mci_set = "No MCI"
+
                     if pvalue > alpha:
                         logger.info(
                             f"Removing edge {i}-{j} conditioned on {cond_set}: "
@@ -521,7 +540,7 @@ def learn_skeleton_graph_with_order(
 
             # finally remove edges after performing
             # conditional independence tests
-            logger.info(f"Removed all edges with p = {size_cond_set}")
+            logger.info(f"For p = {size_cond_set}, removing all edges: {remove_edges}")
             adj_graph.remove_edges_from(remove_edges)
 
             # also remove them from the parent dict mapping
@@ -543,6 +562,7 @@ def learn_skeleton_graph_with_order(
                 # Therefore test statistic values are sorted in descending order.
                 possible_adjacencies = sorted(abs_values, key=abs_values.get, reverse=True)  # type: ignore
             else:
+                logger.debug(f"{node} - {possible_adjacencies}, {list(abs_values.keys())}")
                 possible_adjacencies = list(abs_values.keys())
 
     return adj_graph, sep_set, test_stat_dict, pvalue_dict

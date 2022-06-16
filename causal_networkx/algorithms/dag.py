@@ -1,9 +1,12 @@
+from itertools import combinations
+from typing import Set, Tuple
+
 from networkx.algorithms import (
     is_directed_acyclic_graph as nx_is_directed_acyclic_graph,
 )
 from networkx.algorithms import topological_sort as nx_topological_sort
 
-from causal_networkx.graphs.cgm import ADMG
+from causal_networkx import ADMG, DAG
 
 
 def is_directed_acyclic_graph(G):
@@ -11,12 +14,13 @@ def is_directed_acyclic_graph(G):
 
     Parameters
     ----------
-    G : ADMG
+    G : instance of DAG
+        The causal graph.
 
     Returns
     -------
-    bool
-        True if ``G`` is a DAG, False otherwise
+    is_dag : bool
+        True if ``G`` is a DAG, False otherwise.
 
     Examples
     --------
@@ -67,8 +71,28 @@ def topological_sort(G: ADMG):
     --------
     networkx.algorithms.dag.topological_sort
     """
-    assert isinstance(G, ADMG)
-
     # topological sorting only occurs from the directed edges,
     # not bi-directed edges
     return nx_topological_sort(G.dag)
+
+
+def compute_v_structures(graph: DAG) -> Set[Tuple]:
+    """Iterate through the graph to compute all v-structures.
+
+    Parameters
+    ----------
+    graph : instance of DAG
+        A causal graph.
+
+    Returns
+    -------
+    vstructs : Set[Tuple]
+        The v structures within the graph.
+    """
+    vstructs: Set[Tuple] = set()
+    for node in graph.nodes:
+        for p1, p2 in combinations(set(graph.parents(node)).union(graph.spouses(node)), 2):
+            if not graph.has_adjacency(p1, p2):
+                p1_, p2_ = sorted((p1, p2))
+                vstructs.add((p1_, node, p2_))
+    return vstructs
