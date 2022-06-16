@@ -28,7 +28,7 @@ def graph_to_pred_vector(graph, as_adjacency: bool = True):
     """
     # convert graphs to adjacency graph in networkx
     if isinstance(graph, BaseGraph):
-        graph = graph.to_adjacency_graph()
+        graph = graph.to_adjacency_graph()  # type: ignore
 
     # next convert into 2D numpy array format
     adj_mat = nx.to_numpy_array(graph)
