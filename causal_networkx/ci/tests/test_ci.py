@@ -7,7 +7,7 @@ from causal_networkx.ci import (
     GSquareCITest,
     KernelCITest,
     Oracle,
-    ParentOracle,
+    ParentChildOracle,
     PartialCorrelation,
 )
 
@@ -40,7 +40,7 @@ ground_truth_graph = scm.get_causal_graph()
         FisherZCITest(),
         PartialCorrelation(),
         Oracle(ground_truth_graph),
-        ParentOracle(ground_truth_graph),
+        ParentChildOracle(ground_truth_graph),
     ],
 )
 def test_ci_tests(ci_estimator):

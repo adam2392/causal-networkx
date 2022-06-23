@@ -76,8 +76,6 @@ class FCI(ConstraintDiscovery):
             See :footcite:`Zhang2008`.
         max_path_length : int, optional
             The maximum length of any discriminating path, or None if unlimited.
-        augmented : bool
-            Whether or not to run the augmented version of FCI. See :footcite:`Zhang2008`.
         ci_estimator_kwargs : dict
             Keyword arguments for the ``ci_estimator`` function.
 
@@ -107,7 +105,6 @@ class FCI(ConstraintDiscovery):
             max_path_length = np.inf
         self.max_path_length = max_path_length
         self.selection_bias = selection_bias
-        self.augmented = augmented
         self.max_iter = max_iter
 
     def _orient_colliders(self, graph: PAG, sep_set: Dict[str, Dict[str, Set]]):
@@ -662,8 +659,13 @@ class FCI(ConstraintDiscovery):
         sep_set : Dict[str, Dict[str, Set]]
             The separating set.
         """
-        # initialize the graph
-        graph, sep_set, fixed_edges = self._initialize_graph(X)
+        nodes = X.columns.values
+
+        # initialize graph object to apply learning
+        graph, sep_set = self._initialize_graph(nodes)
+
+        # initialize fixed edge constraints
+        fixed_edges = self._initialize_fixed_constraints(nodes)
 
         # learn the initial skeleton of the graph
         skel_graph, sep_set, test_stat_dict, pvalue_dict = super().learn_skeleton(

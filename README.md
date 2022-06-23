@@ -51,3 +51,9 @@ If you already have a working installation of numpy, scipy and networkx, the eas
 To install the package from github, clone the repository and then `cd` into the directory:
 
     pip install -e .
+
+# Current Limitations and Current Roadmap
+
+Currently, selection bias representation is not implemented in the graphs and corresponding algorithms. However, I believe it is technically feasible based on the design of how we use networkx.
+
+The roadmap currently is to integrate the next phases of causal ID, estimation, refutation and experimental design with the py-why organization and its package "dowhy".

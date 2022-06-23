@@ -241,6 +241,14 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
     def markov_blanket_of(self, node) -> Set:
         """Compute the markov blanket of a node.
 
+        When computing the Markov blanket for an ADMG, we can use the definition
+        presented in :footcite:`pearl2014confounding`, where the Markov blanket
+        is a subset, ``S`` of variables in the graph, where a subset, ``S'`` is
+        called a Markov blanket if it satisfies the condition:
+
+        .. math::
+            X \perp S | S'
+
         Parameters
         ----------
         node : node
@@ -250,7 +258,14 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         -------
         markov_blanket : set
             A set of parents, children and spouses of the node.
+
+        References
+        ----------
+        .. footbibliography::
         """
+        # TODO: make it work for ADMGs
+        if not isinstance(self, DAG):
+            raise RuntimeError(f"{self} must be a DAG right now.")
         parents = set(self.parents(node))
         children = set(self.children(node))
         spouses = set(self.spouses(node))
