@@ -71,7 +71,7 @@ def test_structure_hamming_dist():
     shd = structure_hamming_dist(G, test_G, double_for_anticausal=False)
     assert shd == 1.0
 
-    # anticausal direction shouldnt matter
+    # anticausal direction shouldn't matter
     shd = structure_hamming_dist(G, test_G, double_for_anticausal=True)
     assert shd == 1.0
 

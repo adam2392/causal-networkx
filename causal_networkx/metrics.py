@@ -47,7 +47,7 @@ def graph_to_pred_vector(graph, as_adjacency: bool = True):
         adj_mat = adj_mat > 0
         y_vec = LabelBinarizer().fit_transform(adj_mat.flatten()).squeeze()
     else:
-        raise RuntimeError("Doesnt work yet...")
+        raise RuntimeError("Doesn't work yet...")
         out = np.ones(adj_mat.shape, dtype=bool)
         out[tril_idx] = False
         out[triu_idx] = False

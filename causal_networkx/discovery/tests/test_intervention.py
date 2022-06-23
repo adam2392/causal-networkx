@@ -6,7 +6,7 @@ from causal_networkx.ci import Oracle
 from causal_networkx.discovery import PsiFCI
 
 
-@pytest.mark.skip(reason="Doesnt work yet")
+@pytest.mark.skip(reason="Doesn't work yet")
 def test_psifci_oracle():
     """Test the Psi-FCI algorithm with an Oracle.
 
