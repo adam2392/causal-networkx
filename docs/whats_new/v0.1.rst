@@ -37,6 +37,7 @@ Changelog
 - |Feature| Add ability to export/load causal graphs to numpy and pgmpy, by `Adam Li`_ (:gh:`26`)
 - |Feature| Add ability to compare causal graphs, (i.e. CPDAGs and PAGs) for evaluation of structure learning, by `Adam Li`_ (:gh:`26`)
 - |API| All CI tests now have an abstract class representation for the ``test`` function, by `Adam Li`_ (:gh:`26`)
+- |API| Refactor the skeleton learning phase of the constraint-based causal discovery into a class of its own, by `Adam Li`_ (:gh:``)
 
 Code and Documentation Contributors
 -----------------------------------
