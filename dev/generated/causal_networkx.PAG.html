@@ -43,6 +43,8 @@
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -448,8 +450,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="causal_networkx.ci.ParentOracle.html">
-   causal_networkx.ci.ParentOracle
+  <a class="reference internal" href="causal_networkx.ci.ParentChildOracle.html">
+   causal_networkx.ci.ParentChildOracle
   </a>
  </li>
 </ul>
@@ -728,23 +730,29 @@ edges have different semantics. See more in <a class="reference internal" href="
 <tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.PAG.all_edges" title="causal_networkx.PAG.all_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">all_edges</span></code></a>()</p></td>
 <td><p>Get dictionary of all the edges by edge type.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.PAG.children" title="causal_networkx.PAG.children"><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code></a>(n)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.PAG.ancestors" title="causal_networkx.PAG.ancestors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ancestors</span></code></a>(source)</p></td>
+<td><p>Ancestors of 'source' node with directed path.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.PAG.children" title="causal_networkx.PAG.children"><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code></a>(n)</p></td>
 <td><p>Return the definite children of node 'n' in a PAG.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.PAG.clear" title="causal_networkx.PAG.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.PAG.clear" title="causal_networkx.PAG.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a>()</p></td>
 <td><p>Remove all nodes and edges in graphs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.PAG.clear_edges" title="causal_networkx.PAG.clear_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_edges</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.PAG.clear_edges" title="causal_networkx.PAG.clear_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_edges</span></code></a>()</p></td>
 <td><p>Remove all edges from causal graph without removing nodes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.PAG.compute_full_graph" title="causal_networkx.PAG.compute_full_graph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_full_graph</span></code></a>([to_networkx])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.PAG.compute_full_graph" title="causal_networkx.PAG.compute_full_graph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_full_graph</span></code></a>([to_networkx])</p></td>
 <td><p>Compute the full graph from a PAG.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.PAG.copy" title="causal_networkx.PAG.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.PAG.copy" title="causal_networkx.PAG.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
 <td><p>Return a copy of the causal graph.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.PAG.degree" title="causal_networkx.PAG.degree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">degree</span></code></a>(n)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.PAG.degree" title="causal_networkx.PAG.degree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">degree</span></code></a>(n)</p></td>
 <td><p>Compute the degree of the DiGraph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.PAG.descendants" title="causal_networkx.PAG.descendants"><code class="xref py py-obj docutils literal notranslate"><span class="pre">descendants</span></code></a>(source)</p></td>
+<td><p>Descendants of 'source' node with directed path.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.PAG.do" title="causal_networkx.PAG.do"><code class="xref py py-obj docutils literal notranslate"><span class="pre">do</span></code></a>(nodes)</p></td>
 <td><p>Apply a do-intervention on nodes to causal graph.</p></td>
@@ -1072,6 +1080,12 @@ will be updated when each duplicate edge is added.</p>
 <dd><p>Get dictionary of all the edges by edge type.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.PAG.ancestors">
+<span class="sig-name descname"><span class="pre">ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.PAG.ancestors" title="Permalink to this definition">#</a></dt>
+<dd><p>Ancestors of ‘source’ node with directed path.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="causal_networkx.PAG.bidirected_edges">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bidirected_edges</span></span><a class="headerlink" href="#causal_networkx.PAG.bidirected_edges" title="Permalink to this definition">#</a></dt>
@@ -1184,6 +1198,12 @@ preserve our notion of m-separation in PAGs.</p>
 <dt class="sig sig-object py" id="causal_networkx.PAG.degree">
 <span class="sig-name descname"><span class="pre">degree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.PAG.degree" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the degree of the DiGraph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="causal_networkx.PAG.descendants">
+<span class="sig-name descname"><span class="pre">descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.PAG.descendants" title="Permalink to this definition">#</a></dt>
+<dd><p>Descendants of ‘source’ node with directed path.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1389,6 +1409,12 @@ preserve our notion of m-separation in PAGs.</p>
 <dt class="sig sig-object py" id="causal_networkx.PAG.markov_blanket_of">
 <span class="sig-name descname"><span class="pre">markov_blanket_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.PAG.markov_blanket_of" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the markov blanket of a node.</p>
+<p>When computing the Markov blanket for an ADMG, we can use the definition
+presented in <a class="footnote-reference brackets" href="#footcite-pearl2014confounding" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, where the Markov blanket
+is a subset, <code class="docutils literal notranslate"><span class="pre">S</span></code> of variables in the graph, where a subset, <code class="docutils literal notranslate"><span class="pre">S'</span></code> is
+called a Markov blanket if it satisfies the condition:</p>
+<div class="math notranslate nohighlight">
+\[X \perp S | S'\]</div>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>node</strong> : node</p>
@@ -1401,9 +1427,18 @@ preserve our notion of m-separation in PAGs.</p>
 <blockquote>
 <div><p>A set of parents, children and spouses of the node.</p>
 </div></blockquote>
-<dl>
-<dt><strong>:rtype:</strong><span class="classifier">py:class:<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Set</span></code></a></span></dt><dd></dd>
+</dd>
 </dl>
+<p class="rubric">References</p>
+<div class="docutils container" id="id2">
+<aside class="footnote brackets" id="footcite-pearl2014confounding" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Judea Pearl and Azaria Paz. Confounding equivalence in causal inference. <em>Journal of Causal Inference</em>, 2(1):75–93, 2014.</p>
+</aside>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1927,16 +1962,16 @@ for our numpy array representation.</p>
 
 <section id="examples-using-causal-networkx-pag">
 <h2>Examples using <code class="docutils literal notranslate"><span class="pre">causal_networkx.PAG</span></code><a class="headerlink" href="#examples-using-causal-networkx-pag" title="Permalink to this heading">#</a></h2>
-<div class="sphx-glr-thumbcontainer" tooltip="Causal graphs are graphical objects that attach causal notions to each edge and missing edge. W..."><figure class="align-default" id="id1">
+<div class="sphx-glr-thumbcontainer" tooltip="Causal graphs are graphical objects that attach causal notions to each edge and missing edge. W..."><figure class="align-default" id="id3">
 <img alt="An introduction to causal graphs and how to use them" src="../_images/sphx_glr_intro_causal_graphs_thumb.png" />
 <figcaption>
-<p><span class="caption-text"><a class="reference internal" href="../auto_examples/intro_causal_graphs.html#sphx-glr-auto-examples-intro-causal-graphs-py"><span class="std std-ref">An introduction to causal graphs and how to use them</span></a></span><a class="headerlink" href="#id1" title="Permalink to this image">#</a></p>
+<p><span class="caption-text"><a class="reference internal" href="../auto_examples/intro_causal_graphs.html#sphx-glr-auto-examples-intro-causal-graphs-py"><span class="std std-ref">An introduction to causal graphs and how to use them</span></a></span><a class="headerlink" href="#id3" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
-</div><div class="sphx-glr-thumbcontainer" tooltip="We will simulate some observational data and demonstrate how we will use the FCI algorithm."><figure class="align-default" id="id2">
+</div><div class="sphx-glr-thumbcontainer" tooltip="We will simulate some observational data and demonstrate how we will use the FCI algorithm."><figure class="align-default" id="id4">
 <img alt="Fast Causal Inference (FCI) for causal discovery from observational data" src="../_images/sphx_glr_fci_for_causal_discovery_thumb.png" />
 <figcaption>
-<p><span class="caption-text"><a class="reference internal" href="../auto_examples/fci_for_causal_discovery.html#sphx-glr-auto-examples-fci-for-causal-discovery-py"><span class="std std-ref">Fast Causal Inference (FCI) for causal discovery from observational data</span></a></span><a class="headerlink" href="#id2" title="Permalink to this image">#</a></p>
+<p><span class="caption-text"><a class="reference internal" href="../auto_examples/fci_for_causal_discovery.html#sphx-glr-auto-examples-fci-for-causal-discovery-py"><span class="std std-ref">Fast Causal Inference (FCI) for causal discovery from observational data</span></a></span><a class="headerlink" href="#id4" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
 </div></section>
@@ -1987,7 +2022,7 @@ for our numpy array representation.</p>
   
   <div class="footer-item">
     <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br>
 </p>
   </div>
   

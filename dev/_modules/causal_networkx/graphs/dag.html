@@ -447,6 +447,14 @@
 <div class="viewcode-block" id="DAG.markov_blanket_of"><a class="viewcode-back" href="../../../generated/causal_networkx.graphs.dag.DAG.markov_blanket_of.html#causal_networkx.DAG.markov_blanket_of">[docs]</a>    <span class="k">def</span> <span class="nf">markov_blanket_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Compute the markov blanket of a node.</span>
 
+<span class="sd">        When computing the Markov blanket for an ADMG, we can use the definition</span>
+<span class="sd">        presented in :footcite:`pearl2014confounding`, where the Markov blanket</span>
+<span class="sd">        is a subset, ``S`` of variables in the graph, where a subset, ``S&#39;`` is</span>
+<span class="sd">        called a Markov blanket if it satisfies the condition:</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            X \perp S | S&#39;</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        node : node</span>
@@ -456,7 +464,14 @@
 <span class="sd">        -------</span>
 <span class="sd">        markov_blanket : set</span>
 <span class="sd">            A set of parents, children and spouses of the node.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. footbibliography::</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: make it work for ADMGs</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">DAG</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2"> must be a DAG right now.&quot;</span><span class="p">)</span>
         <span class="n">parents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
         <span class="n">children</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
         <span class="n">spouses</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spouses</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
@@ -511,7 +526,7 @@
   
   <div class="footer-item">
     <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br>
 </p>
   </div>
   

@@ -448,8 +448,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="causal_networkx.ci.ParentOracle.html">
-   causal_networkx.ci.ParentOracle
+  <a class="reference internal" href="causal_networkx.ci.ParentChildOracle.html">
+   causal_networkx.ci.ParentChildOracle
   </a>
  </li>
 </ul>
@@ -598,13 +598,13 @@
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.discovery.FCI.fit" title="causal_networkx.discovery.FCI.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>(X)</p></td>
-<td><p>Fit algorithm on dataset 'X'.</p></td>
+<td><p>Fit constraint-based discovery algorithm on dataset 'X'.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#causal_networkx.discovery.FCI.learn_skeleton" title="causal_networkx.discovery.FCI.learn_skeleton"><code class="xref py py-obj docutils literal notranslate"><span class="pre">learn_skeleton</span></code></a>(X[, graph, sep_set, fixed_edges])</p></td>
 <td><p>Learn skeleton from data.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#causal_networkx.discovery.FCI.test_edge" title="causal_networkx.discovery.FCI.test_edge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_edge</span></code></a>(data, X, Y[, Z])</p></td>
-<td><p>Test any specific edge</p></td>
+<td><p>Test any specific edge for X || Y | Z.</p></td>
 </tr>
 </tbody>
 </table>
@@ -621,7 +621,25 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="causal_networkx.discovery.FCI.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.discovery.FCI.fit" title="Permalink to this definition">#</a></dt>
-<dd><p>Fit algorithm on dataset ‘X’.</p>
+<dd><p>Fit constraint-based discovery algorithm on dataset ‘X’.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> : <code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.5.0.dev0+1016.g27135a5ea2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></a>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">Set</span></code>, <a class="reference external" href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.5.0.dev0+1016.g27135a5ea2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></a>]]</p>
+<blockquote>
+<div><p>Either a pandas dataframe constituting the endogenous (observed) variables
+as columns and samples as rows, or a dictionary of different sampled distributions
+with keys as the distribution names and values as the dataset as a pandas dataframe.</p>
+</div></blockquote>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<blockquote>
+<div><p>If ‘X’ is a dictionary, then all datasets should have the same set of column names (nodes).</p>
+</div></blockquote>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Control over the constraints imposed by the algorithm can be passed into the class constructor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
@@ -635,7 +653,7 @@
 <dd><p>Learn skeleton from data.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>X</strong> : <a class="reference external" href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.5.0.dev0+974.g111bcbb7d5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></a></p>
+<dd class="field-odd"><p><strong>X</strong> : <a class="reference external" href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.5.0.dev0+1016.g27135a5ea2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></a></p>
 <blockquote>
 <div><p>Dataset.</p>
 </div></blockquote>
@@ -672,18 +690,18 @@ relationships.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="causal_networkx.discovery.FCI.test_edge">
 <span class="sig-name descname"><span class="pre">test_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#causal_networkx.discovery.FCI.test_edge" title="Permalink to this definition">#</a></dt>
-<dd><p>Test any specific edge</p>
+<dd><p>Test any specific edge for X || Y | Z.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> : <a class="reference external" href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.5.0.dev0+974.g111bcbb7d5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></a></p>
+<dd class="field-odd"><p><strong>data</strong> : <a class="reference external" href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.5.0.dev0+1016.g27135a5ea2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></a></p>
 <blockquote>
 <div><p>The dataset</p>
 </div></blockquote>
-<p><strong>X</strong> : <a class="reference external" href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.columns.html#pandas.DataFrame.columns" title="(in pandas v1.5.0.dev0+974.g111bcbb7d5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a></p>
+<p><strong>X</strong> : <a class="reference external" href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.columns.html#pandas.DataFrame.columns" title="(in pandas v1.5.0.dev0+1016.g27135a5ea2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a></p>
 <blockquote>
 <div><p>A column in <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
 </div></blockquote>
-<p><strong>Y</strong> : <a class="reference external" href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.columns.html#pandas.DataFrame.columns" title="(in pandas v1.5.0.dev0+974.g111bcbb7d5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a></p>
+<p><strong>Y</strong> : <a class="reference external" href="https://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.columns.html#pandas.DataFrame.columns" title="(in pandas v1.5.0.dev0+1016.g27135a5ea2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a></p>
 <blockquote>
 <div><p>A column in <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
 </div></blockquote>
@@ -763,7 +781,7 @@ relationships.</p>
   
   <div class="footer-item">
     <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br>
 </p>
   </div>
   

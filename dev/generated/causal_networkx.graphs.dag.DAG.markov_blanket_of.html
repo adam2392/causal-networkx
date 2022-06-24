@@ -43,6 +43,8 @@
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -448,8 +450,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="causal_networkx.ci.ParentOracle.html">
-   causal_networkx.ci.ParentOracle
+  <a class="reference internal" href="causal_networkx.ci.ParentChildOracle.html">
+   causal_networkx.ci.ParentChildOracle
   </a>
  </li>
 </ul>
@@ -580,6 +582,12 @@
 <dt class="sig sig-object py" id="causal_networkx.graphs.dag.DAG.markov_blanket_of">
 <span class="sig-prename descclassname"><span class="pre">DAG.</span></span><span class="sig-name descname"><span class="pre">markov_blanket_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/causal_networkx/graphs/dag.html#DAG.markov_blanket_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#causal_networkx.graphs.dag.DAG.markov_blanket_of" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the markov blanket of a node.</p>
+<p>When computing the Markov blanket for an ADMG, we can use the definition
+presented in <a class="footnote-reference brackets" href="#footcite-pearl2014confounding" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, where the Markov blanket
+is a subset, <code class="docutils literal notranslate"><span class="pre">S</span></code> of variables in the graph, where a subset, <code class="docutils literal notranslate"><span class="pre">S'</span></code> is
+called a Markov blanket if it satisfies the condition:</p>
+<div class="math notranslate nohighlight">
+\[X \perp S | S'\]</div>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>node</strong> : node</p>
@@ -592,9 +600,18 @@
 <blockquote>
 <div><p>A set of parents, children and spouses of the node.</p>
 </div></blockquote>
-<dl>
-<dt><strong>:rtype:</strong><span class="classifier">py:class:<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Set</span></code></a></span></dt><dd></dd>
+</dd>
 </dl>
+<p class="rubric">References</p>
+<div class="docutils container" id="id2">
+<aside class="footnote brackets" id="footcite-pearl2014confounding" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Judea Pearl and Azaria Paz. Confounding equivalence in causal inference. <em>Journal of Causal Inference</em>, 2(1):75–93, 2014.</p>
+</aside>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -646,7 +663,7 @@
   
   <div class="footer-item">
     <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br>
 </p>
   </div>
   

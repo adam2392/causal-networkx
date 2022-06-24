@@ -282,8 +282,6 @@
 <span class="sd">            See :footcite:`Zhang2008`.</span>
 <span class="sd">        max_path_length : int, optional</span>
 <span class="sd">            The maximum length of any discriminating path, or None if unlimited.</span>
-<span class="sd">        augmented : bool</span>
-<span class="sd">            Whether or not to run the augmented version of FCI. See :footcite:`Zhang2008`.</span>
 <span class="sd">        ci_estimator_kwargs : dict</span>
 <span class="sd">            Keyword arguments for the ``ci_estimator`` function.</span>
 
@@ -313,7 +311,6 @@
             <span class="n">max_path_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_path_length</span> <span class="o">=</span> <span class="n">max_path_length</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">selection_bias</span> <span class="o">=</span> <span class="n">selection_bias</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">augmented</span> <span class="o">=</span> <span class="n">augmented</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span> <span class="o">=</span> <span class="n">max_iter</span>
 
     <span class="k">def</span> <span class="nf">_orient_colliders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">PAG</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">]]):</span>
@@ -868,8 +865,13 @@
 <span class="sd">        sep_set : Dict[str, Dict[str, Set]]</span>
 <span class="sd">            The separating set.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># initialize the graph</span>
-        <span class="n">graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">,</span> <span class="n">fixed_edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_graph</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="c1"># initialize graph object to apply learning</span>
+        <span class="n">graph</span><span class="p">,</span> <span class="n">sep_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_graph</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+
+        <span class="c1"># initialize fixed edge constraints</span>
+        <span class="n">fixed_edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_fixed_constraints</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
 
         <span class="c1"># learn the initial skeleton of the graph</span>
         <span class="n">skel_graph</span><span class="p">,</span> <span class="n">sep_set</span><span class="p">,</span> <span class="n">test_stat_dict</span><span class="p">,</span> <span class="n">pvalue_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">learn_skeleton</span><span class="p">(</span>
@@ -936,7 +938,7 @@
   
   <div class="footer-item">
     <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br>
 </p>
   </div>
   

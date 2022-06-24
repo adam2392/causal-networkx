@@ -270,25 +270,22 @@
         <span class="k">return</span> <span class="n">test_stat</span><span class="p">,</span> <span class="n">pvalue</span></div></div>
 
 
-<div class="viewcode-block" id="ParentOracle"><a class="viewcode-back" href="../../../generated/causal_networkx.ci.ParentOracle.html#causal_networkx.ci.ParentOracle">[docs]</a><span class="k">class</span> <span class="nc">ParentOracle</span><span class="p">(</span><span class="n">Oracle</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parent oracle for conditional independence testing.</span>
+<div class="viewcode-block" id="ParentChildOracle"><a class="viewcode-back" href="../../../generated/causal_networkx.ci.ParentChildOracle.html#causal_networkx.ci.ParentChildOracle">[docs]</a><span class="k">class</span> <span class="nc">ParentChildOracle</span><span class="p">(</span><span class="n">Oracle</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parent and children oracle for conditional independence testing.</span>
 
-<span class="sd">    An oracle that knows the definite parents of every node.</span>
+<span class="sd">    An oracle that knows the definite parents and children of every node.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ADMG</span><span class="p">,</span> <span class="n">DAG</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
-
-<div class="viewcode-block" id="ParentOracle.get_parents"><a class="viewcode-back" href="../../../generated/causal_networkx.ci.ParentOracle.html#causal_networkx.ci.ParentOracle.get_parents">[docs]</a>    <span class="k">def</span> <span class="nf">get_parents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the definite parents of node &#39;x&#39;.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">predecessors</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="ParentOracle.get_children"><a class="viewcode-back" href="../../../generated/causal_networkx.ci.ParentOracle.html#causal_networkx.ci.ParentOracle.get_children">[docs]</a>    <span class="k">def</span> <span class="nf">get_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="ParentChildOracle.get_children"><a class="viewcode-back" href="../../../generated/causal_networkx.ci.ParentChildOracle.html#causal_networkx.ci.ParentChildOracle.get_children">[docs]</a>    <span class="k">def</span> <span class="nf">get_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the definite children of node &#39;x&#39;.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParentChildOracle.get_parents"><a class="viewcode-back" href="../../../generated/causal_networkx.ci.ParentChildOracle.html#causal_networkx.ci.ParentChildOracle.get_parents">[docs]</a>    <span class="k">def</span> <span class="nf">get_parents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the definite parents of node &#39;x&#39;.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">predecessors</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">MarkovBlanketOracle</span><span class="p">(</span><span class="n">ParentOracle</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MarkovBlanketOracle</span><span class="p">(</span><span class="n">ParentChildOracle</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;MB oracle for conditional independence testing.</span>
 
 <span class="sd">    An oracle that knows the definite Markov Blanket of every node.</span>
@@ -300,6 +297,13 @@
     <span class="k">def</span> <span class="nf">get_markov_blanket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the markov blanket of node &#39;x&#39;.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">markov_blanket_of</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">AncestralOracle</span><span class="p">(</span><span class="n">ParentChildOracle</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Oracle with access to ancestors of any specific node.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">get_ancestors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">ancestors</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </pre></div>
 
               </article>
@@ -332,7 +336,7 @@
   
   <div class="footer-item">
     <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.1.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br>
 </p>
   </div>
   

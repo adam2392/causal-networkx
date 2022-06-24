@@ -243,7 +243,7 @@ in the graph. These unobserved confounders are graphically depicted with a bidir
  .. code-block:: none
 
     ['x', 'z']
-    The ADMG has c-components: [{'x', 'y'}]
+    The ADMG has c-components: [{'y', 'x'}]
     'z' is d-separated from 'x': True
     'z' is d-separated from 'x' given 'y': False
     'z' is d-separated from 'x': False
@@ -342,7 +342,7 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  1.212 seconds)
+   **Total running time of the script:** ( 0 minutes  1.067 seconds)
 
 
 .. _sphx_glr_download_auto_examples_intro_causal_graphs.py:
