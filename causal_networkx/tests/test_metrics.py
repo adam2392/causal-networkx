@@ -29,6 +29,19 @@ def test_graph_to_pred_vector():
     pred_vec = graph_to_pred_vector(G)
     assert_array_equal(pred_vec, np.array([1, 1, 0]))
 
+    # test what happens if we re-order
+    nodes = [1, 2, 0]
+    edges = [(0, 1)]
+    G = DAG()
+    G.add_nodes_from(nodes)
+    G.add_edges_from(edges)
+    pred_vec = graph_to_pred_vector(G, sort_first=False)
+    assert_array_equal(pred_vec, np.array([0, 1, 0]))
+
+    # if we sort, then it should match exactly the earlier answer
+    pred_vec = graph_to_pred_vector(G, sort_first=True)
+    assert_array_equal(pred_vec, np.array([1, 0, 0]))
+
     # TODO: make it work
     # if we want to output to a prediction vector accounting for edge direction
     # pred_vec = graph_to_pred_vector(G)

@@ -285,14 +285,14 @@ class ConstraintDiscovery:
         to determine which variables are (in)dependent. This specific algorithm
         compares exhaustively pairs of adjacent variables.
         """
-        from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_order
+        from causal_networkx.discovery.skeleton import (
+            LearnSkeleton,
+        )
 
         if fixed_edges is None:
             fixed_edges = set()
 
-        # perform pairwise tests to learn skeleton
-        skel_graph, sep_set, test_stat_dict, pvalue_dict = learn_skeleton_graph_with_order(  # type: ignore
-            X,
+        skel_alg = LearnSkeleton(
             self.ci_estimator,
             adj_graph=graph,
             sep_set=sep_set,
@@ -304,5 +304,26 @@ class ConstraintDiscovery:
             keep_sorted=False,
             **self.ci_estimator_kwargs,
         )
+        skel_alg.fit(X)
+
+        skel_graph = skel_alg.adj_graph_
+        sep_set = skel_alg.sep_set_
+        test_stat_dict = skel_alg.test_stat_dict_
+        pvalue_dict = skel_alg.pvalue_dict_
+
+        # perform pairwise tests to learn skeleton
+        # skel_graph, sep_set, test_stat_dict, pvalue_dict = learn_skeleton_graph_with_order(  # type: ignore
+        #     X,
+        #     self.ci_estimator,
+        #     adj_graph=graph,
+        #     sep_set=sep_set,
+        #     fixed_edges=fixed_edges,
+        #     alpha=self.alpha,
+        #     min_cond_set_size=self.min_cond_set_size,
+        #     max_cond_set_size=self.max_cond_set_size,
+        #     max_combinations=self.max_combinations,
+        #     keep_sorted=False,
+        #     **self.ci_estimator_kwargs,
+        # )
 
         return skel_graph, sep_set, test_stat_dict, pvalue_dict

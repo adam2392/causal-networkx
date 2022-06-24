@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from itertools import combinations, permutations
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 import networkx as nx
 import numpy as np
@@ -12,6 +12,437 @@ from causal_networkx.algorithms.pag import possibly_d_sep_sets
 from causal_networkx.ci import BaseConditionalIndependenceTest
 
 logger = logging.getLogger()
+
+
+class LearnSkeleton:
+    """Learn a skeleton graph from data.
+
+    Proceed by testing neighboring nodes, while keeping track of test
+    statistic values (these are the ones that are
+    the "most dependent"). Remember we are testing the null hypothesis
+
+    .. math::
+        H_0:\ X \\perp Y | Z
+
+    where the alternative hypothesis is that they are dependent and hence
+    require a causal edge linking the two variables.
+
+    Parameters
+    ----------
+    ci_estimator : Callable
+        The conditional independence test function. The arguments of the estimator should
+        be data, node, node to compare, conditioning set of nodes, and any additional
+        keyword arguments.
+    adj_graph : networkx.Graph, optional
+        The initialized graph. Can be for example a complete graph.
+        If ``None``, then a complete graph will be initialized.
+    sep_set : dictionary of dictionary of sets
+        Mapping node to other nodes to separating sets of variables.
+        If ``None``, then an empty dictionary of dictionary of sets
+        will be initialized.
+    fixed_edges : set
+        The set of fixed edges.
+    alpha : float, optional
+        The significance level for the conditional independence test, by default 0.05.
+    min_cond_set_size : int
+        The minimum size of the conditioning set, by default 0. The number of variables
+        used in the conditioning set.
+    max_cond_set_size : int, optional
+        Maximum size of the conditioning set, by default None. Used to limit
+        the computation spent on the algorithm.
+    max_combinations : int,optional
+        Maximum number of tries with a conditioning set chosen from the set of possible
+        parents still, by default None. If None, then will not be used. If set, then
+        the conditioning set will be chosen lexographically based on the sorted
+        test statistic values of 'ith Pa(X) -> X', for each possible parent node of 'X'.
+    keep_sorted : bool
+        Whether or not to keep the considered adjacencies in sorted dependency order.
+        If True (default) will sort the existing adjacencies of each variable by its
+        dependencies from strongest to weakest (i.e. largest CI test statistic value to lowest).
+    with_mci : bool
+        Whether or not to run the MCI conditioning phase. By default False.
+    max_conds_x : int
+        If ``with_mci=True``, then this controls the number of conditioning variables
+        from the MCI set of variable 'x'.
+    max_conds_y : int
+        If ``with_mci=True``, then this controls the number of conditioning variables
+        from the MCI set of variable 'y'.
+    parent_dep_dict : Dict[str, Dict[str, float]]
+        The dependency dictionary from variables to their proposed parents.
+    size_inclusive : bool
+        Whether to include the MCI conditioning set in the ``cond_set_size`` count for
+        the overall conditioning set.
+    ci_estimator_kwargs : dict
+        Keyword arguments for the ``ci_estimator`` function.
+
+    Attributes
+    ----------
+    adj_graph_ : nx.Graph
+        The discovered graph from data. Stored using an undirected
+        graph.
+    sep_set_ : dictionary of dictionary of sets
+        Mapping node to other nodes to separating sets of variables.
+    test_stat_dict_ : dictionary of dictionary of float
+        Mapping the candidate parent-child edge to the smallest absolute value
+        test statistic seen in testing 'x' || 'y' given some conditioning set.
+    pvalue_dict_ : dictionary of dictionary of float
+        Mapping the candidate parent-child edge to the largest pvalue
+        seen in testing 'x' || 'y' given some conditioning set.
+    stat_min_dict_ : dictionary of dictionary of float
+        Mapping the candidate parent-child edge to the smallest test statistic
+        seen in testing 'x' || 'y' given some conditioning set.
+
+    See Also
+    --------
+    causal_networkx.algorithms.possibly_d_sep_sets
+
+    Notes
+    -----
+    This algorithm consists of four loops through the data:
+
+    - loop through nodes of the graph
+    - loop through size of the conditioning set, p
+    - loop through current adjacencies
+    - loop through combinations of the conditioning set of size p
+
+    At each iteration, the maximum pvalue is stored for existing
+    dependencies among variables (i.e. any two nodes with an edge still).
+    The ``keep_sorted`` hyperparameter keeps the considered parents in
+    a sorted order. The ``max_combinations`` parameter allows one to
+    limit the fourth loop through combinations of the conditioning set.
+
+    The iteration through combination of the conditioning set only
+    considers adjacencies of the existing variables.
+    """
+
+    def __init__(
+        self,
+        ci_estimator: BaseConditionalIndependenceTest,
+        adj_graph: nx.Graph = None,
+        sep_set: Dict[str, Dict[str, Set]] = None,
+        fixed_edges: Set = None,
+        alpha: float = 0.05,
+        min_cond_set_size: int = 0,
+        max_cond_set_size: int = None,
+        max_combinations: int = None,
+        keep_sorted: bool = True,
+        with_mci: bool = False,
+        max_conds_x: int = None,
+        max_conds_y: int = None,
+        parent_dep_dict: Dict[str, Dict[str, float]] = None,
+        size_inclusive: bool = False,
+        only_mci: bool = False,
+        **ci_estimator_kwargs,
+    ) -> None:
+        self.ci_estimator = ci_estimator
+        self.adj_graph = adj_graph
+        self.sep_set = sep_set
+        self.fixed_edges = fixed_edges
+        self.alpha = alpha
+        self.ci_estimator_kwargs = ci_estimator_kwargs
+
+        # control of the conditioning set
+        self.min_cond_set_size = min_cond_set_size
+        self.max_cond_set_size = max_cond_set_size
+        self.max_combinations = max_combinations
+
+        # for tracking strength of dependencies
+        self.keep_sorted = keep_sorted
+        self.parent_dep_dict = parent_dep_dict
+
+        # control of the optional MCI conditioning
+        self.with_mci = with_mci
+        self.max_conds_x = max_conds_x
+        self.max_conds_y = max_conds_y
+        self.size_inclusive = size_inclusive
+        self.only_mci = only_mci
+
+    def _initialize_params(self, nodes):
+        # error checks of passed in arguments
+        if self.with_mci and self.parent_dep_dict is None:
+            raise RuntimeError(
+                "Cannot run skeleton discovery with MCI if "
+                "parent dependency dictionary (parent_dep_dict) is not passed."
+            )
+        if self.max_combinations is not None and self.max_combinations <= 0:
+            raise RuntimeError(f"Max combinations must be at least 1, not {self.max_combinations}")
+
+        # set default values
+        if self.adj_graph is None:
+            self.adj_graph_ = nx.complete_graph(nodes, create_using=nx.Graph)
+        else:
+            self.adj_graph_ = self.adj_graph
+        if self.fixed_edges is None:
+            self.fixed_edges_ = set()
+        else:
+            self.fixed_edges_ = self.fixed_edges
+        if self.sep_set is None:
+            # keep track of separating sets
+            self.sep_set_ = defaultdict(lambda: defaultdict(set))
+        else:
+            self.sep_set_ = self.sep_set
+
+        # control of the conditioning set
+        if self.max_cond_set_size is None:
+            self.max_cond_set_size_ = np.inf
+        else:
+            self.max_cond_set_size_ = self.max_cond_set_size
+        if self.min_cond_set_size is None:
+            self.min_cond_set_size_ = 0
+        else:
+            self.min_cond_set_size_ = self.min_cond_set_size
+        if self.max_combinations is None:
+            self.max_combinations_ = np.inf
+        else:
+            self.max_combinations_ = self.max_combinations
+
+        # control of the optional MCI conditioning
+        if self.max_conds_x is None:
+            self.max_conds_x_ = np.inf
+        else:
+            self.max_conds_x_ = self.max_conds_x
+        if self.max_conds_y is None:
+            self.max_conds_y_ = np.inf
+        else:
+            self.max_conds_y_ = self.max_conds_y
+
+        # parameters to track progress of the algorithm
+        self.remove_edges_ = set()
+
+    def fit(self, X: Union[Dict[Any, pd.DataFrame], pd.DataFrame]):
+        """_summary_
+
+        Parameters
+        ----------
+        X : pandas.DataFrame
+            A dataframe consisting of nodes as columns
+            and samples as rows.
+        """
+        # perform error-checking and extract node names
+        if isinstance(X, dict):
+            # the data passed in are instances of multiple distributions
+            for idx, (_, X_dataset) in enumerate(X.items()):
+                if idx == 0:
+                    check_nodes = X_dataset.columns
+                nodes = X_dataset.columns
+                if not check_nodes.equals(nodes):
+                    raise RuntimeError(
+                        "All dataset distributions should have the same node names in their columns."
+                    )
+
+            # convert final series of nodes to a list
+            nodes = nodes.values
+        else:
+            nodes = X.columns.values
+
+        # initialize learning parameters
+        self._initialize_params(nodes)
+        adj_graph = self.adj_graph_
+
+        # store the absolute value of test-statistic values for every single
+        # candidate parent-child edge (X -> Y)
+        self.test_stat_dict_: Dict[Any, Dict[Any, float]] = {x_var: dict() for x_var in nodes}
+        self.pvalue_dict_: Dict[Any, Dict[Any, float]] = {x_var: dict() for x_var in nodes}
+
+        # store the actual minimum test-statistic value for every
+        # single candidate parent-child edge
+        self.stat_min_dict_: Dict[Any, Dict[Any, float]] = {x_var: dict() for x_var in nodes}
+
+        # store the list of potential adjacencies for every node
+        # which is tracked and updated in the algorithm
+        adjacency_mapping: Dict[Any, List] = dict()
+        for node in nodes:
+            adjacency_mapping[node] = [
+                other_node for other_node in adj_graph.neighbors(node) if other_node != node
+            ]
+
+        logger.info(
+            f"\n\nRunning skeleton phase with: \n"
+            f"max_combinations: {self.max_combinations_},\n"
+            f"min_cond_set_size: {self.min_cond_set_size_},\n"
+            f"max_cond_set_size: {self.max_cond_set_size_},\n"
+        )
+
+        # loop through every node
+        for x_var in nodes:
+            possible_adjacencies = adjacency_mapping[x_var]
+
+            # the total number of conditioning set variables
+            total_num_vars = len(possible_adjacencies)
+            logger.info(f"\n\nOn node {x_var}:")
+            logger.debug(f"{total_num_vars}")
+
+            for size_cond_set in range(self.min_cond_set_size_, total_num_vars):
+                self.remove_edges_ = set()
+
+                logger.debug(f"{len(possible_adjacencies) - 1} and {size_cond_set}")
+                # if the number of adjacencies is the size of the conditioning set
+                # exit the loop and increase the size of the conditioning set
+                if len(possible_adjacencies) - 1 < size_cond_set:
+                    continue
+
+                # only allow conditioning set sizes up to maximum set number
+                if size_cond_set > self.max_cond_set_size_:
+                    break
+
+                for y_var in possible_adjacencies:
+                    # a node cannot be a parent to itself in DAGs
+                    if y_var == x_var:
+                        continue
+
+                    # ignore fixed edges
+                    if (x_var, y_var) in self.fixed_edges_:
+                        continue
+
+                    # get the additional conditioning set if MCI
+                    if self.with_mci:
+                        mci_inclusion_set = self._compute_mci_set(
+                            x_var, y_var, parent_dep_dict=self.parent_dep_dict
+                        )
+                    else:
+                        mci_inclusion_set = set()
+
+                    # whether to only condition using the MCI set
+                    if self.only_mci:
+                        conditioning_sets = combinations(mci_inclusion_set, size_cond_set)
+                    else:
+                        conditioning_sets = _iter_conditioning_set(
+                            possible_variables=possible_adjacencies,
+                            x_var=x_var,
+                            y_var=y_var,
+                            size_cond_set=size_cond_set,
+                            mci_inclusion_set=mci_inclusion_set,
+                            size_inclusive=self.size_inclusive,
+                        )
+
+                    # now iterate through the possible parents
+                    # f(possible_adjacencies, size_cond_set, j)
+                    for comb_idx, cond_set in enumerate(conditioning_sets):
+                        # check the number of combinations of possible parents we have tried
+                        # to use as a separating set
+                        if (
+                            self.max_combinations_ is not None
+                            and comb_idx >= self.max_combinations_
+                        ):
+                            break
+
+                        # compute conditional independence test
+                        removed_edge, pvalue = self._compute_ci_test(X, x_var, y_var, cond_set)
+
+                        # exit loop if we have found an independency and removed the edge
+                        if removed_edge:
+                            logger.info(
+                                f"Removing edge {x_var}-{y_var} conditioned on {cond_set}: "
+                                f"MCI={mci_inclusion_set}, "
+                                f"alpha={self.alpha}, pvalue={pvalue}"
+                            )
+                            break
+                        else:
+                            logger.info(
+                                f"Did not remove edge {x_var}-{y_var} conditioned on {cond_set}: "
+                                f"MCI={mci_inclusion_set}, "
+                                f"alpha={self.alpha}, pvalue={pvalue}"
+                            )
+                        # re-run edges using MCI condition
+                        # mci_size = len(mci_set)
+                        # for p_size in range(mci_size):
+                        #     test_stats, pvalues = _rerun_ci_tests_with_mci(
+                        #         X, i, j, cond_set, ci_estimator, mci_set, p_size, **ci_estimator_kwargs)
+
+                        # apply correction to the pvalues
+
+                # finally remove edges after performing
+                # conditional independence tests
+                logger.info(f"For p = {size_cond_set}, removing all edges: {self.remove_edges_}")
+                adj_graph.remove_edges_from(self.remove_edges_)
+
+                # also remove them from the parent dict mapping
+                adjacency_mapping[node] = list(adj_graph.neighbors(node))
+
+                # Remove non-significant links from the test statistic and pvalue dict
+                for _, parent in self.remove_edges_:
+                    self.test_stat_dict_[x_var].pop(parent)
+                    self.pvalue_dict_[x_var].pop(parent)
+
+                # variable mapping to its adjacencies and absolute value of their current dependencies
+                # assuming there is still an edge (if the pvalue rejected the null hypothesis)
+                abs_values = {
+                    k: np.abs(self.test_stat_dict_[x_var][k])
+                    for k in list(self.test_stat_dict_[x_var])
+                }
+
+                if self.keep_sorted:
+                    # sort the parents and re-assign possible parents based on this
+                    # ordering, which is used in the next loop for a conditioning set size.
+                    # Pvalues are sorted in ascending order, so that means most dependent to least dependent
+                    # Therefore test statistic values are sorted in descending order.
+                    possible_adjacencies = sorted(abs_values, key=abs_values.get, reverse=True)  # type: ignore
+                else:
+                    logger.debug(f"{node} - {possible_adjacencies}, {list(abs_values.keys())}")
+                    possible_adjacencies = list(abs_values.keys())
+
+        self.adj_graph_ = adj_graph
+
+    def _compute_mci_set(
+        self, x_var, y_var, parent_dep_dict: Dict[str, Dict[str, float]]
+    ) -> Set[Any]:
+        """Compute the MCI conditioning set.
+
+        Parameters
+        ----------
+        x_var : node
+            The node name for 'x'.
+        y_var : node
+            The node name for 'y'.
+        parent_dep_dict : Dict[str, Dict[str, float]]
+            The dependency dictionary from variables to their proposed parents.
+
+        Returns
+        -------
+        mci_set : Set[Any]
+            The MCI conditioning set that does not include 'x', or 'y'.
+        """
+        mci_set: Set[Any]
+
+        # get the additional conditioning set if MCI
+        possible_conds_x = list(parent_dep_dict[x_var].keys())  # type: ignore
+        conds_x = set(possible_conds_x[: self.max_conds_x_])
+        possible_conds_y = list(parent_dep_dict[y_var].keys())  # type: ignore
+        conds_y = set(possible_conds_y[: self.max_conds_y_])
+
+        # make sure X and Y are not in the additional conditionals
+        mci_set = conds_x.union(conds_y)
+
+        if x_var in mci_set:
+            mci_set.remove(x_var)
+        if y_var in mci_set:
+            mci_set.remove(y_var)
+        return mci_set
+
+    def _compute_ci_test(self, X, x_var, y_var, cond_set) -> Tuple[bool, float]:
+        # compute conditional independence test
+        test_stat, pvalue = self.ci_estimator.test(
+            X, x_var, y_var, set(cond_set), **self.ci_estimator_kwargs
+        )
+        # keep track of the smallest test statistic, meaning the highest pvalue
+        # meaning the "most" independent
+        if np.abs(test_stat) <= self.test_stat_dict_[x_var].get(y_var, np.inf):
+            logger.debug(f"Adding {y_var} to possible adjacency of node {x_var}")
+            self.test_stat_dict_[x_var][y_var] = np.abs(test_stat)
+
+        # keep track of the maximum pvalue as well
+        if pvalue > self.pvalue_dict_[x_var].get(y_var, 0.0):
+            self.pvalue_dict_[x_var][y_var] = pvalue
+            self.stat_min_dict_[x_var][y_var] = test_stat
+
+        # two variables found to be independent given a separating set
+        if pvalue > self.alpha:
+            self.remove_edges_.add((x_var, y_var))
+            self.sep_set_[x_var][y_var] |= set(cond_set)
+            self.sep_set_[y_var][x_var] |= set(cond_set)
+            return True, pvalue
+
+        return False, pvalue
 
 
 def learn_skeleton_graph_with_pdsep(
@@ -484,8 +915,9 @@ def learn_skeleton_graph_with_order(
                 else:
                     conditioning_sets = _iter_conditioning_set(
                         possible_adjacencies,
-                        size_cond_set,
-                        exclude_var=j,
+                        x_var=i,
+                        y_var=j,
+                        size_cond_set=size_cond_set,
                         mci_inclusion_set=mci_inclusion_set,
                         size_inclusive=size_inclusive,
                     )
@@ -597,24 +1029,28 @@ def _rerun_ci_tests_with_mci(
 
 
 def _iter_conditioning_set(
-    possible_adjacencies,
-    size_cond_set,
-    exclude_var,
-    mci_inclusion_set={},
+    possible_variables: Iterable,
+    x_var,
+    y_var,
+    size_cond_set: int,
+    mci_inclusion_set: Set = {},
     size_inclusive: bool = True,
 ):
     """Iterate function to generate the conditioning set.
 
     Parameters
     ----------
-    possible_adjacencies : dict
-        A dictionary of possible adjacencies.
+    possible_variables : iterable
+        A set/list/dict of possible variables to consider for the conditioning set.
+        This can be for example, the current adjacencies.
+    x_var : node
+        The node for the 'x' variable.
+    y_var : node
+        The node for the 'y' variable.
     size_cond_set : int
         The size of the conditioning set to consider. If there are
         less adjacent variables than this number, then all variables will be in the
         conditioning set.
-    exclude_var : set
-        The set of variables to exclude from conditioning.
     mci_inclusion_set : set, optional
         Definite set of variables to include for conditioning, by default None.
     size_incluseive : bool
@@ -629,8 +1065,10 @@ def _iter_conditioning_set(
     Z : set
         The set of variables for the conditioning set.
     """
+    exclusion_set = {x_var, y_var}
+
     all_adj_excl_current = [
-        p for p in possible_adjacencies if p != exclude_var and p not in mci_inclusion_set
+        p for p in possible_variables if p not in exclusion_set and p not in mci_inclusion_set
     ]
 
     # set the conditioning size to be the passed in size minus the MCI set if we are inclusive
