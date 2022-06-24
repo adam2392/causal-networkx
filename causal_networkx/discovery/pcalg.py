@@ -306,6 +306,7 @@ class RobustPC(PC):
         partial_knowledge: object = None,
         only_mci: bool = False,
         use_children: bool = False,
+        use_parents: bool = True,  # TODO: remove cuz temporary
         skip_first_stage: bool = False,
         **ci_estimator_kwargs,
     ):
@@ -332,6 +333,19 @@ class RobustPC(PC):
 
         self.use_children = use_children
         self.skip_first_stage = skip_first_stage
+        self.use_parents = use_parents
+
+    def _learn_first_phase(self, X, graph, sep_set, fixed_edges):
+        # learn skeleton using original PC algorithm
+        graph, sep_set, test_stat_dict, pvalue_dict = super().learn_skeleton(
+            X, graph, sep_set, fixed_edges
+        )
+        # convert graph to a CPDAG
+        graph = self.convert_skeleton_graph(graph)
+        # orient the edges of the skeleton graph to build up a set of
+        # "definite" parents
+        graph = self.orient_edges(graph, sep_set)
+        return graph, sep_set, test_stat_dict, pvalue_dict
 
     def learn_skeleton(
         self,
@@ -355,17 +369,13 @@ class RobustPC(PC):
             sep_set = defaultdict(lambda: defaultdict(set))
         orig_graph = graph.copy()
         orig_sep_set = sep_set.copy()
+        test_stat_dict = dict()
+        pvalue_dict = dict()
 
         if not self.skip_first_stage:
-            # learn skeleton using original PC algorithm
-            graph, sep_set, test_stat_dict, pvalue_dict = super().learn_skeleton(
+            graph, sep_set, test_stat_dict, pvalue_dict = self._learn_first_phase(
                 X, graph, sep_set, fixed_edges
             )
-            # convert graph to a CPDAG
-            graph = self.convert_skeleton_graph(graph)
-            # orient the edges of the skeleton graph to build up a set of
-            # "definite" parents
-            graph = self.orient_edges(graph, sep_set)
 
         # store the estimated "definite" parents/children for each node
         def_parent_dict = dict()
@@ -387,8 +397,8 @@ class RobustPC(PC):
                     test_stat_dict[node] = {_node: np.inf for _node in children}
         else:
             # use the estimated parents/children
-            def_parent_dict = self._get_definite_parents(graph)
-            def_children_dict = self._get_definite_children(graph)
+            def_parent_dict = self._estimate_definite_parents(graph)
+            def_children_dict = self._estimate_definite_children(graph)
 
             # use definite parents to filter the dependencies in the test statistics / pvalue
             # removing them from the possible adjacency list
@@ -400,7 +410,9 @@ class RobustPC(PC):
                 for adj_node in possible_parents:
                     # now remove any adjacent nodes from consideration if they
                     # are not part of parent set
-                    check_condition = adj_node not in parents
+                    check_condition = True
+                    if self.use_parents:
+                        check_condition = adj_node not in parents
 
                     # optionally, also include children
                     if self.use_children:
@@ -436,7 +448,7 @@ class RobustPC(PC):
         )
         return skel_graph, sep_set, test_stat_dict, pvalue_dict
 
-    def _get_definite_parents(self, graph: CPDAG):
+    def _estimate_definite_parents(self, graph: CPDAG):
         def_parent_dict = dict()
 
         for node in graph.nodes:
@@ -445,7 +457,7 @@ class RobustPC(PC):
 
         return def_parent_dict
 
-    def _get_definite_children(self, graph: CPDAG):
+    def _estimate_definite_children(self, graph: CPDAG):
         def_children_dict = dict()
 
         for node in graph.nodes:

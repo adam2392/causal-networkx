@@ -77,7 +77,7 @@ variable and then ``sep_set`` is the conditioning set of variables.
    KernelCITest
    PartialCorrelation
    Oracle
-   ParentOracle
+   ParentChildOracle
 
 
 IO for reading/writing causal graphs

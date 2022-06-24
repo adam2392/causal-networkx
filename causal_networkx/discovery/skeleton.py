@@ -479,7 +479,9 @@ def learn_skeleton_graph_with_order(
                     mci_inclusion_set = set()
 
                 # whether to only condition using the MCI set
-                if not only_mci:
+                if only_mci:
+                    conditioning_sets = combinations(mci_inclusion_set, size_cond_set)
+                else:
                     conditioning_sets = _iter_conditioning_set(
                         possible_adjacencies,
                         size_cond_set,
@@ -487,8 +489,6 @@ def learn_skeleton_graph_with_order(
                         mci_inclusion_set=mci_inclusion_set,
                         size_inclusive=size_inclusive,
                     )
-                else:
-                    conditioning_sets = combinations(mci_inclusion_set, size_cond_set)
 
                 # now iterate through the possible parents
                 # f(possible_adjacencies, size_cond_set, j)
@@ -538,6 +538,14 @@ def learn_skeleton_graph_with_order(
                             f"alpha={alpha}, pvalue={pvalue}"
                         )
 
+                    # re-run edges using MCI condition
+                    # mci_size = len(mci_set)
+                    # for p_size in range(mci_size):
+                    #     test_stats, pvalues = _rerun_ci_tests_with_mci(
+                    #         X, i, j, cond_set, ci_estimator, mci_set, p_size, **ci_estimator_kwargs)
+
+                    # apply correction to the pvalues
+
             # finally remove edges after performing
             # conditional independence tests
             logger.info(f"For p = {size_cond_set}, removing all edges: {remove_edges}")
@@ -566,6 +574,26 @@ def learn_skeleton_graph_with_order(
                 possible_adjacencies = list(abs_values.keys())
 
     return adj_graph, sep_set, test_stat_dict, pvalue_dict
+
+
+def _rerun_ci_tests_with_mci(
+    data, x_var, y_var, z_covariates, ci_estimator, mci_set, size_mci, **ci_estimator_kwargs
+):
+    z_covariates = set(z_covariates)
+
+    # keep track of all pvalues
+    pvalues = []
+    test_stats = []
+    for cond_aug_set in combinations(mci_set, size_mci):
+        # augment the conditioning set
+        cond_set = z_covariates.union(cond_aug_set)
+
+        # compute conditional independence test
+        test_stat, pvalue = ci_estimator.test(data, x_var, y_var, cond_set, **ci_estimator_kwargs)
+        pvalues.append(pvalue)
+        test_stats.append(test_stat)
+
+    return test_stats, pvalues
 
 
 def _iter_conditioning_set(

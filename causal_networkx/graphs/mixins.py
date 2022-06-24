@@ -36,6 +36,14 @@ class NetworkXMixin(Protocol):
         """Set the name of the graph."""
         self.dag.name = s
 
+    def ancestors(self, source):
+        """Ancestors of 'source' node with directed path."""
+        return nx.ancestors(self.dag, source)
+
+    def descendants(self, source):
+        """Descendants of 'source' node with directed path."""
+        return nx.descendants(self.dag, source)
+
     def predecessors(self, u):
         """Return predecessors of node u.
 

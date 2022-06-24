@@ -93,8 +93,22 @@ class ConstraintDiscovery:
         self.separating_sets_ = None
         self.graph_ = None
 
-    def _initialize_graph(self, X: pd.DataFrame):
-        nodes = X.columns.values
+    def _initialize_fixed_constraints(self, nodes):
+        # check on fixed edges and keep track
+        fixed_edges = set()
+        if self.fixed_edges is not None:
+            if not np.array_equal(self.fixed_edges.nodes, nodes):
+                raise ValueError(
+                    f"The nodes within the fixed-edges graph, {self.fixed_edges.nodes}, "
+                    f"do not match the nodes in the passed in data, {nodes}."
+                )
+
+            for (i, j) in self.fixed_edges.edges:
+                fixed_edges.add((i, j))
+                fixed_edges.add((j, i))
+        return fixed_edges
+
+    def _initialize_graph(self, nodes):
 
         # keep track of separating sets
         sep_set: Dict[str, Dict[str, Set]] = defaultdict(lambda: defaultdict(set))
@@ -118,19 +132,7 @@ class ConstraintDiscovery:
                     sep_set[node_i][node_j] = set()
                     sep_set[node_j][node_i] = set()
 
-        # check on fixed edges and keep track
-        fixed_edges = set()
-        if self.fixed_edges is not None:
-            if not np.array_equal(self.fixed_edges.nodes, nodes):
-                raise ValueError(
-                    f"The nodes within the fixed-edges graph, {self.fixed_edges.nodes}, "
-                    f"do not match the nodes in the passed in data, {nodes}."
-                )
-
-            for (i, j) in self.fixed_edges.edges:
-                fixed_edges.add((i, j))
-                fixed_edges.add((j, i))
-        return graph, sep_set, fixed_edges
+        return graph, sep_set
 
     def orient_edges(self, graph: Any, sep_set: Dict[str, Dict[str, Set]]) -> Any:
         raise NotImplementedError(
@@ -147,10 +149,47 @@ class ConstraintDiscovery:
             "the skeleton graph to a causal graph."
         )
 
-    def fit(self, X: pd.DataFrame) -> None:
-        """Fit algorithm on dataset 'X'."""
-        # initialize graph
-        graph, sep_set, fixed_edges = self._initialize_graph(X)
+    def fit(self, X: Union[pd.DataFrame, Dict[Set, pd.DataFrame]]) -> None:
+        """Fit constraint-based discovery algorithm on dataset 'X'.
+
+        Parameters
+        ----------
+        X : Union[pd.DataFrame, Dict[Set, pd.DataFrame]]
+            Either a pandas dataframe constituting the endogenous (observed) variables
+            as columns and samples as rows, or a dictionary of different sampled distributions
+            with keys as the distribution names and values as the dataset as a pandas dataframe.
+
+        Raises
+        ------
+        RuntimeError
+            If 'X' is a dictionary, then all datasets should have the same set of column names (nodes).
+
+        Notes
+        -----
+        Control over the constraints imposed by the algorithm can be passed into the class constructor.
+        """
+        # perform error-checking and extract node names
+        if isinstance(X, dict):
+            # the data passed in are instances of multiple distributions
+            for idx, (_, X_dataset) in enumerate(X.items()):
+                if idx == 0:
+                    check_nodes = X_dataset.columns
+                nodes = X_dataset.columns
+                if not check_nodes.equals(nodes):
+                    raise RuntimeError(
+                        "All dataset distributions should have the same node names in their columns."
+                    )
+
+            # convert final series of nodes to a list
+            nodes = nodes.values
+        else:
+            nodes = X.columns.values
+
+        # initialize graph object to apply learning
+        graph, sep_set = self._initialize_graph(nodes)
+
+        # initialize fixed edge constraints
+        fixed_edges = self._initialize_fixed_constraints(nodes)
 
         # learn skeleton graph and the separating sets per variable
         graph, sep_set, _, _ = self.learn_skeleton(X, graph, sep_set, fixed_edges)
@@ -167,7 +206,7 @@ class ConstraintDiscovery:
         self.graph_ = graph
 
     def test_edge(self, data, X, Y, Z=None):
-        """Test any specific edge
+        """Test any specific edge for X || Y | Z.
 
         Parameters
         ----------

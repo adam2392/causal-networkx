@@ -64,25 +64,22 @@ class Oracle(BaseConditionalIndependenceTest):
         return test_stat, pvalue
 
 
-class ParentOracle(Oracle):
-    """Parent oracle for conditional independence testing.
+class ParentChildOracle(Oracle):
+    """Parent and children oracle for conditional independence testing.
 
-    An oracle that knows the definite parents of every node.
+    An oracle that knows the definite parents and children of every node.
     """
-
-    def __init__(self, graph: Union[ADMG, DAG]) -> None:
-        super().__init__(graph)
-
-    def get_parents(self, x):
-        """Return the definite parents of node 'x'."""
-        return self.graph.predecessors(x)
 
     def get_children(self, x):
         """Return the definite children of node 'x'."""
         return self.graph.successors(x)
 
+    def get_parents(self, x):
+        """Return the definite parents of node 'x'."""
+        return self.graph.predecessors(x)
 
-class MarkovBlanketOracle(ParentOracle):
+
+class MarkovBlanketOracle(ParentChildOracle):
     """MB oracle for conditional independence testing.
 
     An oracle that knows the definite Markov Blanket of every node.
@@ -94,3 +91,10 @@ class MarkovBlanketOracle(ParentOracle):
     def get_markov_blanket(self, x):
         """Return the markov blanket of node 'x'."""
         return self.graph.markov_blanket_of(x)
+
+
+class AncestralOracle(ParentChildOracle):
+    """Oracle with access to ancestors of any specific node."""
+
+    def get_ancestors(self, x):
+        return self.graph.ancestors(x)
