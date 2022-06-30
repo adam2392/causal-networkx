@@ -6,7 +6,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from causal_networkx import ADMG
+from causal_networkx import ADMG, PAG
 from causal_networkx.ci.base import BaseConditionalIndependenceTest
 
 
@@ -42,6 +42,14 @@ class ConstraintDiscovery:
         parents still, by default None. If None, then will not be used. If set, then
         the conditioning set will be chosen lexographically based on the sorted
         test statistic values of 'ith Pa(X) -> X', for each possible parent node of 'X'.
+    skeleton_method : str
+        The method to use for testing conditional independence. Must be one of
+        ('neighbors', 'complete'). See Notes for more details.
+    max_path_length : int
+        The maximum length of a path to consider when looking for possibly d-separating
+        sets among two nodes. Only used if ``skeleton_method=pds``. Default is infinite.
+    pag : PAG
+        The partial ancestral graph. Only used if ``skeleton_method=pds``.
     apply_orientations : bool
         Whether or not to apply orientation rules given the learned skeleton graph
         and separating set per pair of variables. If ``True`` (default), will
@@ -71,6 +79,9 @@ class ConstraintDiscovery:
         min_cond_set_size: int = None,
         max_cond_set_size: int = None,
         max_combinations: int = None,
+        skeleton_method: str = "neighbors",
+        max_path_length: int = np.inf,
+        pag: PAG = None,
         apply_orientations: bool = True,
         **ci_estimator_kwargs,
     ):
@@ -80,7 +91,9 @@ class ConstraintDiscovery:
         self.init_graph = init_graph
         self.fixed_edges = fixed_edges
         self.apply_orientations = apply_orientations
+        self.skeleton_method = skeleton_method
 
+        # constraining the conditional independence tests
         if max_cond_set_size is None:
             max_cond_set_size = np.inf
         self.max_cond_set_size = max_cond_set_size
@@ -90,6 +103,12 @@ class ConstraintDiscovery:
         if max_combinations is None:
             max_combinations = np.inf
         self.max_combinations = max_combinations
+
+        # special attributes for learning skeleton with semi-Markovian models
+        self.max_path_length = max_path_length
+        self.pag = pag
+
+        # initialize the result properties we want to fit
         self.separating_sets_ = None
         self.graph_ = None
 
@@ -111,7 +130,7 @@ class ConstraintDiscovery:
     def _initialize_graph(self, nodes):
 
         # keep track of separating sets
-        sep_set: Dict[str, Dict[str, Set]] = defaultdict(lambda: defaultdict(set))
+        sep_set: Dict[str, Dict[str, Set]] = defaultdict(lambda: defaultdict(list))
 
         # initialize the starting graph
         if self.init_graph is None:
@@ -129,8 +148,8 @@ class ConstraintDiscovery:
             # find the separating sets
             for (node_i, node_j) in itertools.combinations(*graph.nodes):
                 if not graph.has_edge(node_i, node_j):
-                    sep_set[node_i][node_j] = set()
-                    sep_set[node_j][node_i] = set()
+                    sep_set[node_i][node_j] = []
+                    sep_set[node_j][node_i] = []
 
         return graph, sep_set
 
@@ -140,7 +159,7 @@ class ConstraintDiscovery:
             "skeleton graph given a separating set."
         )
 
-    def _orient_colliders(self, graph: Any, sep_set: Dict[str, Dict[str, Set]]):
+    def _orient_unshielded_triples(self, graph: Any, sep_set: Dict[str, Dict[str, Set]]):
         raise NotImplementedError()
 
     def convert_skeleton_graph(self, graph: nx.Graph) -> Any:
@@ -184,6 +203,9 @@ class ConstraintDiscovery:
             nodes = nodes.values
         else:
             nodes = X.columns.values
+
+        # create a reference to the underlying data to be used
+        self.X = X
 
         # initialize graph object to apply learning
         graph, sep_set = self._initialize_graph(nodes)
@@ -285,9 +307,7 @@ class ConstraintDiscovery:
         to determine which variables are (in)dependent. This specific algorithm
         compares exhaustively pairs of adjacent variables.
         """
-        from causal_networkx.discovery.skeleton import (
-            LearnSkeleton,
-        )
+        from causal_networkx.discovery.skeleton import LearnSkeleton
 
         if fixed_edges is None:
             fixed_edges = set()
@@ -301,6 +321,9 @@ class ConstraintDiscovery:
             min_cond_set_size=self.min_cond_set_size,
             max_cond_set_size=self.max_cond_set_size,
             max_combinations=self.max_combinations,
+            skeleton_method=self.skeleton_method,
+            # max_path_length=self.max_path_length,
+            # pag=self.pag,
             keep_sorted=False,
             **self.ci_estimator_kwargs,
         )
@@ -310,20 +333,5 @@ class ConstraintDiscovery:
         sep_set = skel_alg.sep_set_
         test_stat_dict = skel_alg.test_stat_dict_
         pvalue_dict = skel_alg.pvalue_dict_
-
-        # perform pairwise tests to learn skeleton
-        # skel_graph, sep_set, test_stat_dict, pvalue_dict = learn_skeleton_graph_with_order(  # type: ignore
-        #     X,
-        #     self.ci_estimator,
-        #     adj_graph=graph,
-        #     sep_set=sep_set,
-        #     fixed_edges=fixed_edges,
-        #     alpha=self.alpha,
-        #     min_cond_set_size=self.min_cond_set_size,
-        #     max_cond_set_size=self.max_cond_set_size,
-        #     max_combinations=self.max_combinations,
-        #     keep_sorted=False,
-        #     **self.ci_estimator_kwargs,
-        # )
 
         return skel_graph, sep_set, test_stat_dict, pvalue_dict

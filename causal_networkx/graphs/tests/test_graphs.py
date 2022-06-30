@@ -273,6 +273,16 @@ class TestNetworkxGraph(TestDAG):
         G.add_edge(1, 2, foo=ll)
         G.add_edge(2, 1, foo=ll)
 
+    def test_to_adjacency(self):
+        adj_graph = self.G.to_adjacency_graph()
+
+        for _, edges in self.G.all_edges().items():
+            for edge in edges:
+                assert adj_graph.has_edge(*edge)
+
+        for edge in adj_graph.edges:
+            assert self.G.has_adjacency(*edge)
+
 
 class TestExportGraph:
     def setup_method(self):
