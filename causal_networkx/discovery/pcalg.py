@@ -8,7 +8,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from causal_networkx import CPDAG, DAG
+from causal_networkx import CPDAG, DAG, ExtendedPattern
 from causal_networkx.ci.base import BaseConditionalIndependenceTest
 from causal_networkx.utils import is_in_sep_set
 
@@ -400,7 +400,7 @@ class ConservativePC(PC):
         )
 
     def convert_skeleton_graph(self, graph: nx.Graph) -> CPDAG:
-        return super().convert_skeleton_graph(graph)
+        return ExtendedPattern(incoming_uncertain_data=graph)
 
     def _orient_unshielded_triples(
         self, graph: CPDAG, sep_set: Dict[str, Dict[str, List[Set[Any]]]]
