@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, List, Set, Union
+from typing import Any, Dict, List, Set, Union
 
 import networkx as nx
 from networkx.classes.reportviews import EdgeView, NodeView
@@ -91,4 +91,9 @@ class MarkovEquivalenceClass(BaseGraph, metaclass=ABCMeta):
 
     @abstractmethod
     def possible_children(self, n) -> NodeView:
+        pass
+
+    @property
+    @abstractmethod
+    def excluded_triples(self) -> Dict:
         pass

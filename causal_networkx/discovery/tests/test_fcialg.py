@@ -50,7 +50,7 @@ class Test_FCI:
         sample = self.scm.sample(n=1, include_latents=False)
         skel_graph, sep_set, _, _ = self.alg.learn_skeleton(sample)
         graph = PAG(incoming_uncertain_data=skel_graph)
-        self.alg._orient_colliders(graph, sep_set)
+        self.alg._orient_unshielded_triples(graph, sep_set)
 
         # the PAG learned
         expected_graph = PAG()
@@ -467,6 +467,7 @@ class Test_FCI:
         sample = graph.dummy_sample()
         alg.fit(sample)
         pag = alg.graph_
+        skel_graph = alg.skel_graph_
 
         # generate the expected PAG
         edge_list = [
@@ -486,9 +487,14 @@ class Test_FCI:
         ]
         expected_pag = PAG(edge_list, latent_edge_list, uncertain_edge_list)
 
-        assert set(expected_pag.bidirected_edges) == set(pag.bidirected_edges)
+        for edge in expected_pag.to_adjacency_graph().edges:
+            assert skel_graph.has_edge(*edge)
+        for edge in skel_graph.edges:
+            assert expected_pag.to_adjacency_graph().has_edge(*edge)
+        assert nx.is_isomorphic(skel_graph, expected_pag.to_adjacency_graph())
         assert set(expected_pag.edges) == set(pag.edges)
         assert set(expected_pag.circle_endpoints) == set(pag.circle_endpoints)
+        assert set(expected_pag.bidirected_edges) == set(pag.bidirected_edges)
 
     def test_fci_complex(self):
         """

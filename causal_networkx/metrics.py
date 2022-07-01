@@ -6,7 +6,7 @@ from sklearn.preprocessing import LabelBinarizer, LabelEncoder
 from causal_networkx.graphs.base import BaseGraph
 
 
-def graph_to_pred_vector(graph, as_adjacency: bool = True):
+def graph_to_pred_vector(graph, sort_first: bool = False, as_adjacency: bool = True):
     """Convert a causal DAG graph to a prediction vector.
 
     If you use two graphs, you first have to align the nodes.
@@ -15,6 +15,9 @@ def graph_to_pred_vector(graph, as_adjacency: bool = True):
     ----------
     graph : instance of causal DAG
         The causal graph.
+    sort_first : bool
+        Whether to sort the graph's nodes ordering and order the adjacency matrix
+        representation that way. By default False.
     as_adjacency : bool, optional
         Whether to convert to a vector representing the adjacencies, by default True.
         If False, then will also evaluate correct edges. See Notes for details.
@@ -34,12 +37,17 @@ def graph_to_pred_vector(graph, as_adjacency: bool = True):
 
     # next convert into 2D numpy array format
     adj_mat = nx.to_numpy_array(graph)
-    triu_idx = np.triu_indices_from(
-        adj_mat, k=1
-    )  # finding advanced indices of upper right triangle
-    tril_idx = np.tril_indices_from(
-        adj_mat, k=-1
-    )  # finding advanced indices of upper right triangle
+
+    if sort_first:
+        # get the order of the nodes
+        idx = np.argsort(graph.nodes)
+
+        # next convert into 2D numpy array format and make sure nodes are ordered accordingly
+        adj_mat = adj_mat[np.ix_(idx, idx)]
+
+    # finding advanced indices of upper/lower right triangle
+    triu_idx = np.triu_indices_from(adj_mat, k=1)
+    tril_idx = np.tril_indices_from(adj_mat, k=-1)
 
     if as_adjacency:
         # then only extract lower-triangular portion and binarize the labels

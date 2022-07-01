@@ -10,6 +10,7 @@ from causal_networkx import ADMG, PAG
 from causal_networkx.ci.base import BaseConditionalIndependenceTest
 from causal_networkx.config import EdgeType, EndPoint
 from causal_networkx.discovery.classes import ConstraintDiscovery
+from causal_networkx.utils import is_in_sep_set
 
 from ..algorithms.pag import discriminating_path, uncovered_pd_path
 
@@ -107,7 +108,7 @@ class FCI(ConstraintDiscovery):
         self.selection_bias = selection_bias
         self.max_iter = max_iter
 
-    def _orient_colliders(self, graph: PAG, sep_set: Dict[str, Dict[str, Set]]):
+    def _orient_unshielded_triples(self, graph: PAG, sep_set: Dict[str, Dict[str, Set]]):
         """Orient colliders given a graph and separation set.
 
         Parameters
@@ -124,7 +125,9 @@ class FCI(ConstraintDiscovery):
                 # v_i and v_j, else this is a "shielded" collider.
                 # Then check to see if 'u' is in the separating
                 # set. If it is not, then there is a collider.
-                if not graph.has_adjacency(v_i, v_j) and u not in sep_set[v_i][v_j]:
+                if not graph.has_adjacency(v_i, v_j) and not is_in_sep_set(
+                    u, sep_set, v_i, v_j, "any"
+                ):  # u not in sep_set[v_i][v_j]:
                     logger.info(
                         f"orienting collider: {v_i} -> {u} and {v_j} -> {u} to make {v_i} -> {u} <- {v_j}."
                     )
@@ -346,12 +349,10 @@ class FCI(ConstraintDiscovery):
             # now check if u is in SepSet(v, c)
             # handle edge case where sep_set is empty.
             if last_node in sep_set:
-                if u in sep_set[last_node][c]:
+                if is_in_sep_set(u, sep_set, last_node, c, "any"):  # u in sep_set[last_node][c]:
                     # orient u -> c
                     graph.remove_circle_endpoint(c, u)
                 if graph.has_circle_endpoint(u, c):
-                    print(f"Trying to orient {u} -o {c} to arrowhead")
-                    print(graph.all_edges())
                     graph.orient_circle_endpoint(u, c, EndPoint.arrow.value)
                 logger.info(f"Rule 4: orienting {u} -> {c}.")
                 logger.info(disc_path_str)
@@ -587,9 +588,9 @@ class FCI(ConstraintDiscovery):
                         any([r1_add, r2_add, r3_add, r4_add, r8_add, r9_add, r10_add])
                         and not change_flag
                     ):
-                        logger.info("Got here...")
-                        logger.info([r1_add, r2_add, r3_add, r4_add, r8_add, r9_add, r10_add])
-                        logger.info(change_flag)
+                        logger.info(
+                            f"{change_flag} with {[r1_add, r2_add, r3_add, r4_add, r8_add, r9_add, r10_add]}"
+                        )
                         change_flag = True
 
             # check if we should continue or not
@@ -606,10 +607,32 @@ class FCI(ConstraintDiscovery):
         sep_set: Dict[str, Dict[str, Set[Any]]],
         fixed_edges: Optional[Set] = set(),
     ):
-        from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_pdsep
+        from causal_networkx.discovery.skeleton import (
+            LearnSkeleton,
+            learn_skeleton_graph_with_pdsep,
+        )
 
+        # convert the adjacency graph
         adj_graph = pag.to_adjacency_graph()
 
+        # perform pairwise tests to learn skeleton
+        # skel_alg = LearnSkeleton(
+        #     self.ci_estimator,
+        #     adj_graph=adj_graph,
+        #     sep_set=sep_set,
+        #     fixed_edges=fixed_edges,
+        #     alpha=self.alpha,
+        #     min_cond_set_size=1,
+        #     max_cond_set_size=self.max_cond_set_size,
+        #     skeleton_method="pds",
+        #     max_path_length=self.max_path_length,
+        #     pag=pag,
+        #     keep_sorted=False,
+        #     **self.ci_estimator_kwargs,
+        # )
+        # skel_alg.fit(X)
+        # skel_graph = skel_alg.adj_graph_
+        # sep_set = skel_alg.sep_set_
         # perform pairwise tests to learn skeleton
         skel_graph, sep_set = learn_skeleton_graph_with_pdsep(
             X,
@@ -677,17 +700,17 @@ class FCI(ConstraintDiscovery):
         pag = PAG(incoming_uncertain_data=skel_graph, name="PAG derived with FCI")
 
         # orient colliders
-        self._orient_colliders(pag, sep_set)
+        self._orient_unshielded_triples(pag, sep_set)
 
         # # now compute all possibly d-separating sets and learn a better skeleton
         skel_graph, sep_set = self._learn_better_skeleton(X, pag, sep_set, fixed_edges)
 
-        self.skel_graph = skel_graph.copy()
+        self.skel_graph_ = skel_graph.copy()
         return skel_graph, sep_set, test_stat_dict, pvalue_dict
 
     def orient_edges(self, graph, sep_set):
         # orient colliders again
-        self._orient_colliders(graph, sep_set)
+        self._orient_unshielded_triples(graph, sep_set)
         self.orient_coll_graph = graph.copy()
 
         # run the rest of the rules to orient as many edges

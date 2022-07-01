@@ -79,7 +79,7 @@ class PsiPC(PC):
 
         # for all pairs of non-adjacent variables with a common neighbor
         # check if we can orient the edge as a collider
-        self._orient_colliders(skel_graph, sep_set)
+        self._orient_unshielded_triples(skel_graph, sep_set)
 
         # For all the combination of nodes i and j, apply the following
         # rules.
@@ -264,7 +264,7 @@ class PsiFCI(FCI):
 
     def orient_edges(self, graph, sep_set):
         # orient colliders again
-        self._orient_colliders(graph, sep_set)
+        self._orient_unshielded_triples(graph, sep_set)
         self.orient_coll_graph = graph.copy()
 
         # run the rest of the rules to orient as many edges
