@@ -1,5 +1,5 @@
 import typing
-from typing import Protocol
+from typing import Protocol, Set
 
 import networkx as nx
 import pandas as pd
@@ -36,11 +36,11 @@ class NetworkXMixin(Protocol):
         """Set the name of the graph."""
         self.dag.name = s
 
-    def ancestors(self, source):
+    def ancestors(self, source) -> Set:
         """Ancestors of 'source' node with directed path."""
         return nx.ancestors(self.dag, source)
 
-    def descendants(self, source):
+    def descendants(self, source) -> Set:
         """Descendants of 'source' node with directed path."""
         return nx.descendants(self.dag, source)
 

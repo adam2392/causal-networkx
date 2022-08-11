@@ -1,12 +1,12 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Set, Union
+from typing import Any, Dict, Iterator, List, Protocol, Set, Union
 
 import networkx as nx
 from networkx.classes.reportviews import EdgeView, NodeView
 from numpy.typing import NDArray
 
 
-class BaseGraph(metaclass=ABCMeta):
+class BaseGraph(Protocol, metaclass=ABCMeta):
     @property
     @abstractmethod
     def nodes(self) -> NodeView:
@@ -26,6 +26,18 @@ class BaseGraph(metaclass=ABCMeta):
 
     @abstractmethod
     def remove_node(self, u):
+        pass
+
+    def ancestors(self, u) -> Set:
+        pass
+
+    def descendants(self, u) -> Set:
+        pass
+
+    def parents(self, u) -> Iterator:
+        pass
+
+    def children(self, u) -> Iterator:
         pass
 
 

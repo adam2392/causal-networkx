@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, FrozenSet
+from typing import Any, Dict, FrozenSet
 
 import networkx as nx
 
@@ -232,7 +232,7 @@ class CPDAG(DAG, MarkovEquivalenceClass):
         pass
 
     @property
-    def excluded_triples(self) -> Dict[FrozenSet]:
+    def excluded_triples(self) -> Dict[FrozenSet, Any]:
         return self._excluded_triples
 
 

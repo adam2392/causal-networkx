@@ -332,15 +332,12 @@ def discriminating_path(graph: PAG, u, a, c, max_path_length: int):
                 descendant_nodes[next_node] = this_node
                 explored_nodes[next_node] = None
 
-    # return the actual uncovered pd path
+    # return the actual discriminating path
     if found_discriminating_path:
         disc_path = deque([])  # type: ignore
         disc_path.append(next_node)
         while disc_path[-1] != c:
             disc_path.append(descendant_nodes[disc_path[-1]])
-        # disc_path.appendleft(next_node)
-        # while disc_path[0] != c:
-        #     disc_path.appendleft(descendant_nodes[disc_path[0]])
 
     return explored_nodes, found_discriminating_path, disc_path
 

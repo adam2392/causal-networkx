@@ -607,10 +607,7 @@ class FCI(ConstraintDiscovery):
         sep_set: Dict[str, Dict[str, Set[Any]]],
         fixed_edges: Optional[Set] = set(),
     ):
-        from causal_networkx.discovery.skeleton import (
-            LearnSkeleton,
-            learn_skeleton_graph_with_pdsep,
-        )
+        from causal_networkx.discovery.skeleton import learn_skeleton_graph_with_pdsep
 
         # convert the adjacency graph
         adj_graph = pag.to_adjacency_graph()

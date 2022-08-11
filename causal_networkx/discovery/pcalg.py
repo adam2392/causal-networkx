@@ -8,7 +8,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from causal_networkx import CPDAG, DAG
+from causal_networkx import CPDAG, DAG, ExtendedPattern
 from causal_networkx.ci.base import BaseConditionalIndependenceTest
 from causal_networkx.utils import is_in_sep_set
 
@@ -229,7 +229,7 @@ class PC(ConstraintDiscovery):
                     continue
 
                 # check if the triple is in the graph's excluded triples
-                if frozenset(k, i, j) in graph.excluded_triples:
+                if frozenset((k, i, j)) in graph.excluded_triples:
                     continue
 
                 # Make i-j into i->j
@@ -303,7 +303,7 @@ class PC(ConstraintDiscovery):
                     continue
 
                 # check if the triple is inside graph's excluded triples
-                if frozenset(l, i, k) in graph.excluded_triples:
+                if frozenset((l, i, k)) in graph.excluded_triples:
                     continue
 
                 # if i - k and i - l, then  at this point, we have a valid path
@@ -316,12 +316,13 @@ class PC(ConstraintDiscovery):
         return added_arrows
 
 
-class ConservativePC(PC):
-    """Conservative-PC algorithm for causal discovery.
+class ConservativeVotingPC(PC):
+    """Conservative/MajorityVote-PC algorithm with causal discovery.
 
     Assumes causal sufficiency, that is, all confounders in the
     causal graph are observed variables. See :footcite:`ramsey2012adjacency` for
-    full details on the algorithm.
+    full details on the algorithm for conservative orientation. See :footcite:`Colombo2012_MPC`
+    for full details on the algorithm for Majority Voting orientation.
 
     Parameters
     ----------
@@ -356,6 +357,9 @@ class ConservativePC(PC):
         and separating set per pair of variables. If ``True`` (default), will
         apply Meek's orientation rules R0-3, orienting colliders and certain
         arrowheads :footcite:`Meek1995`.
+    vote_threshold : float
+        The voting threshold to orient a triple collider. By default, is None for
+        pure conservative PC. See Notes for details on how to set value for voting.
     ci_estimator_kwargs : dict
         Keyword arguments for the ``ci_estimator`` function.
 
@@ -371,6 +375,22 @@ class ConservativePC(PC):
     References
     ----------
     .. footbibliography::
+
+    Notes
+    -----
+    The majority voting scheme will set a triple as either a definite collider,
+    definite non-collider, or mark it as an unfaithful triple. If the majority voting
+    `vote_threshold` is set to 0.5, then it will:
+
+    - mark definite collider if < 0.5 of tests say X || Y has Z
+    - mark definite non-collider if > 0.5 of tests say X || Y has Z
+    - mark unfaithful if exactly 0.5 of tests say X || Y has Z
+
+    If we modify the `vote_threshold` to 0.3, then it will:
+
+    - mark definite collider if < 0.3 of tests say X || Y has Z
+    - mark definite non-collider if > 0.7 of tests say X || Y has Z
+    - mark unfaithful if 0.3 to 0.7 of tests say X || Y has Z
     """
 
     def __init__(
@@ -384,6 +404,7 @@ class ConservativePC(PC):
         max_iter: int = 1000,
         max_combinations: int = None,
         apply_orientations: bool = True,
+        vote_threshold: float = None,
         **ci_estimator_kwargs,
     ):
         super().__init__(
@@ -398,6 +419,7 @@ class ConservativePC(PC):
             apply_orientations,
             **ci_estimator_kwargs,
         )
+        self.vote_threshold = vote_threshold
 
     def convert_skeleton_graph(self, graph: nx.Graph) -> CPDAG:
         return super().convert_skeleton_graph(graph)
@@ -416,7 +438,7 @@ class ConservativePC(PC):
                     # check the triple
                     self._check_triple(graph, self.X, v_i, u, v_j, sep_set)
 
-    def _check_triple(self, graph: CPDAG, data, v_i, u, v_j, sep_set):
+    def _check_triple(self, graph: ExtendedPattern, data, v_i, u, v_j, sep_set):
         """Check the triple (v_i, u, v_j) using the conservative rules.
 
         Parameters
@@ -467,7 +489,7 @@ class ConservativePC(PC):
             # it is unfaithful triple
             self._mark_unfaithful_triple(graph, v_i, u, v_j)
 
-    def _mark_unfaithful_triple(self, graph: CPDAG, v_i, u, v_j):
+    def _mark_unfaithful_triple(self, graph: ExtendedPattern, v_i, u, v_j):
         """Mark an unshielded triple as unfaithful.
 
         Parameters

@@ -222,7 +222,8 @@ class LearnSkeleton:
 
         if self.skeleton_method not in ACCEPTED_MARKOVIAN_SKELETON_METHODS:
             raise ValueError(
-                f"Skeleton method must be one of {ACCEPTED_MARKOVIAN_SKELETON_METHODS}, not {self.skeleton_method}."
+                f"Skeleton method must be one of {ACCEPTED_MARKOVIAN_SKELETON_METHODS}, "
+                f"not {self.skeleton_method}."
             )
 
         # error check skeleton method and required arguments for FCI case
@@ -461,7 +462,7 @@ class LearnSkeleton:
                         )
 
                     # exit loop if we have found an independency and removed the edge
-                    statistic_summary = f"Statistical summary:\n"
+                    statistic_summary = "Statistical summary:\n"
                     # f"- ({cond_set}) with MCI={mci_inclusion_set}\n"\
                     # f"- alpha={self.alpha}, pvalue={pvalue}\n"\
                     # f"- size_cond_set={size_cond_set}"

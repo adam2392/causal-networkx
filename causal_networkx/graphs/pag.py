@@ -1,3 +1,5 @@
+from typing import Dict
+
 import networkx as nx
 
 from ..config import EdgeType, EndPoint
@@ -111,6 +113,11 @@ class PAG(ADMG, MarkovEquivalenceClass):
 
         # number of allowed edges between any two nodes
         self.allowed_edges = 1
+
+    @property
+    def excluded_triples(self) -> Dict:
+        """Not implemented yet."""
+        return dict()
 
     def _check_circle_endpoint(self, node, nghbr):
         raise_error = False

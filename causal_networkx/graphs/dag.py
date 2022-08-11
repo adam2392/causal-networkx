@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Set
+from typing import Any, Iterator, List, Optional, Set
 
 import networkx as nx
 
@@ -69,6 +69,16 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         # keep track of variables that are always conditioned on
         self._cond_set = set()
 
+    def __str__(self):
+        return "".join(
+            [
+                type(self).__name__,
+                f" named {self.name!r}" if self.name else "",
+                f" with {self.number_of_nodes()} nodes, ",
+                f"{self.number_of_edges()} edges",
+            ]
+        )
+
     def _init_graphs(self):
         """Private function to initialize graphs.
 
@@ -81,7 +91,7 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         # number of edges allowed between nodes
         self.allowed_edges = 1
 
-    def children(self, n):
+    def children(self, n) -> Iterator:
         """Return an iterator over children of node n.
 
         Children of node 'n' are nodes with a directed
@@ -102,7 +112,7 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         """
         return self.dag.successors(n)
 
-    def parents(self, n):
+    def parents(self, n) -> Iterator:
         """Return an iterator over parents of node n.
 
         Parents of node 'n' are nodes with a directed
@@ -151,9 +161,6 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
                 f"Adding a {edge_type} edge is not possible. Please remove the existing "
                 f"edge first."
             )
-
-    def draw(self, **kwargs):
-        nx.draw_networkx(self.dag, with_labels=True, **kwargs)
 
     def is_node_common_cause(self, node, exclude_nodes: List[Any] = None):
         """Check if a node is a common cause within the graph.
@@ -288,3 +295,57 @@ class DAG(NetworkXMixin, GraphSampleMixin, AddingEdgeMixin, ExportMixin, Markovi
         if to_networkx:
             return nx.DiGraph(self.dag)  # type: ignore
         return self.dag
+
+    def subgraph(self, nodes):
+        """Obtain a subgraph of just `nodes`."""
+        G = self.copy()
+
+        for node in self.nodes:
+            if node not in nodes:
+                G.remove_node(node)
+
+        return G
+
+    def draw(self, direction=None):
+        """
+        Visualize the graph.
+
+        :return : dot language representation of the graph.
+        """
+        from graphviz import Digraph
+
+        dot = Digraph()
+
+        # set direction from left to right if that's preferred
+        if direction == "LR":
+            dot.graph_attr["rankdir"] = direction
+
+        shape = "square"  # 'plaintext'
+        for v in self.nodes:
+            child = str(v)
+
+            dot.node(child, shape=shape, height=".5", width=".5")
+
+            for parent in self.parents(v):
+                parent = str(parent)
+                if parent == v:
+                    dot.edge(parent, child, style="invis")
+                else:
+                    dot.edge(parent, child, color="blue")
+
+            if hasattr(self, "undirected_edges"):
+                for neb1, neb2 in self.undirected_edges:
+                    neb1, neb2 = str(neb1), str(neb2)
+                    dot.edge(neb1, neb2, dir="none", color="brown")
+
+            if hasattr(self, "bidirected_edges"):
+                for sib1, sib2 in self.bidirected_edges:
+                    sib1, sib2 = str(sib1), str(sib2)
+                    dot.edge(sib1, sib2, dir="both", color="red")
+
+            if hasattr(self, "circle_edges"):
+                for sib1, sib2 in self.circle_edges:
+                    sib1, sib2 = str(sib1), str(sib2)
+                    dot.edge(sib1, sib2, arrowhead="circle", color="green")
+
+        return dot

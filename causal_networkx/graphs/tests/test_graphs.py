@@ -14,6 +14,7 @@ from causal_networkx.utils import requires_pydot
 
 def test_spouses():
     ed1, ed2 = ({}, {})
+    # 0 -> 1; 0 -> 2
     incoming_graph_data = {0: {1: ed1, 2: ed2}}
     G = DAG(incoming_graph_data)
     # add collider on 2
@@ -23,6 +24,13 @@ def test_spouses():
     assert G.spouses(1) == set()
     assert G.spouses(2) == set()
     assert G.spouses(3) == {0}
+
+    # Now make graph:
+    # 0 -> 1; 0 -> 2
+    # 1 -> 3; 4 -> 3
+    G.add_edge(1, 3)
+    G.add_edge(4, 3)
+    assert G.spouses(4) == {1}
 
 
 class TestDAG:
