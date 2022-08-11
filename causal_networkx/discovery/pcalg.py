@@ -422,7 +422,7 @@ class ConservativeVotingPC(PC):
         self.vote_threshold = vote_threshold
 
     def convert_skeleton_graph(self, graph: nx.Graph) -> CPDAG:
-        return super().convert_skeleton_graph(graph)
+        return ExtendedPattern(incoming_uncertain_data=graph)
 
     def _orient_unshielded_triples(
         self, graph: CPDAG, sep_set: Dict[str, Dict[str, List[Set[Any]]]]
