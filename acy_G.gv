@@ -1,0 +1,8 @@
+digraph {
+	a -> y [arrowhead=normal color=blue]
+	a -> x [arrowhead=normal color=blue]
+	y -> b [arrowhead=normal color=blue]
+	y -> z [arrowhead=normal color=blue]
+	x -> z [arrowhead=normal color=blue]
+	y -> x [color=red dir=both]
+}

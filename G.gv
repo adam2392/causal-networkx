@@ -1,0 +1,14 @@
+digraph {
+	x8 -> x2 [arrowhead=normal color=blue]
+	x2 -> x6 [arrowhead=normal color=blue]
+	x2 -> x5 [arrowhead=normal color=blue]
+	x2 -> x3 [arrowhead=normal color=blue]
+	x2 -> x4 [arrowhead=normal color=blue]
+	x9 -> x2 [arrowhead=normal color=blue]
+	x10 -> x1 [arrowhead=normal color=blue]
+	x6 -> x7 [arrowhead=normal color=blue]
+	x1 -> x6 [color=red dir=both]
+	x1 -> x5 [color=red dir=both]
+	x1 -> x3 [color=red dir=both]
+	x1 -> x4 [color=red dir=both]
+}

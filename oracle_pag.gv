@@ -1,0 +1,8 @@
+digraph {
+	x -> a [arrowhead=odot color=green]
+	y -> b [arrowhead=odot color=green]
+	y -> x [arrowhead=odot color=green]
+	y -> z [arrowhead=odot color=green]
+	x -> z [arrowhead=odot color=green]
+	y -> a [arrowhead=odot color=green]
+}
