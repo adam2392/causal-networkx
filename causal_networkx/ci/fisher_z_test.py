@@ -3,7 +3,6 @@ from typing import Any, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from numpy.typing import NDArray
 from scipy.stats import norm
 
 from .base import BaseConditionalIndependenceTest
@@ -53,7 +52,7 @@ class FisherZCITest(BaseConditionalIndependenceTest):
 
 
 def fisherz(
-    data: Union[NDArray, pd.DataFrame],
+    data: pd.DataFrame,
     x: Union[int, str],
     y: Union[int, str],
     sep_set: Set,
@@ -96,9 +95,22 @@ def fisherz(
 
     # compute the correlation matrix within the specified data
     sub_corr_matrix = correlation_matrix[np.ix_(var_idx, var_idx)]
+    # try:
     inv = np.linalg.inv(sub_corr_matrix)
     r = -inv[0, 1] / sqrt(inv[0, 0] * inv[1, 1])
+    # except Exception as e:
+    #     print('inside errors...')
+    #     print(var)
+    #     print(correlation_matrix.shape)
+    #     print(sub_corr_matrix)
+    #     print(sub_corr_matrix.shape)
+    #     print(var_idx)
+    #     raise Exception(e)
+
+    # apply the Fisher Z-transformation
     Z = 0.5 * log((1 + r) / (1 - r))
+
+    # compute the test statistic
     X = sqrt(sample_size - len(sep_set) - 3) * abs(Z)
     p = 2 * (1 - norm.cdf(abs(X)))
     return X, p

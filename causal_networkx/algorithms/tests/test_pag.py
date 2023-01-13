@@ -54,7 +54,7 @@ def test_possibly_d_separated():
     sample = graph.dummy_sample()
     skel_graph, sep_set, _, _ = alg.learn_skeleton(sample)
     fci_pag = PAG(incoming_uncertain_data=skel_graph)
-    alg._orient_colliders(fci_pag, sep_set)
+    alg._orient_unshielded_triples(fci_pag, sep_set)
 
     # possibly d-sep sets should match
     pdsep = possibly_d_sep_sets(fci_pag, "A", "E")

@@ -1,3 +1,6 @@
+from collections import defaultdict
+from typing import Any, Dict, FrozenSet
+
 import networkx as nx
 
 from ..config import EdgeType
@@ -54,6 +57,7 @@ class CPDAG(DAG, MarkovEquivalenceClass):
 
         super().__init__(incoming_graph_data, **attr)
         self._check_cpdag()
+        self._excluded_triples = defaultdict(frozenset)
 
     def _init_graphs(self):
         # create a list of the internal graphs
@@ -226,3 +230,29 @@ class CPDAG(DAG, MarkovEquivalenceClass):
 
     def possible_parents(self, n):
         pass
+
+    @property
+    def excluded_triples(self) -> Dict[FrozenSet, Any]:
+        return self._excluded_triples
+
+
+class ExtendedPattern(CPDAG):
+    def __init__(self, incoming_graph_data=None, incoming_uncertain_data=None, **attr) -> None:
+        super().__init__(incoming_graph_data, incoming_uncertain_data, **attr)
+        self._unfaithful_triples = dict()
+
+    def mark_unfaithful_triple(self, v_i, u, v_j):
+        if any(node not in self.nodes for node in [v_i, u, v_j]):
+            raise RuntimeError(f"The triple {v_i}, {u}, {v_j} is not in the graph.")
+
+        self._unfaithful_triples[frozenset(v_i, u, v_j)] = None
+
+    @property
+    def unfaithful_triples(self):
+        return self._unfaithful_triples
+
+    @property
+    def excluded_triples(self) -> Dict:
+        excluded_trips = super().excluded_triples().copy()
+        excluded_trips |= self.unfaithful_triples
+        return excluded_trips

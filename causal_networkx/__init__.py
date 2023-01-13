@@ -4,5 +4,5 @@
 #
 # License: BSD (3-clause)
 
-from .graphs import ADMG, CPDAG, DAG, PAG
+from .graphs import ADMG, CPDAG, DAG, PAG, ExtendedPattern
 from .scm import StructuralCausalModel

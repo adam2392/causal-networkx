@@ -57,3 +57,9 @@ def test_compute_v_structures():
     v_structs = compute_v_structures(G)
     assert len(v_structs) == 1
     assert (0, 2, 3) in v_structs
+
+    edges = [("A", "B"), ("C", "B"), ("B", "D"), ("D", "E"), ("G", "E")]
+    G = DAG()
+    G.add_edges_from(edges)
+    v_structs = compute_v_structures(G)
+    assert len(v_structs) == 2

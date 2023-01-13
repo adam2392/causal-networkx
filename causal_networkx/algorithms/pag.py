@@ -12,19 +12,19 @@ from causal_networkx import PAG
 logger = logging.getLogger()
 
 
-def possibly_d_sep_sets(graph: PAG, node_x, node_y=None, max_path_length: int = np.inf):
+def possibly_d_sep_sets(graph: PAG, node_x, node_y=None, max_path_length: int = np.inf) -> Set:
     """Find all PDS sets between node_x and node_y.
 
     Possibly d-separting (PDS) sets are adjacency paths from 'node_x' to
     some node 'V', which has the following characteristics for every
-    subpath triple <X, Y, Z>:
+    subpath triple <X, Y, Z> on the path:
 
     - Y is a collider, or
     - Y is a triangle (i.e. X, Y and Z form a complete subgraph)
 
     If Y is a triangle, then it will be uncertain with circular edges
     due to the fact that it is a shielded triple, not allowing us to infer
-    that it is a collider.
+    that it is a collider. These are defined in :footcite:`Colombo2012`.
 
     Parameters
     ----------
@@ -39,7 +39,7 @@ def possibly_d_sep_sets(graph: PAG, node_x, node_y=None, max_path_length: int = 
 
     Returns
     -------
-    pds_set : set
+    dsep : set
         The possibly d-separating set between node_x and node_y.
     """
     if max_path_length == np.inf:
@@ -156,6 +156,56 @@ def possibly_d_sep_sets(graph: PAG, node_x, node_y=None, max_path_length: int = 
     return dsep
 
 
+def pds_path(graph: PAG, node_x, node_y, max_path_length: int = np.inf) -> Set:
+    """Compute the possibly-d-separating set path.
+
+    Returns the PDS_path set defined in definition 3.4 of :footcite:`Colombo2012`.
+
+    Parameters
+    ----------
+    graph : PAG
+        _description_
+    node_x : node
+        The starting node.
+    node_y : node
+        The ending node
+    max_path_length : int, optional
+        The maximum length of a path to search on for PDS set, by default np.inf.
+
+    Notes
+    -----
+    This is a smaller subset compared to possibly-d-separating sets. It takes
+    the PDS set and intersects it with the biconnected components of the adjacency
+    graph that contains the edge (node_x, node_y).
+    """
+    # get the adjacency graph to perform path searches over
+    adj_graph = graph.to_adjacency_graph()
+
+    # compute all biconnected componnets
+    biconn_comp = nx.biconnected_component_edges(adj_graph)
+
+    # compute the PDS set
+    pds_set = possibly_d_sep_sets(
+        graph, node_x=node_x, node_y=node_y, max_path_length=max_path_length
+    )
+
+    # now we intersect
+    found_component: Set = set()
+    for comp in biconn_comp:
+        if (node_x, node_y) in biconn_comp or (node_y, node_x) in biconn_comp:
+            # add all unique nodes in the biconnected component
+            for (x, y) in comp:
+                found_component.add(x)
+                found_component.add(y)
+            break
+
+    # now intersect the pds set with the biconnected component with the edge between
+    # 'x' and 'y'
+    pds_path = pds_set.intersection(found_component)
+
+    return pds_path
+
+
 def discriminating_path(graph: PAG, u, a, c, max_path_length: int):
     """Find the discriminating path for <..., a, u, c>.
 
@@ -216,8 +266,6 @@ def discriminating_path(graph: PAG, u, a, c, max_path_length: int):
     explored_nodes[c] = None
     explored_nodes[u] = None
     explored_nodes[a] = None
-
-    print(c, u, a)
 
     # a must be a parent of c
     if not graph.has_edge(a, c):
@@ -284,15 +332,12 @@ def discriminating_path(graph: PAG, u, a, c, max_path_length: int):
                 descendant_nodes[next_node] = this_node
                 explored_nodes[next_node] = None
 
-    # return the actual uncovered pd path
+    # return the actual discriminating path
     if found_discriminating_path:
         disc_path = deque([])  # type: ignore
         disc_path.append(next_node)
         while disc_path[-1] != c:
             disc_path.append(descendant_nodes[disc_path[-1]])
-        # disc_path.appendleft(next_node)
-        # while disc_path[0] != c:
-        #     disc_path.appendleft(descendant_nodes[disc_path[0]])
 
     return explored_nodes, found_discriminating_path, disc_path
 

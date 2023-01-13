@@ -1,6 +1,11 @@
 import math
 
+import networkx as nx
+import numpy as np
 import pandas as pd
+from manm_cs.graph import Graph
+from networkx import DiGraph
+from numpy.random import PCG64
 
 from causal_networkx import DAG
 
@@ -44,6 +49,7 @@ def simulate_random_graphs_manm_cs(
     beta_lower_limit=0.5,
     beta_upper_limit=1.0,
     n_latents=None,
+    seed=None,
 ):
     """_summary_
 
@@ -110,7 +116,7 @@ def simulate_random_graphs_manm_cs(
         .with_betas(beta_lower_limit, beta_upper_limit)
     )
 
-    graph = graph_builder.build()
+    graph = graph_builder.build(seed=seed)
 
     if n_jobs == -1:
         n_jobs = cpu_count()
@@ -128,3 +134,95 @@ def simulate_random_graphs_manm_cs(
     # if we have latents, then let's randomly set certain variables to be latent
     # TODO: MAKE THIS WORK
     return causal_dag, df, graph_builder
+
+
+def extract_weights(graph: Graph):
+    """Assumes manm_cs graph is entirely continuous."""
+    test_nx_graph = DiGraph()
+
+    nx_graph = graph.to_networkx_graph()
+    top_sort_idx = list(nx.topological_sort(nx_graph))
+    variables = graph.variables
+
+    for var in variables:
+        # add parents
+        parents = var.parents
+        betas = var.betas
+        var_name = top_sort_idx[var.idx]
+
+        test_nx_graph.add_node(var_name)
+        for idx, parent in enumerate(parents):
+            parent_name = top_sort_idx[parent.idx]
+            weight = betas[idx]
+
+            test_nx_graph.add_node(parent_name)
+            test_nx_graph.add_edge(parent_name, var_name, weight=weight)
+            nx_graph.add_edge(parent_name, var_name, weight=weight)
+    return nx_graph
+
+
+def _node_funcs():
+    pass
+
+
+def _edge_funcs(num_continuous_parents, random_state=None):
+    rng = np.random.Generator(PCG64(seed=random_state))
+    functions = []
+
+    # pick randomly from the set of passed in functions
+    rand_val = rng.random()
+    for function_tuple in sorted(functions):
+        if rand_val <= function_tuple[0]:
+            return function_tuple[1]
+
+    # use last entry as default
+    def identical(value):
+        return value
+
+    return identical
+
+    # generate the edge function now for each parent that is continuous
+    # functions = [self.chose_function() for p in range(num_continuous_parents)]
+
+
+def sample(graph, n_samples, random_state=None):
+    df = pd.DataFrame()
+    for node in graph.nodes:
+        df[node] = _sample_node(graph, node, random_state=random_state)
+
+    return df
+
+
+def _sample_node(graph, node, n_samples, random_state=None):
+    # we are at a root node
+    if len(graph.parents(node)) == 0:
+        signal = np.zeros(n_samples)
+    else:
+        signal = _compute_signal_from_parents(graph, node, n_samples, random_state=random_state)
+
+    noise = np.random.normal()
+    return signal + noise
+
+
+def _compute_signal_from_parents(graph, node, n_samples, random_state=None):
+    pass
+
+
+def simulate_random_graphs(
+    n_nodes,
+    edge_density,
+    n_samples=1000,
+    discrete_node_ratio=0.5,
+    discrete_signal_to_noise_ratio=0.9,
+    min_discrete_value_classes=3,
+    max_discrete_value_classes=4,
+    continuous_noise_std=1.0,
+    with_conditional_gaussian=True,
+    functions=[(1.0, lin_func)],
+    n_jobs=-1,
+    beta_lower_limit=0.5,
+    beta_upper_limit=1.0,
+    n_latents=None,
+    seed=None,
+):
+    pass

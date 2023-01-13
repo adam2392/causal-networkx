@@ -181,7 +181,7 @@ class Test_PC:
         pc.fit(sample)
         skel_graph = pc.graph_
         sep_set = pc.separating_sets_
-        self.alg._orient_colliders(skel_graph, sep_set)
+        self.alg._orient_unshielded_triples(skel_graph, sep_set)
 
         # the CPDAG learned should be a fully oriented DAG
         assert len(skel_graph.undirected_edges) == 0
